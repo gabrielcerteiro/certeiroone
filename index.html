@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Gabriel Certeiro</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --navy: #1c2b3a; --navy2: #243347;
+  --gold-bar: #c9a93a; --green-bar: #2d6a4f; --green-bar2: #40916c;
+  --red: #c0392b; --bg: #eeece5; --white: #ffffff;
+  --gray: #8c8f96; --gray2: #b5b8bf; --light: #f4f3ee;
+  --border: #e2e0d8; --text: #1c2b3a; --gold-alert: #c9952a;
+}
+html,body { font-family:'Sora',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; -webkit-font-smoothing:antialiased; overscroll-behavior:none; }
+
+/* HEADER */
+.hdr { background:var(--navy); display:flex; justify-content:space-between; align-items:center; padding:13px 18px 11px; position:sticky; top:0; z-index:200; }
+.hdr-logo .brand { color:#fff; font-size:13px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; }
+.hdr-logo .sub { color:#6b7d94; font-size:8.5px; letter-spacing:1.4px; text-transform:uppercase; margin-top:2px; }
+.hdr-date { text-align:right; }
+.hdr-date .d1 { color:#8fa0b3; font-size:11px; }
+.hdr-date .d2 { color:#fff; font-size:12px; font-weight:600; }
+
+/* PAGE */
+.page { padding:14px 14px 24px; max-width:480px; margin:0 auto; }
+
+/* VGV */
+.vgv { background:var(--navy); border-radius:14px; padding:18px 18px 16px; margin-bottom:14px; }
+.vgv-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
+.vgv-lbl { color:#6b7d94; font-size:9px; letter-spacing:2px; text-transform:uppercase; margin-bottom:5px; }
+.vgv-val { color:#fff; font-size:28px; font-weight:800; line-height:1; letter-spacing:-0.5px; }
+.vgv-sub { color:#6b7d94; font-size:10px; margin-top:5px; }
+.vgv-right { text-align:right; }
+.vgv-nec-lbl { color:#8fa0b3; font-size:10px; margin-bottom:4px; }
+.vgv-nec-val { color:#e05252; font-size:17px; font-weight:700; line-height:1; }
+.vgv-nec-x { color:#e05252; font-size:10px; font-weight:600; margin-top:3px; }
+.vgv-bar-bg { background:rgba(255,255,255,0.1); border-radius:3px; height:5px; overflow:hidden; }
+.vgv-bar-fill { background:var(--red); height:100%; border-radius:3px; transition:width .6s ease; }
+.vgv-pct { color:#6b7d94; font-size:10px; text-align:right; margin-top:5px; }
+
+/* STATS */
+.stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; margin-bottom:14px; }
+.stat { background:var(--white); border-radius:12px; padding:13px 10px 11px; text-align:center; }
+.stat-n { font-size:26px; font-weight:800; line-height:1; }
+.stat-l { font-size:9px; color:var(--gray); text-transform:uppercase; letter-spacing:1.1px; margin-top:3px; }
+
+/* IMOVEL CARD */
+.icard { background:var(--white); border-radius:14px; margin-bottom:12px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.07); cursor:pointer; border-left:4px solid transparent; transition:transform .12s; -webkit-user-select:none; }
+.icard.atencao { border-left-color:var(--gold-alert); }
+.icard.melhoria { border-left-color:#2d6fa5; }
+.icard.ok       { border-left-color:var(--green-bar2); }
+.icard.sem_exclusividade { border-left-color:var(--gray2); }
+.icard:active { transform:scale(0.984); }
+.icard-inner { padding:15px 15px 13px; }
+.icard-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
+.icard-nome { font-size:12.5px; font-weight:700; line-height:1.3; flex:1; padding-right:8px; }
+.icard-preco { font-size:13px; font-weight:700; white-space:nowrap; }
+
+/* TAGS */
+.tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:11px; }
+.tag { font-size:10px; font-weight:600; padding:3px 9px; border-radius:20px; }
+.tag-venda     { background:#d6f0df; color:#1a6636; }
+.tag-mobiliado { background:#d3edf5; color:#0c5a72; }
+.tag-vazio     { background:#f0efea; color:#555; border:1px solid #ddd; }
+.tag-repaginado{ background:#ede8f5; color:#4a2d7a; }
+.tag-atencao   { background:#fef3d0; color:#7a5800; }
+.tag-melhoria  { background:#d0e8fb; color:#0d4b7a; }
+.tag-ok        { background:#d6f0df; color:#1a6636; }
+.tag-neutro    { background:#f0efea; color:#555; border:1px solid #ddd; }
+
+/* TIMELINE */
+.tl-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; }
+.tl-lbl  { font-size:9px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:var(--gray); }
+.tl-rest { font-size:11px; font-weight:700; color:var(--gold-alert); }
+.tl-row  { margin-bottom:5px; }
+.tl-rlbl { font-size:8px; color:var(--gray2); text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; }
+.tl-track { position:relative; background:#edecea; border-radius:3px; height:6px; overflow:visible; }
+.tl-fill  { height:100%; border-radius:3px; }
+.tl-green { background:var(--green-bar); }
+.tl-gold  { background:var(--gold-bar); }
+.tl-marker { position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--navy); border-radius:2px; }
+.tl-hoje { position:absolute; top:-15px; left:50%; transform:translateX(-50%); font-size:7.5px; font-weight:700; color:var(--navy); white-space:nowrap; }
+
+/* FUNIL */
+.funil { margin:11px 0 0; }
+.funil-row { display:flex; align-items:center; gap:7px; margin-bottom:5px; }
+.funil-lbl { width:60px; font-size:12px; flex-shrink:0; }
+.funil-bar { flex:1; background:#edecea; border-radius:3px; height:7px; overflow:hidden; }
+.funil-fill { height:100%; border-radius:3px; }
+.funil-nums { font-size:12.5px; font-weight:700; white-space:nowrap; display:flex; align-items:center; gap:3px; }
+.funil-target { color:var(--gray2); font-weight:400; font-size:11.5px; }
+.dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.dot-red   { background:var(--red); }
+.dot-amber { background:var(--gold-alert); }
+.dot-green { background:var(--green-bar2); }
+
+/* MIDIA/CPL */
+.mbox-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:11px; }
+.mbox { background:var(--light); border-radius:9px; padding:10px 12px; }
+.mbox-alert { background:#fdf0ee; }
+.mbox-lbl { font-size:8.5px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; color:var(--gray); margin-bottom:4px; display:flex; align-items:center; gap:4px; }
+.cpl-badge { background:var(--navy); color:white; font-size:7.5px; font-weight:700; padding:1px 5px; border-radius:3px; }
+.mbox-val { font-size:15px; font-weight:700; }
+.mbox-ref { font-size:10px; color:var(--gray); font-weight:400; margin-left:2px; }
+.ver-det { text-align:right; font-size:11px; color:var(--gray); font-weight:600; margin-top:9px; }
+
+/* BOTTOM NAV */
+.bnav { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:8px 0 max(12px,env(safe-area-inset-bottom)); z-index:200; }
+.bnav-item { display:flex; flex-direction:column; align-items:center; gap:2px; position:relative; cursor:pointer; min-width:40px; padding:0 2px; }
+.bnav-icon { font-size:17px; color:var(--gray); }
+.bnav-lbl  { font-size:8px; color:var(--gray); font-weight:600; letter-spacing:0.5px; text-transform:uppercase; }
+.bnav-item.active .bnav-icon, .bnav-item.active .bnav-lbl { color:var(--navy); }
+.bnav-badge { position:absolute; top:-3px; right:0; background:var(--red); color:#fff; border-radius:10px; font-size:8px; font-weight:700; padding:1px 4px; }
+
+/* VIEWS */
+.view { display:none; }
+.view.on { display:block; animation:fadeUp .17s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+/* DETAIL */
+.det-topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+.back-btn { display:flex; align-items:center; gap:4px; font-size:14px; font-weight:500; color:var(--navy); cursor:pointer; padding:6px 0; }
+.back-btn svg { width:16px; height:16px; }
+.share-btn { background:var(--navy); color:#fff; border:none; border-radius:10px; padding:9px 18px; font-size:13px; font-weight:600; font-family:'Sora',sans-serif; cursor:pointer; }
+.det-title { font-size:18px; font-weight:800; line-height:1.25; margin-bottom:8px; }
+.det-price { font-size:24px; font-weight:800; margin:10px 0 14px; letter-spacing:-0.3px; }
+.scard { background:var(--white); border-radius:14px; padding:15px; margin-bottom:11px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+.scard-title { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--gray); margin-bottom:13px; }
+
+/* CONV */
+.conv-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:13px; }
+.conv-box { background:var(--light); border-radius:9px; padding:11px 12px; }
+.conv-lbl { font-size:8.5px; color:var(--gray); font-weight:600; letter-spacing:0.6px; text-transform:uppercase; margin-bottom:5px; }
+.conv-val { font-size:22px; font-weight:800; line-height:1; }
+.conv-ref { font-size:12px; font-weight:400; color:var(--gray); }
+
+/* CAMPANHA */
+.camp-grid { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; }
+.camp-lbl { font-size:8px; color:var(--gray); font-weight:700; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:4px; display:flex; align-items:center; gap:3px; }
+.camp-val { font-size:13.5px; font-weight:700; }
+
+/* VISITAS */
+.vis-item { padding:12px 0; border-bottom:1px solid var(--border); }
+.vis-item:first-child { padding-top:0; }
+.vis-item:last-child  { border-bottom:none; padding-bottom:0; }
+.vis-top  { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:7px; }
+.vis-left { display:flex; align-items:center; gap:9px; }
+.vis-av   { width:33px; height:33px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; flex-shrink:0; }
+.vis-name { font-size:13.5px; font-weight:600; }
+.vis-date { font-size:11px; color:var(--gray); margin-top:1px; }
+.vis-badge { font-size:10.5px; font-weight:600; padding:3px 10px; border-radius:20px; }
+.vis-badge.sem_proposta    { background:#fef3d0; color:#7a5800; }
+.vis-badge.proposta_gerada { background:#d6f0df; color:#1a6636; }
+.vis-tags { display:flex; flex-wrap:wrap; gap:5px; margin:6px 0; }
+.vis-tag  { font-size:10px; padding:2px 9px; border-radius:12px; background:var(--light); color:var(--navy); font-weight:500; }
+.vis-obs  { font-size:12px; color:#3a4550; background:var(--light); border-radius:8px; padding:9px 11px; line-height:1.5; }
+.vis-empty { font-size:12px; color:var(--gray); padding:8px 0; text-align:center; }
+
+/* LOADING / ERRO */
+.loading { text-align:center; padding:40px 20px; }
+.loading-spin { width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--navy); border-radius:50%; animation:spin .7s linear infinite; margin:0 auto 12px; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.loading-txt { font-size:13px; color:var(--gray); }
+.erro-box { background:#fdf0ee; border-radius:12px; padding:16px; margin:20px 0; text-align:center; }
+.erro-box p { font-size:12px; color:var(--red); }
+.erro-box button { margin-top:10px; background:var(--navy); color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:12px; font-weight:600; font-family:'Sora',sans-serif; cursor:pointer; }
+
+::-webkit-scrollbar { width:0; }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-logo">
+    <div class="brand">Gabriel Certeiro</div>
+    <div class="sub">De A Suítes | Fazenda e Brava</div>
+  </div>
+  <div class="hdr-date">
+    <div class="d1" id="hdrData">—</div>
+    <div class="d2" id="hdrDia">—</div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- LIST VIEW -->
+  <div class="view on" id="vList">
+    <div class="vgv">
+      <div class="vgv-top">
+        <div>
+          <div class="vgv-lbl">VGV em Carteira</div>
+          <div class="vgv-val" id="vgvTotal">—</div>
+          <div class="vgv-sub" id="vgvSub">carregando...</div>
+        </div>
+        <div class="vgv-right">
+          <div class="vgv-nec-lbl">Necessário (+0,66)</div>
+          <div class="vgv-nec-val">R$ 123,84M</div>
+          <div class="vgv-nec-x">✕ descoberto</div>
+        </div>
+      </div>
+      <div class="vgv-bar-bg"><div class="vgv-bar-fill" id="vgvBar" style="width:0%"></div></div>
+      <div class="vgv-pct" id="vgvPct">—</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-n" id="stTotal">—</div><div class="stat-l">Total</div></div>
+      <div class="stat"><div class="stat-n" id="stVenda">—</div><div class="stat-l">Em Venda</div></div>
+      <div class="stat"><div class="stat-n" id="stProposta">—</div><div class="stat-l">Com Proposta</div></div>
+    </div>
+
+    <div id="cardsWrap">
+      <div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando imóveis...</div></div>
+    </div>
+  </div>
+
+  <!-- DETAIL VIEW -->
+  <div class="view" id="vDetail">
+    <div class="det-topbar">
+      <div class="back-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Voltar
+      </div>
+      <button class="share-btn">Compartilhar</button>
+    </div>
+    <div id="detailBody"></div>
+  </div>
+
+</div>
+
+
+
+<script>
+// ─── SUPABASE CONFIG ───────────────────────────────────────────
+const SUPA_URL  = 'https://vtykzralkxlbqqkleofl.supabase.co';
+const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0eWt6cmFsa3hsYnFxa2xlb2ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjMyNjAsImV4cCI6MjA4OTkzOTI2MH0.rYBifw2NXqVDGrKbDWKJgrFAIdoruxxsIPc9RXibgy0';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ─── DATA CACHE ────────────────────────────────────────────────
+let imoveis = [];
+let visitasMap = {};  // imovel_id -> []
+
+// ─── HELPERS ──────────────────────────────────────────────────
+function hoje() {
+  const d = new Date();
+  const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  return `${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
+}
+function diaDoAno(d = new Date()) {
+  const ini = new Date(d.getFullYear(), 0, 0);
+  return Math.floor((d - ini) / 86400000);
+}
+function diasNoAno(ano = new Date().getFullYear()) {
+  return ((ano % 4 === 0 && ano % 100 !== 0) || ano % 400 === 0) ? 366 : 365;
+}
+function fmt(n) {
+  if (!n) return '—';
+  const v = parseFloat(n);
+  if (v >= 1e6) return 'R$ ' + (v/1e6).toFixed(2).replace('.',',') + 'M';
+  if (v >= 1e3) return 'R$ ' + (v/1e3).toFixed(0) + 'K';
+  return 'R$ ' + v.toFixed(0);
+}
+function fmtMoeda(s) {
+  if (!s) return '—';
+  return s.toString().startsWith('R$') ? s : 'R$ ' + s;
+}
+function pct(a, m) { return m > 0 ? Math.min((a / m) * 100, 100) : 0; }
+function dotC(a, m) { const p = pct(a,m); return p >= 90 ? 'dot-green' : p >= 60 ? 'dot-amber' : 'dot-red'; }
+function barCol(a, m) { const p = pct(a,m); return p >= 90 ? '#40916c' : p >= 60 ? '#c9a93a' : '#c0392b'; }
+function avatarCor(nome) {
+  const cores = ['#2d6a4f','#3a6fa8','#7b4fa6','#b85c1a','#1c2b3a','#2d7fa5','#6a4f2d'];
+  let h = 0; for (const c of (nome||'?')) h = c.charCodeAt(0) + ((h<<5)-h);
+  return cores[Math.abs(h) % cores.length];
+}
+function inicial(nome) { return (nome||'?').charAt(0).toUpperCase(); }
+
+function statusTag(s) {
+  const m = {
+    atencao: { label:'Atenção', cls:'atencao' },
+    melhoria: { label:'Melhoria', cls:'melhoria' },
+    ok: { label:'No prazo', cls:'ok' },
+    sem_exclusividade: { label:'Sem exclusividade', cls:'neutro' }
+  };
+  return m[s] || { label: s, cls:'neutro' };
+}
+
+function imovelStatusTag(s) {
+  if (!s) return '';
+  const m = {
+    'Mobiliado': 'mobiliado',
+    'Vazio': 'vazio',
+    'Repaginado': 'repaginado',
+    'Em Venda': 'venda',
+  };
+  return m[s] || 'neutro';
+}
+
+// ─── HEADER DATE ───────────────────────────────────────────────
+function initHeader() {
+  const d = new Date();
+  document.getElementById('hdrData').textContent = hoje();
+  document.getElementById('hdrDia').textContent  = `Dia ${diaDoAno(d)} / ${diasNoAno()}`;
+}
+
+// ─── VGV CALC ─────────────────────────────────────────────────
+function calcVGV(data) {
+  let total = 0;
+  let comProposta = 0;
+  data.forEach(im => {
+    const v = parseFloat((im.preco||'').replace(/[^\d,.]/g,'').replace(',','.')) || 0;
+    total += v;
+    if (im.total_propostas > 0) comProposta++;
+  });
+  const meta = 123.84;
+  const pctCob = Math.min((total / meta) * 100, 100);
+  document.getElementById('vgvTotal').textContent  = 'R$ ' + total.toFixed(2).replace('.',',') + 'M';
+  document.getElementById('vgvSub').textContent    = `${data.length} exclusividades ativas`;
+  document.getElementById('vgvBar').style.width    = pctCob.toFixed(1) + '%';
+  document.getElementById('vgvPct').textContent    = pctCob.toFixed(0) + '% coberto';
+  document.getElementById('stTotal').textContent   = data.length;
+  document.getElementById('stVenda').textContent   = data.filter(x => x.imovel_status !== 'Vendido').length;
+  document.getElementById('stProposta').textContent= comProposta;
+}
+
+// ─── RENDER TIMELINE ──────────────────────────────────────────
+function tlHtml(im) {
+  const hPct = Math.min(parseFloat(im.tl_hoje_pct)||0, 100);
+  const rPct = im.dias_contrato > 0
+    ? Math.max(0, Math.min(
+        (parseInt(im.total_leads)||0) / Math.max(im.meta_leads,1) * 100,
+        100
+      ))
+    : 0;
+  const rest = im.dias_restantes != null ? im.dias_restantes : '—';
+  return `
+    <div class="tl-head">
+      <span class="tl-lbl">Timeline · ${im.dias_contrato||120}D</span>
+      <span class="tl-rest">${rest}d restantes</span>
+    </div>
+    <div class="tl-row">
+      <div class="tl-rlbl">META</div>
+      <div class="tl-track">
+        <div class="tl-fill tl-green" style="width:100%"></div>
+        <div class="tl-marker" style="left:${hPct}%"><div class="tl-hoje">HOJE</div></div>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-rlbl">REAL</div>
+      <div class="tl-track">
+        <div class="tl-fill tl-gold" style="width:${hPct}%"></div>
+      </div>
+    </div>`;
+}
+
+// ─── RENDER FUNIL ─────────────────────────────────────────────
+function funilHtml(im) {
+  const rows = [
+    { lbl:'Leads',     a: im.total_leads||0,     m: im.meta_leads||1 },
+    { lbl:'Visitas',   a: im.total_visitas||0,   m: im.meta_visitas||1 },
+    { lbl:'Propostas', a: im.total_propostas||0, m: im.meta_propostas||1 }
+  ];
+  return rows.map(r => `
+    <div class="funil-row">
+      <div class="funil-lbl">${r.lbl}</div>
+      <div class="funil-bar"><div class="funil-fill" style="width:${pct(r.a,r.m)}%;background:${barCol(r.a,r.m)}"></div></div>
+      <div class="funil-nums">${r.a} <span class="funil-target">/ ${r.m}</span></div>
+      <div class="dot ${dotC(r.a,r.m)}"></div>
+    </div>`).join('');
+}
+
+// ─── RENDER MBOXES ────────────────────────────────────────────
+function mBoxHtml(im) {
+  const inv    = im.investido   ? 'R$ ' + parseFloat(im.investido).toLocaleString('pt-BR')   : '—';
+  const invRef = im.meta_investimento ? '/R$ ' + parseFloat(im.meta_investimento).toLocaleString('pt-BR') : '';
+  const cplV   = im.cpl        ? 'R$ ' + parseFloat(im.cpl).toFixed(0)        : '—';
+  const cplRef = im.meta_cpl   ? '/R$ ' + parseFloat(im.meta_cpl).toFixed(0)  : '';
+  const invAlert = im.investido && im.meta_investimento && parseFloat(im.investido) > parseFloat(im.meta_investimento);
+  const cplAlert = im.cpl      && im.meta_cpl           && parseFloat(im.cpl) > parseFloat(im.meta_cpl);
+  return `
+    <div class="mbox-row">
+      <div class="mbox ${invAlert?'mbox-alert':''}">
+        <div class="mbox-lbl">Mídia</div>
+        <div class="mbox-val">${inv}<span class="mbox-ref">${invRef}</span></div>
+      </div>
+      <div class="mbox ${cplAlert?'mbox-alert':''}">
+        <div class="mbox-lbl"><span class="cpl-badge">CPL</span></div>
+        <div class="mbox-val">${cplV}<span class="mbox-ref">${cplRef}</span></div>
+      </div>
+    </div>`;
+}
+
+// ─── RENDER CARD ──────────────────────────────────────────────
+function renderCard(im) {
+  const st = statusTag(im.dash_status);
+  const nomeDisplay = [im.nome, im.proprietario].filter(Boolean).join(' — ').toUpperCase();
+  const imStatus = im.imovel_status || '';
+  return `
+  <div class="icard ${im.dash_status||'neutro'}" onclick="openDetail('${im.id}')">
+    <div class="icard-inner">
+      <div class="icard-top">
+        <div class="icard-nome">${nomeDisplay}</div>
+        <div class="icard-preco">${fmtMoeda(im.preco)}</div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-venda">Em Venda</span>
+        ${imStatus ? `<span class="tag tag-${imovelStatusTag(imStatus)}">${imStatus}</span>` : ''}
+        ${im.bairro ? `<span class="tag tag-neutro">${im.bairro}</span>` : ''}
+        <span class="tag tag-${st.cls}">${st.label}</span>
+      </div>
+      ${tlHtml(im)}
+      <div class="funil">${funilHtml(im)}</div>
+      ${mBoxHtml(im)}
+      <div class="ver-det">Ver detalhe →</div>
+    </div>
+  </div>`;
+}
+
+// ─── RENDER DETALHE ───────────────────────────────────────────
+function renderDetail(im, visitas) {
+  const st = statusTag(im.dash_status);
+  const nomeDisplay = [im.nome, im.proprietario].filter(Boolean).join(' — ').toUpperCase();
+  const imStatus = im.imovel_status || '';
+
+  const cvLV = parseFloat(im.conv_lead_visita)||0;
+  const cvVP = parseFloat(im.conv_visita_prop)||0;
+  const mLV  = parseFloat(im.meta_conv_lead_visita)||35;
+  const mVP  = parseFloat(im.meta_conv_visita_prop)||20;
+
+  const inv    = im.investido  ? 'R$ ' + parseFloat(im.investido).toLocaleString('pt-BR')  : '—';
+  const cplV   = im.cpl        ? 'R$ ' + parseFloat(im.cpl).toFixed(0)                     : '—';
+  const alc    = im.alcance    ? parseInt(im.alcance).toLocaleString('pt-BR')               : '—';
+  const freq   = im.frequencia ? parseFloat(im.frequencia).toFixed(2).replace('.',',')      : '—';
+
+  const visHtml = visitas.length === 0
+    ? `<div class="vis-empty">Nenhuma visita registrada ainda.</div>`
+    : visitas.map(v => {
+        const stBadge = v.status_pos_visita === 'proposta_gerada' ? 'proposta_gerada' : 'sem_proposta';
+        const stLabel = v.status_pos_visita === 'proposta_gerada' ? 'Proposta gerada' : 'Sem proposta';
+        const tags = [
+          v.parceiro ? 'Com parceria' : 'Sem parceria',
+          v.qualificado_financeiramente ? 'Qualificado' : 'Em qualificação',
+          v.origem ? `Origem: ${v.origem}` : null
+        ].filter(Boolean);
+        return `
+        <div class="vis-item">
+          <div class="vis-top">
+            <div class="vis-left">
+              <div class="vis-av" style="background:${avatarCor(v.nome_interessado)}">${inicial(v.nome_interessado)}</div>
+              <div>
+                <div class="vis-name">${v.nome_interessado||'—'}</div>
+                <div class="vis-date">${v.data_visita||'—'}</div>
+              </div>
+            </div>
+            <div class="vis-badge ${stBadge}">${stLabel}</div>
+          </div>
+          <div class="vis-tags">${tags.map(t=>`<span class="vis-tag">${t}</span>`).join('')}</div>
+          ${v.observacoes ? `<div class="vis-obs">${v.observacoes}</div>` : ''}
+        </div>`;
+      }).join('');
+
+  return `
+    <div class="det-title">${nomeDisplay}</div>
+    <div class="tags">
+      <span class="tag tag-venda">Em Venda</span>
+      ${imStatus ? `<span class="tag tag-${imovelStatusTag(imStatus)}">${imStatus}</span>` : ''}
+      ${im.bairro ? `<span class="tag tag-neutro">${im.bairro}</span>` : ''}
+      <span class="tag tag-${st.cls}">${st.label}</span>
+    </div>
+    <div class="det-price">${fmtMoeda(im.preco)}</div>
+
+    <div class="scard">
+      <div class="scard-title">Timeline</div>
+      ${tlHtml(im)}
+    </div>
+
+    <div class="scard">
+      <div class="scard-title">Funil de Vendas</div>
+      <div class="funil">${funilHtml(im)}</div>
+      <div class="conv-row">
+        <div class="conv-box">
+          <div class="conv-lbl">LEAD → VISITA</div>
+          <div class="conv-val">${cvLV}%<span class="conv-ref"> /${mLV}%</span></div>
+        </div>
+        <div class="conv-box">
+          <div class="conv-lbl">VISITA → PROP.</div>
+          <div class="conv-val">${cvVP}%<span class="conv-ref"> /${mVP}%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scard">
+      <div class="scard-title">Métricas de Campanha</div>
+      <div class="camp-grid">
+        <div><div class="camp-lbl">Investido</div><div class="camp-val">${inv}</div></div>
+        <div><div class="camp-lbl"><span class="cpl-badge">CPL</span></div><div class="camp-val">${cplV}</div></div>
+        <div><div class="camp-lbl">Alcance</div><div class="camp-val">${alc}</div></div>
+        <div><div class="camp-lbl">Freq.</div><div class="camp-val">${freq}</div></div>
+      </div>
+    </div>
+
+    <div class="scard">
+      <div class="scard-title">Relatórios de Visitas (${visitas.length})</div>
+      ${visHtml}
+    </div>`;
+}
+
+// ─── LOAD DATA ────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const { data, error } = await sb
+      .from('dashboard_imoveis')
+      .select('*')
+      .order('dias_restantes', { ascending: true });
+
+    if (error) throw error;
+    imoveis = data || [];
+
+    // carrega visitas de todos os imóveis em paralelo
+    const ids = imoveis.map(x => x.id);
+    const { data: vis, error: visErr } = await sb
+      .from('dashboard_visitas_detalhe')
+      .select('*')
+      .in('imovel_id', ids)
+      .order('data_visita', { ascending: false });
+
+    if (!visErr && vis) {
+      vis.forEach(v => {
+        if (!visitasMap[v.imovel_id]) visitasMap[v.imovel_id] = [];
+        visitasMap[v.imovel_id].push(v);
+      });
+    }
+
+    calcVGV(imoveis);
+    document.getElementById('cardsWrap').innerHTML =
+      imoveis.length > 0
+        ? imoveis.map(renderCard).join('')
+        : `<div class="vis-empty" style="padding:30px 0">Nenhum imóvel ativo encontrado.</div>`;
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('cardsWrap').innerHTML = `
+      <div class="erro-box">
+        <p>Erro ao carregar dados: ${err.message}</p>
+        <button onclick="loadDashboard()">Tentar novamente</button>
+      </div>`;
+  }
+}
+
+// ─── NAVEGAÇÃO ────────────────────────────────────────────────
+function openDetail(id) {
+  const im = imoveis.find(x => x.id === id);
+  if (!im) return;
+  const vis = visitasMap[id] || [];
+  document.getElementById('detailBody').innerHTML = renderDetail(im, vis);
+  document.getElementById('vList').classList.remove('on');
+  document.getElementById('vDetail').classList.add('on');
+  window.scrollTo({ top: 0 });
+}
+
+function goBack() {
+  document.getElementById('vDetail').classList.remove('on');
+  document.getElementById('vList').classList.add('on');
+  window.scrollTo({ top: 0 });
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+initHeader();
+loadDashboard();
+</script>
+</body>
+</html>
