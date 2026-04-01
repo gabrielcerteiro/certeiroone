@@ -7,169 +7,213 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-:root {
-  --navy: #1c2b3a; --navy2: #243347;
-  --gold-bar: #c9a93a; --green-bar: #2d6a4f; --green-bar2: #40916c;
-  --red: #c0392b; --bg: #eeece5; --white: #ffffff;
-  --gray: #8c8f96; --gray2: #b5b8bf; --light: #f4f3ee;
-  --border: #e2e0d8; --text: #1c2b3a; --gold-alert: #c9952a;
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#1c2b3a;--navy2:#243347;--gold-bar:#c9a93a;--green-bar:#2d6a4f;--green-bar2:#40916c;
+  --red:#c0392b;--bg:#eeece5;--white:#fff;--gray:#8c8f96;--gray2:#b5b8bf;
+  --light:#f4f3ee;--border:#e2e0d8;--text:#1c2b3a;--gold-alert:#c9952a;
 }
-html,body { font-family:'Sora',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; -webkit-font-smoothing:antialiased; overscroll-behavior:none; }
+html,body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
 
-/* HEADER */
-.hdr { background:var(--navy); display:flex; justify-content:space-between; align-items:center; padding:13px 18px 11px; position:sticky; top:0; z-index:200; }
-.hdr-logo .brand { color:#fff; font-size:13px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; }
-.hdr-logo .sub { color:#6b7d94; font-size:8.5px; letter-spacing:1.4px; text-transform:uppercase; margin-top:2px; }
-.hdr-date { text-align:right; }
-.hdr-date .d1 { color:#8fa0b3; font-size:11px; }
-.hdr-date .d2 { color:#fff; font-size:12px; font-weight:600; }
+.hdr{background:var(--navy);display:flex;justify-content:space-between;align-items:center;padding:13px 18px 11px;position:sticky;top:0;z-index:200}
+.hdr-logo .brand{color:#fff;font-size:13px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase}
+.hdr-logo .sub{color:#6b7d94;font-size:8.5px;letter-spacing:1.4px;text-transform:uppercase;margin-top:2px}
+.hdr-date{text-align:right}
+.hdr-date .d1{color:#8fa0b3;font-size:11px}
+.hdr-date .d2{color:#fff;font-size:12px;font-weight:600}
 
-/* PAGE */
-.page { padding:14px 14px 24px; max-width:480px; margin:0 auto; }
+.page{padding:14px 14px 24px;max-width:480px;margin:0 auto}
 
-/* VGV */
-.vgv { background:var(--navy); border-radius:14px; padding:18px 18px 16px; margin-bottom:14px; }
-.vgv-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
-.vgv-lbl { color:#6b7d94; font-size:9px; letter-spacing:2px; text-transform:uppercase; margin-bottom:5px; }
-.vgv-val { color:#fff; font-size:28px; font-weight:800; line-height:1; letter-spacing:-0.5px; }
-.vgv-sub { color:#6b7d94; font-size:10px; margin-top:5px; }
-.vgv-right { text-align:right; }
-.vgv-nec-lbl { color:#8fa0b3; font-size:10px; margin-bottom:4px; }
-.vgv-nec-val { color:#e05252; font-size:17px; font-weight:700; line-height:1; }
-.vgv-nec-x { color:#e05252; font-size:10px; font-weight:600; margin-top:3px; }
-.vgv-bar-bg { background:rgba(255,255,255,0.1); border-radius:3px; height:5px; overflow:hidden; }
-.vgv-bar-fill { background:var(--red); height:100%; border-radius:3px; transition:width .6s ease; }
-.vgv-pct { color:#6b7d94; font-size:10px; text-align:right; margin-top:5px; }
+.vgv{background:var(--navy);border-radius:14px;padding:18px 18px 16px;margin-bottom:14px}
+.vgv-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.vgv-lbl{color:#6b7d94;font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
+.vgv-val{color:#fff;font-size:28px;font-weight:800;line-height:1;letter-spacing:-0.5px}
+.vgv-sub{color:#6b7d94;font-size:10px;margin-top:5px}
+.vgv-right{text-align:right}
+.vgv-nec-lbl{color:#8fa0b3;font-size:10px;margin-bottom:4px}
+.vgv-nec-val{color:#e05252;font-size:17px;font-weight:700;line-height:1}
+.vgv-nec-x{color:#e05252;font-size:10px;font-weight:600;margin-top:3px}
+.vgv-bar-bg{background:rgba(255,255,255,0.1);border-radius:3px;height:5px;overflow:hidden}
+.vgv-bar-fill{background:var(--red);height:100%;border-radius:3px;transition:width .6s}
+.vgv-pct{color:#6b7d94;font-size:10px;text-align:right;margin-top:5px}
 
-/* STATS */
-.stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; margin-bottom:14px; }
-.stat { background:var(--white); border-radius:12px; padding:13px 10px 11px; text-align:center; }
-.stat-n { font-size:26px; font-weight:800; line-height:1; }
-.stat-l { font-size:9px; color:var(--gray); text-transform:uppercase; letter-spacing:1.1px; margin-top:3px; }
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:14px}
+.stat{background:var(--white);border-radius:12px;padding:13px 10px 11px;text-align:center}
+.stat-n{font-size:26px;font-weight:800;line-height:1}
+.stat-l{font-size:9px;color:var(--gray);text-transform:uppercase;letter-spacing:1.1px;margin-top:3px}
 
-/* IMOVEL CARD */
-.icard { background:var(--white); border-radius:14px; margin-bottom:12px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.07); cursor:pointer; border-left:4px solid transparent; transition:transform .12s; -webkit-user-select:none; }
-.icard.atencao { border-left-color:var(--gold-alert); }
-.icard.melhoria { border-left-color:#2d6fa5; }
-.icard.ok       { border-left-color:var(--green-bar2); }
-.icard.sem_exclusividade { border-left-color:var(--gray2); }
-.icard:active { transform:scale(0.984); }
-.icard-inner { padding:15px 15px 13px; }
-.icard-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
-.icard-nome { font-size:12.5px; font-weight:700; line-height:1.3; flex:1; padding-right:8px; }
-.icard-preco { font-size:13px; font-weight:700; white-space:nowrap; }
+.icard{background:var(--white);border-radius:14px;margin-bottom:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.07);border-left:4px solid transparent;-webkit-user-select:none}
+.icard.atencao{border-left-color:var(--gold-alert)}
+.icard.melhoria{border-left-color:#2d6fa5}
+.icard.ok{border-left-color:var(--green-bar2)}
+.icard.vendida{border-left-color:#27ae60}
+.icard.perdida{border-left-color:var(--red)}
+.icard.encerrada{border-left-color:var(--gray2)}
+.icard-inner{padding:15px 15px 0;cursor:pointer}
+.icard-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.icard-nome{font-size:12.5px;font-weight:700;line-height:1.3;flex:1;padding-right:8px}
+.icard-preco{font-size:13px;font-weight:700;white-space:nowrap}
 
-/* TAGS */
-.tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:11px; }
-.tag { font-size:10px; font-weight:600; padding:3px 9px; border-radius:20px; }
-.tag-venda     { background:#d6f0df; color:#1a6636; }
-.tag-mobiliado { background:#d3edf5; color:#0c5a72; }
-.tag-vazio     { background:#f0efea; color:#555; border:1px solid #ddd; }
-.tag-repaginado{ background:#ede8f5; color:#4a2d7a; }
-.tag-atencao   { background:#fef3d0; color:#7a5800; }
-.tag-melhoria  { background:#d0e8fb; color:#0d4b7a; }
-.tag-ok        { background:#d6f0df; color:#1a6636; }
-.tag-neutro    { background:#f0efea; color:#555; border:1px solid #ddd; }
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:11px}
+.tag{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px}
+.tag-venda{background:#d6f0df;color:#1a6636}
+.tag-mobiliado{background:#d3edf5;color:#0c5a72}
+.tag-vazio{background:#f0efea;color:#555;border:1px solid #ddd}
+.tag-repaginado{background:#ede8f5;color:#4a2d7a}
+.tag-atencao{background:#fef3d0;color:#7a5800}
+.tag-melhoria{background:#d0e8fb;color:#0d4b7a}
+.tag-ok{background:#d6f0df;color:#1a6636}
+.tag-vendida{background:#d6f0df;color:#1a6636}
+.tag-perdida{background:#fde8e8;color:#7a0000}
+.tag-encerrada{background:#f0efea;color:#555;border:1px solid #ddd}
+.tag-neutro{background:#f0efea;color:#555;border:1px solid #ddd}
 
-/* TIMELINE */
-.tl-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; }
-.tl-lbl  { font-size:9px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:var(--gray); }
-.tl-rest { font-size:11px; font-weight:700; color:var(--gold-alert); }
-.tl-row  { margin-bottom:5px; }
-.tl-rlbl { font-size:8px; color:var(--gray2); text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; }
-.tl-track { position:relative; background:#edecea; border-radius:3px; height:6px; overflow:visible; }
-.tl-fill  { height:100%; border-radius:3px; }
-.tl-green { background:var(--green-bar); }
-.tl-gold  { background:var(--gold-bar); }
-.tl-marker { position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--navy); border-radius:2px; }
-.tl-hoje { position:absolute; top:-15px; left:50%; transform:translateX(-50%); font-size:7.5px; font-weight:700; color:var(--navy); white-space:nowrap; }
+.tl-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.tl-lbl{font-size:9px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray)}
+.tl-rest{font-size:11px;font-weight:700;color:var(--gold-alert)}
+.tl-row{margin-bottom:5px}
+.tl-rlbl{font-size:8px;color:var(--gray2);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.tl-track{position:relative;background:#edecea;border-radius:3px;height:6px;overflow:visible}
+.tl-fill{height:100%;border-radius:3px}
+.tl-green{background:var(--green-bar)}
+.tl-gold{background:var(--gold-bar)}
+.tl-red{background:var(--red)}
+.tl-marker{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--navy);border-radius:2px}
+.tl-hoje{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:7.5px;font-weight:700;color:var(--navy);white-space:nowrap}
 
-/* FUNIL */
-.funil { margin:11px 0 0; }
-.funil-row { display:flex; align-items:center; gap:7px; margin-bottom:5px; }
-.funil-lbl { width:60px; font-size:12px; flex-shrink:0; }
-.funil-bar { flex:1; background:#edecea; border-radius:3px; height:7px; overflow:hidden; }
-.funil-fill { height:100%; border-radius:3px; }
-.funil-nums { font-size:12.5px; font-weight:700; white-space:nowrap; display:flex; align-items:center; gap:3px; }
-.funil-target { color:var(--gray2); font-weight:400; font-size:11.5px; }
-.dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-.dot-red   { background:var(--red); }
-.dot-amber { background:var(--gold-alert); }
-.dot-green { background:var(--green-bar2); }
+/* TIMELINE HORIZONTAL */
+.tl-horiz{margin:12px 0 0;overflow-x:auto;padding-bottom:4px}
+.tl-horiz-inner{display:flex;align-items:flex-start;min-width:max-content;padding:0 2px}
+.tl-node{display:flex;flex-direction:column;align-items:center;min-width:64px}
+.tl-node-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.tl-node-dot.ok{background:var(--green-bar2)}
+.tl-node-dot.pendente{background:var(--gray2)}
+.tl-node-dot.atrasado{background:var(--red)}
+.tl-node-dot.nao_se_aplica{background:var(--gray2);opacity:0.3}
+.tl-node-lbl{font-size:8.5px;font-weight:700;color:var(--text);text-align:center;margin-top:5px;line-height:1.2;max-width:60px}
+.tl-node-data{font-size:8px;color:var(--gray);text-align:center;margin-top:2px}
+.tl-connector{display:flex;flex-direction:column;align-items:center;padding-top:8px}
+.tl-line{height:2px;background:var(--border);flex:1;min-width:18px}
+.tl-line.ok{background:var(--green-bar2)}
+.tl-interval{font-size:7.5px;color:var(--gray);margin-top:3px;white-space:nowrap}
 
-/* MIDIA/CPL */
-.mbox-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:11px; }
-.mbox { background:var(--light); border-radius:9px; padding:10px 12px; }
-.mbox-alert { background:#fdf0ee; }
-.mbox-lbl { font-size:8.5px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; color:var(--gray); margin-bottom:4px; display:flex; align-items:center; gap:4px; }
-.cpl-badge { background:var(--navy); color:white; font-size:7.5px; font-weight:700; padding:1px 5px; border-radius:3px; }
-.mbox-val { font-size:15px; font-weight:700; }
-.mbox-ref { font-size:10px; color:var(--gray); font-weight:400; margin-left:2px; }
-.ver-det { text-align:right; font-size:11px; color:var(--gray); font-weight:600; margin-top:9px; }
+/* DETALHE OPS */
+.tl-ops-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.tl-ops-item:last-child{border-bottom:none}
+.tl-ops-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.tl-ops-dot.ok{background:var(--green-bar2)}
+.tl-ops-dot.pendente{background:var(--gray2)}
+.tl-ops-dot.atrasado{background:var(--red)}
+.tl-ops-dot.nao_se_aplica{background:var(--gray2);opacity:0.3}
+.tl-ops-name{font-size:12px;font-weight:600}
+.tl-ops-info{font-size:11px;color:var(--gray);margin-top:2px}
+.tl-ops-interval{font-size:10px;color:var(--gray);margin-top:2px;font-style:italic}
+.tl-ops-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;display:inline-block;margin-top:3px}
+.tl-ops-badge.ok{background:#d6f0df;color:#1a6636}
+.tl-ops-badge.pendente{background:#f0efea;color:var(--gray)}
+.tl-ops-badge.atrasado{background:#fde8e8;color:#7a0000}
+.tl-ops-badge.nao_se_aplica{background:#f0efea;color:var(--gray2)}
 
-/* BOTTOM NAV */
-.bnav { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:8px 0 max(12px,env(safe-area-inset-bottom)); z-index:200; }
-.bnav-item { display:flex; flex-direction:column; align-items:center; gap:2px; position:relative; cursor:pointer; min-width:40px; padding:0 2px; }
-.bnav-icon { font-size:17px; color:var(--gray); }
-.bnav-lbl  { font-size:8px; color:var(--gray); font-weight:600; letter-spacing:0.5px; text-transform:uppercase; }
-.bnav-item.active .bnav-icon, .bnav-item.active .bnav-lbl { color:var(--navy); }
-.bnav-badge { position:absolute; top:-3px; right:0; background:var(--red); color:#fff; border-radius:10px; font-size:8px; font-weight:700; padding:1px 4px; }
+.funil{margin:11px 0 0}
+.funil-row{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.funil-lbl{width:60px;font-size:12px;flex-shrink:0}
+.funil-bar{flex:1;background:#edecea;border-radius:3px;height:7px;overflow:hidden}
+.funil-fill{height:100%;border-radius:3px}
+.funil-nums{font-size:12.5px;font-weight:700;white-space:nowrap;display:flex;align-items:center;gap:3px}
+.funil-target{color:var(--gray2);font-weight:400;font-size:11.5px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-red{background:var(--red)}.dot-amber{background:var(--gold-alert)}.dot-green{background:var(--green-bar2)}
 
-/* VIEWS */
-.view { display:none; }
-.view.on { display:block; animation:fadeUp .17s ease; }
-@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.mbox-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}
+.mbox{background:var(--light);border-radius:9px;padding:10px 12px}
+.mbox-alert{background:#fdf0ee}
+.mbox-lbl{font-size:8.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--gray);margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.cpl-badge{background:var(--navy);color:white;font-size:7.5px;font-weight:700;padding:1px 5px;border-radius:3px}
+.mbox-val{font-size:15px;font-weight:700}
+.mbox-ref{font-size:10px;color:var(--gray);font-weight:400;margin-left:2px}
 
-/* DETAIL */
-.det-topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
-.back-btn { display:flex; align-items:center; gap:4px; font-size:14px; font-weight:500; color:var(--navy); cursor:pointer; padding:6px 0; }
-.back-btn svg { width:16px; height:16px; }
-.share-btn { background:var(--navy); color:#fff; border:none; border-radius:10px; padding:9px 18px; font-size:13px; font-weight:600; font-family:'Sora',sans-serif; cursor:pointer; }
-.det-title { font-size:18px; font-weight:800; line-height:1.25; margin-bottom:8px; }
-.det-price { font-size:24px; font-weight:800; margin:10px 0 14px; letter-spacing:-0.3px; }
-.scard { background:var(--white); border-radius:14px; padding:15px; margin-bottom:11px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
-.scard-title { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--gray); margin-bottom:13px; }
+.card-actions{display:flex;justify-content:space-between;align-items:center;padding:10px 15px 13px}
+.ver-det{font-size:11px;color:var(--gray);font-weight:600;cursor:pointer}
+.edit-btn-card{background:var(--light);border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;color:var(--navy);font-family:'Sora',sans-serif;cursor:pointer}
 
-/* CONV */
-.conv-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:13px; }
-.conv-box { background:var(--light); border-radius:9px; padding:11px 12px; }
-.conv-lbl { font-size:8.5px; color:var(--gray); font-weight:600; letter-spacing:0.6px; text-transform:uppercase; margin-bottom:5px; }
-.conv-val { font-size:22px; font-weight:800; line-height:1; }
-.conv-ref { font-size:12px; font-weight:400; color:var(--gray); }
+.view{display:none}.view.on{display:block;animation:fadeUp .17s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-/* CAMPANHA */
-.camp-grid { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; }
-.camp-lbl { font-size:8px; color:var(--gray); font-weight:700; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:4px; display:flex; align-items:center; gap:3px; }
-.camp-val { font-size:13.5px; font-weight:700; }
+.det-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.back-btn{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:500;color:var(--navy);cursor:pointer;padding:6px 0}
+.back-btn svg{width:16px;height:16px}
+.share-btn{background:var(--navy);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:600;font-family:'Sora',sans-serif;cursor:pointer}
 
-/* VISITAS */
-.vis-item { padding:12px 0; border-bottom:1px solid var(--border); }
-.vis-item:first-child { padding-top:0; }
-.vis-item:last-child  { border-bottom:none; padding-bottom:0; }
-.vis-top  { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:7px; }
-.vis-left { display:flex; align-items:center; gap:9px; }
-.vis-av   { width:33px; height:33px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; flex-shrink:0; }
-.vis-name { font-size:13.5px; font-weight:600; }
-.vis-date { font-size:11px; color:var(--gray); margin-top:1px; }
-.vis-badge { font-size:10.5px; font-weight:600; padding:3px 10px; border-radius:20px; }
-.vis-badge.sem_proposta    { background:#fef3d0; color:#7a5800; }
-.vis-badge.proposta_gerada { background:#d6f0df; color:#1a6636; }
-.vis-tags { display:flex; flex-wrap:wrap; gap:5px; margin:6px 0; }
-.vis-tag  { font-size:10px; padding:2px 9px; border-radius:12px; background:var(--light); color:var(--navy); font-weight:500; }
-.vis-obs  { font-size:12px; color:#3a4550; background:var(--light); border-radius:8px; padding:9px 11px; line-height:1.5; }
-.vis-empty { font-size:12px; color:var(--gray); padding:8px 0; text-align:center; }
+.det-title{font-size:18px;font-weight:800;line-height:1.25;margin-bottom:8px}
+.det-price{font-size:24px;font-weight:800;margin:10px 0 14px;letter-spacing:-0.3px}
+.scard{background:var(--white);border-radius:14px;padding:15px;margin-bottom:11px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.scard-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:13px}
 
-/* LOADING / ERRO */
-.loading { text-align:center; padding:40px 20px; }
-.loading-spin { width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--navy); border-radius:50%; animation:spin .7s linear infinite; margin:0 auto 12px; }
-@keyframes spin { to{transform:rotate(360deg)} }
-.loading-txt { font-size:13px; color:var(--gray); }
-.erro-box { background:#fdf0ee; border-radius:12px; padding:16px; margin:20px 0; text-align:center; }
-.erro-box p { font-size:12px; color:var(--red); }
-.erro-box button { margin-top:10px; background:var(--navy); color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:12px; font-weight:600; font-family:'Sora',sans-serif; cursor:pointer; }
+/* TIMELINE OPS DETALHE */
+.tl-ops-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.tl-ops-item:last-child{border-bottom:none}
+.tl-ops-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.tl-ops-icon.ok{background:#d6f0df}
+.tl-ops-icon.pendente{background:#f0efea}
+.tl-ops-icon.atrasado{background:#fde8e8}
+.tl-ops-icon.nao_se_aplica{background:#f0efea;opacity:0.4}
+.tl-ops-name{font-size:12px;font-weight:600}
+.tl-ops-info{font-size:11px;color:var(--gray);margin-top:2px}
+.tl-ops-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;display:inline-block;margin-top:3px}
+.tl-ops-badge.ok{background:#d6f0df;color:#1a6636}
+.tl-ops-badge.pendente{background:#f0efea;color:var(--gray)}
+.tl-ops-badge.atrasado{background:#fde8e8;color:#7a0000}
+.tl-ops-badge.nao_se_aplica{background:#f0efea;color:var(--gray2)}
 
-::-webkit-scrollbar { width:0; }
+.conv-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}
+.conv-box{background:var(--light);border-radius:9px;padding:11px 12px}
+.conv-lbl{font-size:8.5px;color:var(--gray);font-weight:600;letter-spacing:0.6px;text-transform:uppercase;margin-bottom:5px}
+.conv-val{font-size:22px;font-weight:800;line-height:1}
+.conv-ref{font-size:12px;font-weight:400;color:var(--gray)}
+
+.camp-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px}
+.camp-lbl{font-size:8px;color:var(--gray);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px}
+.camp-val{font-size:13.5px;font-weight:700}
+
+.vis-item{padding:12px 0;border-bottom:1px solid var(--border)}
+.vis-item:first-child{padding-top:0}
+.vis-item:last-child{border-bottom:none;padding-bottom:0}
+.vis-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
+.vis-left{display:flex;align-items:center;gap:9px}
+.vis-av{width:33px;height:33px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.vis-name{font-size:13.5px;font-weight:600}
+.vis-date{font-size:11px;color:var(--gray);margin-top:1px}
+.vis-badge{font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:20px}
+.vis-badge.sem_proposta{background:#fef3d0;color:#7a5800}
+.vis-badge.proposta_gerada{background:#d6f0df;color:#1a6636}
+.vis-tags{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}
+.vis-tag{font-size:10px;padding:2px 9px;border-radius:12px;background:var(--light);color:var(--navy);font-weight:500}
+.vis-obs{font-size:12px;color:#3a4550;background:var(--light);border-radius:8px;padding:9px 11px;line-height:1.5}
+.vis-empty{font-size:12px;color:var(--gray);padding:8px 0;text-align:center}
+
+/* EDIT */
+.edit-section{background:var(--white);border-radius:14px;padding:15px;margin-bottom:11px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.edit-section-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:12px}
+.edit-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);gap:8px}
+.edit-row:last-child{border-bottom:none}
+.edit-lbl{font-size:12px;color:var(--text);flex:1;line-height:1.3}
+.edit-lbl small{font-size:10px;color:var(--gray);display:block;margin-top:1px}
+.edit-input{width:76px;text-align:center;border:1.5px solid var(--border);border-radius:8px;padding:7px 6px;font-size:14px;font-weight:700;font-family:'Sora',sans-serif;color:var(--navy);background:var(--light);outline:none;-webkit-appearance:none;flex-shrink:0}
+.edit-input:focus{border-color:var(--navy);background:#fff}
+.edit-input.wide{width:110px;font-size:12px}
+.edit-input.date-input{width:130px;font-size:11px}
+.edit-meta{font-size:10px;color:var(--gray2);text-align:right;margin-top:6px}
+.save-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:13px;font-weight:600;padding:12px 24px;border-radius:12px;z-index:400;opacity:0;transition:opacity .25s;pointer-events:none;font-family:'Sora',sans-serif;white-space:nowrap}
+.save-toast.show{opacity:1}
+
+.loading{text-align:center;padding:40px 20px}
+.loading-spin{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:13px;color:var(--gray)}
+.erro-box{background:#fdf0ee;border-radius:12px;padding:16px;margin:20px 0;text-align:center}
+.erro-box p{font-size:12px;color:var(--red)}
+.erro-box button{margin-top:10px;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;font-family:'Sora',sans-serif;cursor:pointer}
+::-webkit-scrollbar{width:0}
 </style>
 </head>
 <body>
@@ -186,8 +230,6 @@ html,body { font-family:'Sora',sans-serif; background:var(--bg); color:var(--tex
 </div>
 
 <div class="page">
-
-  <!-- LIST VIEW -->
   <div class="view on" id="vList">
     <div class="vgv">
       <div class="vgv-top">
@@ -205,275 +247,333 @@ html,body { font-family:'Sora',sans-serif; background:var(--bg); color:var(--tex
       <div class="vgv-bar-bg"><div class="vgv-bar-fill" id="vgvBar" style="width:0%"></div></div>
       <div class="vgv-pct" id="vgvPct">—</div>
     </div>
-
     <div class="stats">
       <div class="stat"><div class="stat-n" id="stTotal">—</div><div class="stat-l">Total</div></div>
       <div class="stat"><div class="stat-n" id="stVenda">—</div><div class="stat-l">Em Venda</div></div>
       <div class="stat"><div class="stat-n" id="stProposta">—</div><div class="stat-l">Com Proposta</div></div>
     </div>
-
-    <div id="cardsWrap">
-      <div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando imóveis...</div></div>
-    </div>
+    <div id="cardsWrap"><div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando...</div></div></div>
   </div>
 
-  <!-- DETAIL VIEW -->
   <div class="view" id="vDetail">
     <div class="det-topbar">
-      <div class="back-btn" onclick="goBack()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        Voltar
-      </div>
+      <div class="back-btn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Voltar</div>
       <button class="share-btn">Compartilhar</button>
     </div>
     <div id="detailBody"></div>
   </div>
 
+  <div class="view" id="vEdit">
+    <div class="det-topbar">
+      <div class="back-btn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Voltar</div>
+      <button class="share-btn" id="saveBtn" onclick="saveSnapshot()">Salvar</button>
+    </div>
+    <div id="editBody"></div>
+  </div>
 </div>
 
-
-
 <script>
-// ─── SUPABASE CONFIG ───────────────────────────────────────────
-const SUPA_URL  = 'https://vtykzralkxlbqqkleofl.supabase.co';
-const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0eWt6cmFsa3hsYnFxa2xlb2ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjMyNjAsImV4cCI6MjA4OTkzOTI2MH0.rYBifw2NXqVDGrKbDWKJgrFAIdoruxxsIPc9RXibgy0';
+const SUPA_URL = 'https://vtykzralkxlbqqkleofl.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0eWt6cmFsa3hsYnFxa2xlb2ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjMyNjAsImV4cCI6MjA4OTkzOTI2MH0.rYBifw2NXqVDGrKbDWKJgrFAIdoruxxsIPc9RXibgy0';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+let imoveis=[], visitasMap={}, editingId=null;
 
-// ─── DATA CACHE ────────────────────────────────────────────────
-let imoveis = [];
-let visitasMap = {};  // imovel_id -> []
+// ── HELPERS ──────────────────────────────────────────
+function hoje(){const d=new Date(),m=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return`${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()}`}
+function diaDoAno(d=new Date()){return Math.floor((d-new Date(d.getFullYear(),0,0))/86400000)}
+function diasNoAno(a=new Date().getFullYear()){return((a%4===0&&a%100!==0)||a%400===0)?366:365}
+function pct(a,m){return m>0?Math.min((a/m)*100,100):0}
+function dotC(a,m){const p=pct(a,m);return p>=90?'dot-green':p>=60?'dot-amber':'dot-red'}
+function barCol(a,m){const p=pct(a,m);return p>=90?'#40916c':p>=60?'#c9a93a':'#c0392b'}
+function fmtD(s){if(!s)return'—';const d=new Date(s+'T00:00:00');return`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`}
+function avatarCor(n){const c=['#2d6a4f','#3a6fa8','#7b4fa6','#b85c1a','#1c2b3a','#2d7fa5'];let h=0;for(const x of(n||'?'))h=x.charCodeAt(0)+((h<<5)-h);return c[Math.abs(h)%c.length]}
+function inicial(n){return(n||'?').charAt(0).toUpperCase()}
+function g(id){return parseFloat(document.getElementById('ef_'+id)?.value)||0}
+function gStr(id){return document.getElementById('ef_'+id)?.value||null}
+function statusLabel(s){return{atencao:'Atenção',melhoria:'Melhoria',ok:'No prazo',vendida:'Vendida',perdida:'Perdida',encerrada:'Encerrada'}[s]||s}
+function tipoTag(t){return{Mobiliado:'mobiliado',Vazio:'vazio',Repaginado:'repaginado'}[t]||'neutro'}
 
-// ─── HELPERS ──────────────────────────────────────────────────
-function hoje() {
-  const d = new Date();
-  const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-  return `${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
-}
-function diaDoAno(d = new Date()) {
-  const ini = new Date(d.getFullYear(), 0, 0);
-  return Math.floor((d - ini) / 86400000);
-}
-function diasNoAno(ano = new Date().getFullYear()) {
-  return ((ano % 4 === 0 && ano % 100 !== 0) || ano % 400 === 0) ? 366 : 365;
-}
-function fmt(n) {
-  if (!n) return '—';
-  const v = parseFloat(n);
-  if (v >= 1e6) return 'R$ ' + (v/1e6).toFixed(2).replace('.',',') + 'M';
-  if (v >= 1e3) return 'R$ ' + (v/1e3).toFixed(0) + 'K';
-  return 'R$ ' + v.toFixed(0);
-}
-function fmtMoeda(s) {
-  if (!s) return '—';
-  return s.toString().startsWith('R$') ? s : 'R$ ' + s;
-}
-function pct(a, m) { return m > 0 ? Math.min((a / m) * 100, 100) : 0; }
-function dotC(a, m) { const p = pct(a,m); return p >= 90 ? 'dot-green' : p >= 60 ? 'dot-amber' : 'dot-red'; }
-function barCol(a, m) { const p = pct(a,m); return p >= 90 ? '#40916c' : p >= 60 ? '#c9a93a' : '#c0392b'; }
-function avatarCor(nome) {
-  const cores = ['#2d6a4f','#3a6fa8','#7b4fa6','#b85c1a','#1c2b3a','#2d7fa5','#6a4f2d'];
-  let h = 0; for (const c of (nome||'?')) h = c.charCodeAt(0) + ((h<<5)-h);
-  return cores[Math.abs(h) % cores.length];
-}
-function inicial(nome) { return (nome||'?').charAt(0).toUpperCase(); }
-
-function statusTag(s) {
-  const m = {
-    atencao: { label:'Atenção', cls:'atencao' },
-    melhoria: { label:'Melhoria', cls:'melhoria' },
-    ok: { label:'No prazo', cls:'ok' },
-    sem_exclusividade: { label:'Sem exclusividade', cls:'neutro' }
-  };
-  return m[s] || { label: s, cls:'neutro' };
+// Meta interna = data_midia_entregue + prazo_interno_dias
+function calcMetaInterna(im){
+  if(!im.data_midia_entregue||!im.prazo_interno_dias)return null;
+  const d=new Date(im.data_midia_entregue+'T00:00:00');
+  d.setDate(d.getDate()+parseInt(im.prazo_interno_dias));
+  return d.toISOString().split('T')[0];
 }
 
-function imovelStatusTag(s) {
-  if (!s) return '';
-  const m = {
-    'Mobiliado': 'mobiliado',
-    'Vazio': 'vazio',
-    'Repaginado': 'repaginado',
-    'Em Venda': 'venda',
-  };
-  return m[s] || 'neutro';
+function initHeader(){
+  const d=new Date();
+  document.getElementById('hdrData').textContent=hoje();
+  document.getElementById('hdrDia').textContent=`Dia ${diaDoAno(d)} / ${diasNoAno()}`;
 }
 
-// ─── HEADER DATE ───────────────────────────────────────────────
-function initHeader() {
-  const d = new Date();
-  document.getElementById('hdrData').textContent = hoje();
-  document.getElementById('hdrDia').textContent  = `Dia ${diaDoAno(d)} / ${diasNoAno()}`;
-}
-
-// ─── VGV CALC ─────────────────────────────────────────────────
-function calcVGV(data) {
-  let total = 0;
-  let comProposta = 0;
-  data.forEach(im => {
-    const v = parseFloat((im.preco||'').replace(/[^\d,.]/g,'').replace(',','.')) || 0;
-    total += v;
-    if (im.total_propostas > 0) comProposta++;
+function calcVGV(data){
+  let total=0,prop=0;
+  data.forEach(im=>{
+    const v=parseFloat((im.preco||'').replace(/[^\d,]/g,'').replace(',','.'))||0;
+    total+=v; if((im.total_propostas||0)>0)prop++;
   });
-  const meta = 123.84;
-  const pctCob = Math.min((total / meta) * 100, 100);
-  document.getElementById('vgvTotal').textContent  = 'R$ ' + total.toFixed(2).replace('.',',') + 'M';
-  document.getElementById('vgvSub').textContent    = `${data.length} exclusividades ativas`;
-  document.getElementById('vgvBar').style.width    = pctCob.toFixed(1) + '%';
-  document.getElementById('vgvPct').textContent    = pctCob.toFixed(0) + '% coberto';
-  document.getElementById('stTotal').textContent   = data.length;
-  document.getElementById('stVenda').textContent   = data.filter(x => x.imovel_status !== 'Vendido').length;
-  document.getElementById('stProposta').textContent= comProposta;
+  const meta=123.84,cob=Math.min((total/meta)*100,100);
+  document.getElementById('vgvTotal').textContent='R$ '+total.toFixed(2).replace('.',',')+' M';
+  document.getElementById('vgvSub').textContent=`${data.length} exclusividades ativas`;
+  document.getElementById('vgvBar').style.width=cob.toFixed(1)+'%';
+  document.getElementById('vgvPct').textContent=cob.toFixed(0)+'% coberto';
+  document.getElementById('stTotal').textContent=data.length;
+  document.getElementById('stVenda').textContent=data.filter(x=>x.status_exclusividade==='ativa').length;
+  document.getElementById('stProposta').textContent=prop;
 }
 
-// ─── RENDER TIMELINE ──────────────────────────────────────────
-function tlHtml(im) {
-  const hPct = Math.min(parseFloat(im.tl_hoje_pct)||0, 100);
-  const rPct = im.dias_contrato > 0
-    ? Math.max(0, Math.min(
-        (parseInt(im.total_leads)||0) / Math.max(im.meta_leads,1) * 100,
-        100
-      ))
-    : 0;
-  const rest = im.dias_restantes != null ? im.dias_restantes : '—';
-  return `
-    <div class="tl-head">
-      <span class="tl-lbl">Timeline · ${im.dias_contrato||120}D</span>
-      <span class="tl-rest">${rest}d restantes</span>
+function tlHtml(im){
+  const hPct=Math.min(parseFloat(im.tl_hoje_pct)||0,100);
+  const rest=im.dias_restantes!=null?im.dias_restantes:'—';
+  const restColor=im.dias_restantes<=15?'var(--red)':im.dias_restantes<=30?'var(--gold-alert)':'var(--gold-alert)';
+  return`<div class="tl-head">
+    <span class="tl-lbl">Contrato · ${im.prazo_contrato_dias||120}D</span>
+    <span class="tl-rest" style="color:${restColor}">${rest}d restantes</span>
+  </div>
+  <div class="tl-row"><div class="tl-rlbl">META</div>
+    <div class="tl-track">
+      <div class="tl-fill tl-green" style="width:100%"></div>
+      <div class="tl-marker" style="left:${hPct}%"><div class="tl-hoje">HOJE</div></div>
     </div>
-    <div class="tl-row">
-      <div class="tl-rlbl">META</div>
-      <div class="tl-track">
-        <div class="tl-fill tl-green" style="width:100%"></div>
-        <div class="tl-marker" style="left:${hPct}%"><div class="tl-hoje">HOJE</div></div>
-      </div>
-    </div>
-    <div class="tl-row">
-      <div class="tl-rlbl">REAL</div>
-      <div class="tl-track">
-        <div class="tl-fill tl-gold" style="width:${hPct}%"></div>
+  </div>
+  <div class="tl-row"><div class="tl-rlbl">REAL</div>
+    <div class="tl-track"><div class="tl-fill tl-gold" style="width:${hPct}%"></div></div>
+  </div>`;
+}
+
+function marcosSt(im){
+  const hoje=new Date();
+  const metaInterna=calcMetaInterna(im);
+  return[
+    {
+      lbl:'Repaginação',
+      data:im.data_repaginacao_concluida,
+      st:im.status_repaginacao,
+      show: im.prazo_repaginacao_dias!=null
+    },
+    {lbl:'Gravação',data:im.data_gravacao_conteudo,st:im.data_gravacao_conteudo?'ok':'pendente',show:true},
+    {lbl:'Mídia + Campanha',data:im.data_midia_entregue,st:im.data_midia_entregue?'ok':'pendente',show:true},
+    {
+      lbl:'Meta interna',
+      data:metaInterna,
+      st:!metaInterna?'pendente':hoje<=new Date(metaInterna+'T23:59:59')?'ok':'atrasado',
+      show:true
+    },
+    {
+      lbl:'Fim contrato',
+      data:im.data_fim,
+      st:!im.data_fim?'pendente':hoje<=new Date(im.data_fim+'T23:59:59')?'ok':'atrasado',
+      show:true
+    }
+  ].filter(m=>m.show);
+}
+
+function diffDias(d1, d2){
+  if(!d1||!d2)return null;
+  const a=new Date(d1+'T00:00:00'), b=new Date(d2+'T00:00:00');
+  return Math.round((b-a)/86400000);
+}
+
+function marcosMinHtml(im){
+  const metaInterna=calcMetaInterna(im);
+  const hoje=new Date();
+  const nos=[
+    im.prazo_repaginacao_dias!=null ? {lbl:'Repaginação',data:im.data_repaginacao_concluida,st:im.status_repaginacao} : null,
+    {lbl:'Gravação',data:im.data_gravacao_conteudo,st:im.data_gravacao_conteudo?'ok':'pendente'},
+    {lbl:'Campanha',data:im.data_midia_entregue,st:im.data_midia_entregue?'ok':'pendente'},
+    {lbl:'Meta',data:metaInterna,st:!metaInterna?'pendente':hoje<=new Date(metaInterna+'T23:59:59')?'ok':'atrasado'},
+    {lbl:'Fim',data:im.data_fim,st:!im.data_fim?'pendente':hoje<=new Date(im.data_fim+'T23:59:59')?'ok':'atrasado'},
+  ].filter(Boolean);
+
+  let html='<div class="tl-horiz"><div class="tl-horiz-inner">';
+  nos.forEach((n,i)=>{
+    if(i>0){
+      const prev=nos[i-1];
+      const dias=diffDias(prev.data,n.data);
+      const lineOk=prev.st==='ok'&&n.st==='ok';
+      html+=`<div class="tl-connector">
+        <div class="tl-line${lineOk?' ok':''}"></div>
+        <div class="tl-interval">${dias!=null?dias+'d':''}</div>
+      </div>`;
+    }
+    html+=`<div class="tl-node">
+      <div class="tl-node-dot ${n.st}"></div>
+      <div class="tl-node-lbl">${n.lbl}</div>
+      <div class="tl-node-data">${n.data?fmtD(n.data).slice(0,5):'—'}</div>
+    </div>`;
+  });
+  html+='</div></div>';
+  return html;
+}
+
+function marcosDetailHtml(im){
+  const metaInterna=calcMetaInterna(im);
+  const hoje=new Date();
+  const nos=[
+    im.prazo_repaginacao_dias!=null ? {
+      lbl:'Repaginação',data:im.data_repaginacao_concluida,st:im.status_repaginacao,
+      extra:`Meta: ${im.prazo_repaginacao_dias} dias após assinatura`
+    } : null,
+    {lbl:'Gravação de conteúdo',data:im.data_gravacao_conteudo,st:im.data_gravacao_conteudo?'ok':'pendente',extra:''},
+    {lbl:'Entrega mídia + Campanha no ar',data:im.data_midia_entregue,st:im.data_midia_entregue?'ok':'pendente',extra:''},
+    {
+      lbl:'Meta interna de venda',data:metaInterna,
+      st:!metaInterna?'pendente':hoje<=new Date(metaInterna+'T23:59:59')?'ok':'atrasado',
+      extra:im.prazo_interno_dias?`${im.prazo_interno_dias} dias após campanha`:''
+    },
+    {
+      lbl:'Fim do contrato',data:im.data_fim,
+      st:!im.data_fim?'pendente':hoje<=new Date(im.data_fim+'T23:59:59')?'ok':'atrasado',
+      extra:`${im.prazo_contrato_dias||120} dias após assinatura`
+    },
+  ].filter(Boolean);
+
+  return nos.map((n,i)=>{
+    const prev=i>0?nos[i-1]:null;
+    const dias=prev?diffDias(prev.data,n.data):null;
+    const badgeLbl={ok:'✓ Ok',pendente:'Pendente',atrasado:'Atrasado',nao_se_aplica:'N/A'}[n.st];
+    return`<div class="tl-ops-item">
+      <div class="tl-ops-dot ${n.st}" style="margin-top:4px"></div>
+      <div style="flex:1">
+        <div class="tl-ops-name">${n.lbl}</div>
+        <div class="tl-ops-info">${n.data?fmtD(n.data):'Não preenchida'}${n.extra?' · '+n.extra:''}</div>
+        ${dias!=null?`<div class="tl-ops-interval">⟵ ${dias} dias após marco anterior</div>`:''}
+        <span class="tl-ops-badge ${n.st}">${badgeLbl}</span>
       </div>
     </div>`;
+  }).join('');
 }
 
-// ─── RENDER FUNIL ─────────────────────────────────────────────
-function funilHtml(im) {
-  const rows = [
-    { lbl:'Leads',     a: im.total_leads||0,     m: im.meta_leads||1 },
-    { lbl:'Visitas',   a: im.total_visitas||0,   m: im.meta_visitas||1 },
-    { lbl:'Propostas', a: im.total_propostas||0, m: im.meta_propostas||1 }
-  ];
-  return rows.map(r => `
-    <div class="funil-row">
-      <div class="funil-lbl">${r.lbl}</div>
-      <div class="funil-bar"><div class="funil-fill" style="width:${pct(r.a,r.m)}%;background:${barCol(r.a,r.m)}"></div></div>
-      <div class="funil-nums">${r.a} <span class="funil-target">/ ${r.m}</span></div>
-      <div class="dot ${dotC(r.a,r.m)}"></div>
-    </div>`).join('');
+function funilHtml(im){
+  return[
+    {lbl:'Leads',a:im.total_leads||0,m:im.meta_leads||1},
+    {lbl:'Visitas',a:im.total_visitas||0,m:im.meta_visitas||1},
+    {lbl:'Propostas',a:im.total_propostas||0,m:im.meta_propostas||1}
+  ].map(r=>`<div class="funil-row">
+    <div class="funil-lbl">${r.lbl}</div>
+    <div class="funil-bar"><div class="funil-fill" style="width:${pct(r.a,r.m)}%;background:${barCol(r.a,r.m)}"></div></div>
+    <div class="funil-nums">${r.a}<span class="funil-target"> / ${r.m}</span></div>
+    <div class="dot ${dotC(r.a,r.m)}"></div>
+  </div>`).join('');
 }
 
-// ─── RENDER MBOXES ────────────────────────────────────────────
-function mBoxHtml(im) {
-  const inv    = im.investido   ? 'R$ ' + parseFloat(im.investido).toLocaleString('pt-BR')   : '—';
-  const invRef = im.meta_investimento ? '/R$ ' + parseFloat(im.meta_investimento).toLocaleString('pt-BR') : '';
-  const cplV   = im.cpl        ? 'R$ ' + parseFloat(im.cpl).toFixed(0)        : '—';
-  const cplRef = im.meta_cpl   ? '/R$ ' + parseFloat(im.meta_cpl).toFixed(0)  : '';
-  const invAlert = im.investido && im.meta_investimento && parseFloat(im.investido) > parseFloat(im.meta_investimento);
-  const cplAlert = im.cpl      && im.meta_cpl           && parseFloat(im.cpl) > parseFloat(im.meta_cpl);
-  return `
-    <div class="mbox-row">
-      <div class="mbox ${invAlert?'mbox-alert':''}">
-        <div class="mbox-lbl">Mídia</div>
-        <div class="mbox-val">${inv}<span class="mbox-ref">${invRef}</span></div>
-      </div>
-      <div class="mbox ${cplAlert?'mbox-alert':''}">
-        <div class="mbox-lbl"><span class="cpl-badge">CPL</span></div>
-        <div class="mbox-val">${cplV}<span class="mbox-ref">${cplRef}</span></div>
-      </div>
-    </div>`;
-}
-
-// ─── RENDER CARD ──────────────────────────────────────────────
-function renderCard(im) {
-  const st = statusTag(im.dash_status);
-  const nomeDisplay = [im.nome, im.proprietario].filter(Boolean).join(' — ').toUpperCase();
-  const imStatus = im.imovel_status || '';
-  return `
-  <div class="icard ${im.dash_status||'neutro'}" onclick="openDetail('${im.id}')">
-    <div class="icard-inner">
-      <div class="icard-top">
-        <div class="icard-nome">${nomeDisplay}</div>
-        <div class="icard-preco">${fmtMoeda(im.preco)}</div>
-      </div>
-      <div class="tags">
-        <span class="tag tag-venda">Em Venda</span>
-        ${imStatus ? `<span class="tag tag-${imovelStatusTag(imStatus)}">${imStatus}</span>` : ''}
-        ${im.bairro ? `<span class="tag tag-neutro">${im.bairro}</span>` : ''}
-        <span class="tag tag-${st.cls}">${st.label}</span>
-      </div>
-      ${tlHtml(im)}
-      <div class="funil">${funilHtml(im)}</div>
-      ${mBoxHtml(im)}
-      <div class="ver-det">Ver detalhe →</div>
+function mBoxHtml(im){
+  const inv=im.investido?'R$ '+parseFloat(im.investido).toLocaleString('pt-BR'):'—';
+  const invRef=im.meta_investimento?'/R$ '+parseFloat(im.meta_investimento).toLocaleString('pt-BR'):'';
+  const cplV=im.cpl?'R$ '+parseFloat(im.cpl).toFixed(0):'—';
+  const cplRef=im.meta_cpl?'/R$ '+parseFloat(im.meta_cpl).toFixed(0):'';
+  const invAlert=im.investido&&im.meta_investimento&&parseFloat(im.investido)>parseFloat(im.meta_investimento);
+  const cplAlert=im.cpl&&im.meta_cpl&&parseFloat(im.cpl)>parseFloat(im.meta_cpl);
+  return`<div class="mbox-row">
+    <div class="mbox ${invAlert?'mbox-alert':''}">
+      <div class="mbox-lbl">Mídia</div>
+      <div class="mbox-val">${inv}<span class="mbox-ref">${invRef}</span></div>
+    </div>
+    <div class="mbox ${cplAlert?'mbox-alert':''}">
+      <div class="mbox-lbl"><span class="cpl-badge">CPL</span></div>
+      <div class="mbox-val">${cplV}<span class="mbox-ref">${cplRef}</span></div>
     </div>
   </div>`;
 }
 
-// ─── RENDER DETALHE ───────────────────────────────────────────
-function renderDetail(im, visitas) {
-  const st = statusTag(im.dash_status);
-  const nomeDisplay = [im.nome, im.proprietario].filter(Boolean).join(' — ').toUpperCase();
-  const imStatus = im.imovel_status || '';
+function renderCard(im){
+  const st=im.dash_status||'neutro';
+  const nome=[im.nome,im.proprietario].filter(Boolean).join(' — ').toUpperCase();
+  const tipo=im.tipo_imovel||im.imovel_status||'';
+  const loc=im.localizacao||im.bairro||'';
+  return`<div class="icard ${st}">
+    <div class="icard-inner" onclick="openDetail('${im.id}')">
+      <div class="icard-top">
+        <div class="icard-nome">${nome}</div>
+        <div class="icard-preco">${im.preco||'—'}</div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-venda">Em Venda</span>
+        ${tipo?`<span class="tag tag-${tipoTag(tipo)}">${tipo}</span>`:''}
+        ${loc?`<span class="tag tag-neutro">${loc}</span>`:''}
+        <span class="tag tag-${st}">${statusLabel(st)}</span>
+      </div>
+      ${tlHtml(im)}
+      ${marcosMinHtml(im)}
+      <div class="funil">${funilHtml(im)}</div>
+      ${mBoxHtml(im)}
+    </div>
+    <div class="card-actions">
+      <button class="edit-btn-card" onclick="event.stopPropagation();openEdit('${im.id}')">✏️ Atualizar dados</button>
+      <div class="ver-det" onclick="openDetail('${im.id}')">Ver detalhe →</div>
+    </div>
+  </div>`;
+}
 
-  const cvLV = parseFloat(im.conv_lead_visita)||0;
-  const cvVP = parseFloat(im.conv_visita_prop)||0;
-  const mLV  = parseFloat(im.meta_conv_lead_visita)||35;
-  const mVP  = parseFloat(im.meta_conv_visita_prop)||20;
+function renderDetail(im,vis){
+  const st=im.dash_status||'neutro';
+  const nome=[im.nome,im.proprietario].filter(Boolean).join(' — ').toUpperCase();
+  const tipo=im.tipo_imovel||im.imovel_status||'';
+  const loc=im.localizacao||im.bairro||'';
+  const metaInterna=calcMetaInterna(im);
+  const cvLV=parseFloat(im.conv_lead_visita)||0;
+  const cvVP=parseFloat(im.conv_visita_prop)||0;
+  const inv=im.investido?'R$ '+parseFloat(im.investido).toLocaleString('pt-BR'):'—';
+  const cplV=im.cpl?'R$ '+parseFloat(im.cpl).toFixed(0):'—';
+  const alc=im.alcance?parseInt(im.alcance).toLocaleString('pt-BR'):'—';
+  const freq=im.frequencia?parseFloat(im.frequencia).toFixed(2).replace('.',','):'—';
 
-  const inv    = im.investido  ? 'R$ ' + parseFloat(im.investido).toLocaleString('pt-BR')  : '—';
-  const cplV   = im.cpl        ? 'R$ ' + parseFloat(im.cpl).toFixed(0)                     : '—';
-  const alc    = im.alcance    ? parseInt(im.alcance).toLocaleString('pt-BR')               : '—';
-  const freq   = im.frequencia ? parseFloat(im.frequencia).toFixed(2).replace('.',',')      : '—';
-
-  const visHtml = visitas.length === 0
-    ? `<div class="vis-empty">Nenhuma visita registrada ainda.</div>`
-    : visitas.map(v => {
-        const stBadge = v.status_pos_visita === 'proposta_gerada' ? 'proposta_gerada' : 'sem_proposta';
-        const stLabel = v.status_pos_visita === 'proposta_gerada' ? 'Proposta gerada' : 'Sem proposta';
-        const tags = [
-          v.parceiro ? 'Com parceria' : 'Sem parceria',
-          v.qualificado_financeiramente ? 'Qualificado' : 'Em qualificação',
-          v.origem ? `Origem: ${v.origem}` : null
-        ].filter(Boolean);
-        return `
-        <div class="vis-item">
-          <div class="vis-top">
-            <div class="vis-left">
-              <div class="vis-av" style="background:${avatarCor(v.nome_interessado)}">${inicial(v.nome_interessado)}</div>
-              <div>
-                <div class="vis-name">${v.nome_interessado||'—'}</div>
-                <div class="vis-date">${v.data_visita||'—'}</div>
-              </div>
-            </div>
-            <div class="vis-badge ${stBadge}">${stLabel}</div>
+  const visHtml=!vis.length?`<div class="vis-empty">Nenhuma visita registrada.</div>`:
+    vis.map(v=>{
+      const stB=v.status_pos_visita==='proposta_gerada'?'proposta_gerada':'sem_proposta';
+      const stL=v.status_pos_visita==='proposta_gerada'?'Proposta gerada':'Sem proposta';
+      const tags=[v.parceiro?'Com parceria':'Sem parceria',v.qualificado_financeiramente?'Qualificado':'Em qualificação',v.origem?`Origem: ${v.origem}`:null].filter(Boolean);
+      return`<div class="vis-item">
+        <div class="vis-top">
+          <div class="vis-left">
+            <div class="vis-av" style="background:${avatarCor(v.nome_interessado)}">${inicial(v.nome_interessado)}</div>
+            <div><div class="vis-name">${v.nome_interessado||'—'}</div><div class="vis-date">${v.data_visita||'—'}</div></div>
           </div>
-          <div class="vis-tags">${tags.map(t=>`<span class="vis-tag">${t}</span>`).join('')}</div>
-          ${v.observacoes ? `<div class="vis-obs">${v.observacoes}</div>` : ''}
-        </div>`;
-      }).join('');
+          <div class="vis-badge ${stB}">${stL}</div>
+        </div>
+        <div class="vis-tags">${tags.map(t=>`<span class="vis-tag">${t}</span>`).join('')}</div>
+        ${v.observacoes?`<div class="vis-obs">${v.observacoes}</div>`:''}
+      </div>`;
+    }).join('');
 
-  return `
-    <div class="det-title">${nomeDisplay}</div>
+  return`
+    <div class="det-title">${nome}</div>
     <div class="tags">
       <span class="tag tag-venda">Em Venda</span>
-      ${imStatus ? `<span class="tag tag-${imovelStatusTag(imStatus)}">${imStatus}</span>` : ''}
-      ${im.bairro ? `<span class="tag tag-neutro">${im.bairro}</span>` : ''}
-      <span class="tag tag-${st.cls}">${st.label}</span>
+      ${tipo?`<span class="tag tag-${tipoTag(tipo)}">${tipo}</span>`:''}
+      ${loc?`<span class="tag tag-neutro">${loc}</span>`:''}
+      <span class="tag tag-${st}">${statusLabel(st)}</span>
     </div>
-    <div class="det-price">${fmtMoeda(im.preco)}</div>
+    <div class="det-price">${im.preco||'—'}</div>
 
     <div class="scard">
-      <div class="scard-title">Timeline</div>
+      <div class="scard-title">Timeline do Contrato</div>
       ${tlHtml(im)}
+      <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:var(--light);border-radius:9px;padding:10px 12px">
+          <div style="font-size:8.5px;color:var(--gray);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Assinatura</div>
+          <div style="font-size:13px;font-weight:700">${fmtD(im.data_inicio)}</div>
+        </div>
+        <div style="background:var(--light);border-radius:9px;padding:10px 12px">
+          <div style="font-size:8.5px;color:var(--gray);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Fim contrato</div>
+          <div style="font-size:13px;font-weight:700">${fmtD(im.data_fim)}</div>
+        </div>
+        <div style="background:var(--light);border-radius:9px;padding:10px 12px">
+          <div style="font-size:8.5px;color:var(--gray);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Meta interna</div>
+          <div style="font-size:13px;font-weight:700">${fmtD(metaInterna)}</div>
+          <div style="font-size:9px;color:var(--gray)">${im.prazo_interno_dias||'—'} dias após campanha</div>
+        </div>
+        <div style="background:var(--light);border-radius:9px;padding:10px 12px">
+          <div style="font-size:8.5px;color:var(--gray);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Dias restantes</div>
+          <div style="font-size:13px;font-weight:700;color:${(im.dias_restantes||0)<=15?'var(--red)':'var(--text)'}">${im.dias_restantes||0}d</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scard">
+      <div class="scard-title">Linha do Tempo Operacional</div>
+      ${marcosDetailHtml(im)}
     </div>
 
     <div class="scard">
@@ -482,11 +582,11 @@ function renderDetail(im, visitas) {
       <div class="conv-row">
         <div class="conv-box">
           <div class="conv-lbl">LEAD → VISITA</div>
-          <div class="conv-val">${cvLV}%<span class="conv-ref"> /${mLV}%</span></div>
+          <div class="conv-val">${cvLV}%<span class="conv-ref"> /${parseFloat(im.meta_conv_lead_visita)||35}%</span></div>
         </div>
         <div class="conv-box">
           <div class="conv-lbl">VISITA → PROP.</div>
-          <div class="conv-val">${cvVP}%<span class="conv-ref"> /${mVP}%</span></div>
+          <div class="conv-val">${cvVP}%<span class="conv-ref"> /${parseFloat(im.meta_conv_visita_prop)||20}%</span></div>
         </div>
       </div>
     </div>
@@ -502,71 +602,205 @@ function renderDetail(im, visitas) {
     </div>
 
     <div class="scard">
-      <div class="scard-title">Relatórios de Visitas (${visitas.length})</div>
+      <div class="scard-title">Relatórios de Visitas (${vis.length})</div>
       ${visHtml}
     </div>`;
 }
 
-// ─── LOAD DATA ────────────────────────────────────────────────
-async function loadDashboard() {
-  try {
-    const { data, error } = await sb
-      .from('dashboard_imoveis')
-      .select('*')
-      .order('dias_restantes', { ascending: true });
+function renderEdit(im){
+  const nome=[im.nome,im.proprietario].filter(Boolean).join(' — ').toUpperCase();
+  function field(id,label,sub,val,wide=false){
+    return`<div class="edit-row">
+      <div class="edit-lbl">${label}<small>${sub}</small></div>
+      <input class="edit-input${wide?' wide':''}" type="number" min="0" step="any" id="ef_${id}" value="${val||0}">
+    </div>`;
+  }
+  function fieldDate(id,label,sub,val){
+    return`<div class="edit-row">
+      <div class="edit-lbl">${label}<small>${sub}</small></div>
+      <input class="edit-input date-input" type="date" id="ef_${id}" value="${val||''}">
+    </div>`;
+  }
+  function fieldSelect(id,label,sub,val,opts){
+    const o=opts.map(x=>`<option value="${x.v}"${val===x.v?' selected':''}>${x.l}</option>`).join('');
+    return`<div class="edit-row">
+      <div class="edit-lbl">${label}<small>${sub}</small></div>
+      <select class="edit-input wide" id="ef_${id}" style="font-size:11px">${o}</select>
+    </div>`;
+  }
+  return`
+    <div class="det-title" style="font-size:15px">${nome}</div>
+    <div style="font-size:11px;color:var(--gray);margin:4px 0 16px">Preencha — salva direto no banco</div>
 
-    if (error) throw error;
-    imoveis = data || [];
+    <div class="edit-section">
+      <div class="edit-section-title">📋 Exclusividade</div>
+      ${fieldSelect('status_excl','Status','situação atual',im.status_exclusividade||'ativa',[
+        {v:'ativa',l:'✅ Ativa'},{v:'vendida',l:'🏆 Vendida'},{v:'perdida',l:'❌ Perdida'},{v:'encerrada',l:'⏹ Encerrada'}
+      ])}
+      ${fieldSelect('tipo_imovel','Tipo do imóvel','',im.tipo_imovel||'',[
+        {v:'Mobiliado',l:'Mobiliado'},{v:'Vazio',l:'Vazio'},{v:'Repaginado',l:'Repaginado'}
+      ])}
+      ${fieldSelect('localizacao','Localização','',im.localizacao||'',[
+        {v:'Fazenda',l:'Fazenda'},{v:'Praia Brava',l:'Praia Brava'},{v:'Itajaí — Bairros',l:'Itajaí — Bairros'},{v:'Balneário Camboriú',l:'Balneário Camboriú'},{v:'Outros',l:'Outros'}
+      ])}
+      ${fieldDate('data_inicio','Data de assinatura','início da exclusividade',im.data_inicio)}
+      ${field('prazo_contrato_dias','Dias de contrato','padrão 120',im.prazo_contrato_dias||120,true)}
+      ${field('prazo_interno_dias','Meta interna (dias)','contado após campanha no ar',im.prazo_interno_dias,true)}
+      ${field('meta_leads','Meta de Leads','',im.meta_leads)}
+      ${field('meta_visitas','Meta de Visitas','',im.meta_visitas)}
+      ${field('meta_propostas','Meta de Propostas','',im.meta_propostas)}
+    </div>
 
-    // carrega visitas de todos os imóveis em paralelo
-    const ids = imoveis.map(x => x.id);
-    const { data: vis, error: visErr } = await sb
-      .from('dashboard_visitas_detalhe')
-      .select('*')
-      .in('imovel_id', ids)
-      .order('data_visita', { ascending: false });
+    <div class="edit-section">
+      <div class="edit-section-title">🗓️ Linha do Tempo Operacional</div>
+      ${field('prazo_repaginacao_dias','Prazo repaginação (dias)','só se houver',im.prazo_repaginacao_dias||0,true)}
+      ${fieldDate('data_repaginacao_concluida','Repaginação concluída','',im.data_repaginacao_concluida)}
+      ${fieldDate('data_gravacao_conteudo','Gravação de conteúdo','',im.data_gravacao_conteudo)}
+      ${fieldDate('data_midia_entregue','Entrega mídia + Campanha no ar','',im.data_midia_entregue)}
+    </div>
 
-    if (!visErr && vis) {
-      vis.forEach(v => {
-        if (!visitasMap[v.imovel_id]) visitasMap[v.imovel_id] = [];
-        visitasMap[v.imovel_id].push(v);
-      });
+    <div class="edit-section">
+      <div class="edit-section-title">📊 Funil Realizado</div>
+      ${field('total_leads','Leads gerados',`meta: ${im.meta_leads||0}`,im.total_leads)}
+      ${field('total_visitas','Visitas feitas',`meta: ${im.meta_visitas||0}`,im.total_visitas)}
+      ${field('total_propostas','Propostas feitas',`meta: ${im.meta_propostas||0}`,im.total_propostas)}
+      ${field('leads_abertos','Leads em aberto','',im.leads_abertos)}
+      ${field('leads_perdidos','Leads perdidos','',im.leads_perdidos)}
+    </div>
+
+    <div class="edit-section">
+      <div class="edit-section-title">🌐 Origem dos Leads</div>
+      ${field('leads_meta_ads','Meta Ads','',im.leads_meta_ads)}
+      ${field('leads_google_ads','Google Ads','',im.leads_google_ads)}
+      ${field('leads_instagram_org','Instagram Orgânico','',im.leads_instagram_org)}
+      ${field('leads_youtube','YouTube','',im.leads_youtube)}
+      ${field('leads_tiktok','TikTok','',im.leads_tiktok)}
+      ${field('leads_site_org','Site / Orgânico','',im.leads_site_org)}
+      ${field('leads_indicacao','Indicação de cliente','',im.leads_indicacao)}
+      ${field('leads_corretor_parc','Corretor parceiro','',im.leads_corretor_parc)}
+      ${field('leads_relacionamento','Relacionamento','',im.leads_relacionamento)}
+      ${field('leads_disparo_base','Disparo de base','',im.leads_disparo_base)}
+      ${field('leads_oferta_ativa','Oferta ativa','',im.leads_oferta_ativa)}
+      ${field('leads_outdoor','Outdoor / Mídia offline','',im.leads_outdoor)}
+    </div>
+
+    <div class="edit-section">
+      <div class="edit-section-title">💰 Campanha</div>
+      ${field('meta_investimento','Budget planejado (R$)','',im.meta_investimento||1500,true)}
+      ${field('investido','Investido (R$)','total gasto',im.investido||0,true)}
+      ${field('meta_cpl','CPL meta (R$)','',im.meta_cpl||65,true)}
+      ${field('cpl','CPL real (R$)','',im.cpl||0,true)}
+      ${field('alcance','Alcance','',im.alcance||0)}
+      ${field('frequencia','Frequência','',im.frequencia||0,true)}
+    </div>
+    <div class="edit-meta">Última atualização: ${im.atualizado_em?new Date(im.atualizado_em).toLocaleString('pt-BR'):'—'}</div>`;
+}
+
+async function saveSnapshot(){
+  const btn=document.getElementById('saveBtn');
+  btn.textContent='Salvando...';btn.disabled=true;
+  const im=imoveis.find(x=>x.id===editingId);
+  if(!im){btn.textContent='Salvar';btn.disabled=false;return;}
+  try{
+    const dataInicio=gStr('data_inicio');
+    const diasContrato=g('prazo_contrato_dias')||120;
+    const dataFim=dataInicio?new Date(new Date(dataInicio+'T00:00:00').getTime()+diasContrato*86400000).toISOString().split('T')[0]:null;
+    const {error}=await sb.from('funil_snapshot').update({
+      status_exclusividade:         document.getElementById('ef_status_excl')?.value||'ativa',
+      tipo_imovel:                  document.getElementById('ef_tipo_imovel')?.value||null,
+      localizacao:                  document.getElementById('ef_localizacao')?.value||null,
+      data_inicio:                  dataInicio||undefined,
+      data_fim:                     dataFim||undefined,
+      prazo_contrato_dias:          diasContrato,
+      prazo_interno_dias:           g('prazo_interno_dias')||null,
+      meta_leads:                   g('meta_leads'),
+      meta_visitas:                 g('meta_visitas'),
+      meta_propostas:               g('meta_propostas'),
+      prazo_repaginacao_dias:       g('prazo_repaginacao_dias')||null,
+      data_repaginacao_concluida:   gStr('data_repaginacao_concluida')||null,
+      data_gravacao_conteudo:       gStr('data_gravacao_conteudo')||null,
+      data_midia_entregue:          gStr('data_midia_entregue')||null,
+      total_leads:                  g('total_leads'),
+      total_visitas:                g('total_visitas'),
+      total_propostas:              g('total_propostas'),
+      leads_abertos:                g('leads_abertos'),
+      leads_perdidos:               g('leads_perdidos'),
+      leads_meta_ads:               g('leads_meta_ads'),
+      leads_google_ads:             g('leads_google_ads'),
+      leads_instagram_org:          g('leads_instagram_org'),
+      leads_youtube:                g('leads_youtube'),
+      leads_tiktok:                 g('leads_tiktok'),
+      leads_site_org:               g('leads_site_org'),
+      leads_indicacao:              g('leads_indicacao'),
+      leads_corretor_parc:          g('leads_corretor_parc'),
+      leads_relacionamento:         g('leads_relacionamento'),
+      leads_disparo_base:           g('leads_disparo_base'),
+      leads_oferta_ativa:           g('leads_oferta_ativa'),
+      leads_outdoor:                g('leads_outdoor'),
+      meta_investimento:            g('meta_investimento'),
+      meta_cpl:                     g('meta_cpl'),
+      atualizado_em:                new Date().toISOString(),
+      fonte:                        'manual'
+    }).eq('exclusividade_id',im.id);
+    await sb.from('campanhas').upsert({
+      imovel_id:im.imovel_id,exclusividade_id:im.id,
+      investido:g('investido'),meta_investimento:g('meta_investimento'),
+      cpl:g('cpl'),meta_cpl:g('meta_cpl'),
+      alcance:g('alcance'),frequencia:g('frequencia'),plataforma:'meta'
+    },{onConflict:'imovel_id'});
+    if(error)throw error;
+    showToast('✅ Dados salvos!');
+    await loadDashboard();goBack();
+  }catch(err){showToast('❌ Erro: '+err.message);}
+  finally{btn.textContent='Salvar';btn.disabled=false;}
+}
+
+async function loadDashboard(){
+  try{
+    const {data,error}=await sb.from('dashboard_imoveis').select('*').order('dias_restantes',{ascending:true});
+    if(error)throw error;
+    imoveis=data||[];
+    const ids=imoveis.map(x=>x.imovel_id).filter(Boolean);
+    if(ids.length){
+      const {data:vis}=await sb.from('dashboard_visitas_detalhe').select('*').in('imovel_id',ids).order('data_visita',{ascending:false});
+      visitasMap={};
+      (vis||[]).forEach(v=>{if(!visitasMap[v.imovel_id])visitasMap[v.imovel_id]=[];visitasMap[v.imovel_id].push(v);});
     }
-
     calcVGV(imoveis);
-    document.getElementById('cardsWrap').innerHTML =
-      imoveis.length > 0
-        ? imoveis.map(renderCard).join('')
-        : `<div class="vis-empty" style="padding:30px 0">Nenhum imóvel ativo encontrado.</div>`;
-
-  } catch (err) {
-    console.error(err);
-    document.getElementById('cardsWrap').innerHTML = `
-      <div class="erro-box">
-        <p>Erro ao carregar dados: ${err.message}</p>
-        <button onclick="loadDashboard()">Tentar novamente</button>
-      </div>`;
+    document.getElementById('cardsWrap').innerHTML=imoveis.length>0?imoveis.map(renderCard).join(''):`<div class="vis-empty" style="padding:30px 0">Nenhum imóvel ativo.</div>`;
+  }catch(err){
+    document.getElementById('cardsWrap').innerHTML=`<div class="erro-box"><p>Erro: ${err.message}</p><button onclick="loadDashboard()">Tentar novamente</button></div>`;
   }
 }
 
-// ─── NAVEGAÇÃO ────────────────────────────────────────────────
-function openDetail(id) {
-  const im = imoveis.find(x => x.id === id);
-  if (!im) return;
-  const vis = visitasMap[id] || [];
-  document.getElementById('detailBody').innerHTML = renderDetail(im, vis);
+function openDetail(id){
+  const im=imoveis.find(x=>x.id===id);if(!im)return;
+  const vis=visitasMap[im.imovel_id]||[];
+  document.getElementById('detailBody').innerHTML=renderDetail(im,vis);
   document.getElementById('vList').classList.remove('on');
   document.getElementById('vDetail').classList.add('on');
-  window.scrollTo({ top: 0 });
+  window.scrollTo({top:0});
 }
-
-function goBack() {
-  document.getElementById('vDetail').classList.remove('on');
+function openEdit(id){
+  const im=imoveis.find(x=>x.id===id);if(!im)return;
+  editingId=id;
+  document.getElementById('editBody').innerHTML=renderEdit(im);
+  document.getElementById('vList').classList.remove('on');
+  document.getElementById('vEdit').classList.add('on');
+  window.scrollTo({top:0});
+}
+function goBack(){
+  ['vDetail','vEdit'].forEach(v=>document.getElementById(v).classList.remove('on'));
   document.getElementById('vList').classList.add('on');
-  window.scrollTo({ top: 0 });
+  window.scrollTo({top:0});
+}
+function showToast(msg){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';t.className='save-toast';document.body.appendChild(t);}
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-// ─── INIT ─────────────────────────────────────────────────────
 initHeader();
 loadDashboard();
 </script>
