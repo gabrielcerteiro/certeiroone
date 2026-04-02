@@ -342,17 +342,18 @@ function calcVGV(data){
   document.getElementById('stProposta').textContent=prop;
 }
 
-function diffDias(d1,d2){if(!d1||!d2)return null;return Math.round((new Date(d2+'T00:00:00')-new Date(d1+'T00:00:00'))/86400000)}
-
 function tlHtml(im){
-  const hoje=new Date();hoje.setHours(0,0,0,0);
-  const dF=im.data_fim?new Date(im.data_fim+'T00:00:00'):null;
-  const contRest=dF?Math.round((dF-hoje)/86400000):null;
-  const restLabel=!dF?'—':contRest>=0?`${contRest}d restantes`:`${Math.abs(contRest)}d atrasado`;
-  const restColor=!dF?'var(--gray)':contRest<0?'var(--red)':contRest<=20?'var(--red)':'var(--gold-alert)';
   const hPct=Math.min(parseFloat(im.tl_hoje_pct)||0,100);
+  const diasRest = im.dias_restantes != null ? parseInt(im.dias_restantes) : null;
+  const diasRestLabel = diasRest == null ? '—' : diasRest > 0 ? `${diasRest}d restantes` : `${Math.abs(diasRest || 0) + (diasRest === 0 ? 0 : 0)}d atrasado`;
+  // calcula dias atrasado real a partir da data_fim
+  const hoje2 = new Date(); hoje2.setHours(0,0,0,0);
+  const dataFimD = im.data_fim ? new Date(im.data_fim+'T00:00:00') : null;
+  const diffReal = dataFimD ? Math.round((hoje2 - dataFimD) / 86400000) : 0;
+  const restLabel = !dataFimD ? '—' : diffReal <= 0 ? `${Math.abs(diffReal)}d restantes` : `${diffReal}d atrasado`;
+  const restColor = !dataFimD ? 'var(--gray)' : diffReal > 0 ? 'var(--red)' : diffReal <= 15 ? 'var(--red)' : 'var(--gold-alert)';
   return`<div class="tl-head">
-    <span class="tl-lbl">Timeline · ${im.prazo_contrato_dias||120}D</span>
+    <span class="tl-lbl">Contrato · ${im.prazo_contrato_dias||120}D</span>
     <span class="tl-rest" style="color:${restColor}">${restLabel}</span>
   </div>
   <div class="tl-row"><div class="tl-rlbl">META</div>
@@ -366,231 +367,192 @@ function tlHtml(im){
   </div>`;
 }
 
-function marcosMinHtml(im){
-  const hoje=new Date();hoje.setHours(0,0,0,0);
-  const meta=calcMetaInterna(im);
-  const nos=[
-    im.prazo_repaginacao_dias!=null?{abrev:'Rep.',data:im.data_repaginacao_concluida,st:im.status_repaginacao}:null,
-    {abrev:'Grav.',data:im.data_gravacao_conteudo,st:im.data_gravacao_conteudo?'ok':'pendente'},
-    {abrev:'Camp.',data:im.data_midia_entregue,st:im.data_midia_entregue?'ok':'pendente'},
-    {abrev:'Meta',data:meta,st:!meta?'pendente':hoje<=new Date(meta+'T00:00:00')?'ok':'atrasado'},
-    {abrev:'Fim',data:im.data_fim,st:!im.data_fim?'pendente':hoje<=new Date(im.data_fim+'T00:00:00')?'ok':'atrasado'},
-  ].filter(Boolean);
-  let h='<div class="tl-horiz" style="margin-top:10px"><div class="tl-horiz-inner">';
-  nos.forEach((n,i)=>{
-    if(i>0){const p=nos[i-1];const d=diffDias(p.data,n.data);const ok=p.st==='ok'&&n.st==='ok';h+=`<div class="tl-connector"><div class="tl-line${ok?' ok':''}"></div><div class="tl-interval">${d!=null?d+'d':''}</div></div>`;}
-    h+=`<div class="tl-node"><div class="tl-node-dot ${n.st}"></div><div class="tl-node-lbl">${n.abrev}</div><div class="tl-node-data">${n.data?fmtD(n.data).slice(0,5):'—'}</div></div>`;
-  });
-  return h+'</div></div>';
+function marcosSt(im){
+  const hoje=new Date();
+  const metaInterna=calcMetaInterna(im);
+  return[
+    {
+      lbl:'Repaginação',
+      data:im.data_repaginacao_concluida,
+      st:im.status_repaginacao,
+      show: im.prazo_repaginacao_dias!=null
+    },
+    {lbl:'Gravação',data:im.data_gravacao_conteudo,st:im.data_gravacao_conteudo?'ok':'pendente',show:true},
+    {lbl:'Mídia + Campanha',data:im.data_midia_entregue,st:im.data_midia_entregue?'ok':'pendente',show:true},
+    {
+      lbl:'Meta interna',
+      data:metaInterna,
+      st:!metaInterna?'pendente':hoje<=new Date(metaInterna+'T23:59:59')?'ok':'atrasado',
+      show:true
+    },
+    {
+      lbl:'Fim contrato',
+      data:im.data_fim,
+      st:!im.data_fim?'pendente':hoje<=new Date(im.data_fim+'T23:59:59')?'ok':'atrasado',
+      show:true
+    }
+  ].filter(m=>m.show);
 }
 
-function marcosDetailHtml(im){
-  const meta=calcMetaInterna(im);
-  const hoje=new Date();hoje.setHours(0,0,0,0);
-  const hStr=hoje.toISOString().split('T')[0];
-  function diag(msg,t){return`<div class="tl-diag ${t}">${msg}</div>`}
+function diffDias(d1, d2){
+  if(!d1||!d2) return null;
+  const a=new Date(d1+'T00:00:00'), b=new Date(d2+'T00:00:00');
+  return Math.round((b-a)/86400000);
+}
 
-  const ms=[];
+// ── TIMELINE MINI (no card) ─────────────────────────────────
+function marcosMinHtml(im){
+  const metaInterna = calcMetaInterna(im);
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
 
-  ms.push({lbl:'Assinatura do contrato',data:im.data_inicio,st:'ok',intervalo:null,
-    nota:`Contrato de ${im.prazo_contrato_dias||120} dias`,
-    diag:diag(`✓ Contrato de ${im.prazo_contrato_dias||120} dias`,'ok')});
+  const nos = [
+    im.prazo_repaginacao_dias != null ? {
+      lbl: 'Repaginação', abrev: 'Rep.',
+      data: im.data_repaginacao_concluida,
+      meta_data: im.data_inicio ? new Date(new Date(im.data_inicio+'T00:00:00').getTime() + im.prazo_repaginacao_dias*86400000).toISOString().split('T')[0] : null,
+      st: im.status_repaginacao
+    } : null,
+    { lbl: 'Gravação',   abrev: 'Grav.', data: im.data_gravacao_conteudo, meta_data: null, st: im.data_gravacao_conteudo?'ok':'pendente' },
+    { lbl: 'Campanha',   abrev: 'Camp.', data: im.data_midia_entregue,    meta_data: null, st: im.data_midia_entregue?'ok':'pendente' },
+    { lbl: 'Meta venda', abrev: 'Meta',  data: metaInterna, meta_data: null,
+      st: !metaInterna?'pendente': hoje<=new Date(metaInterna+'T00:00:00')?'ok':'atrasado' },
+    { lbl: 'Fim contrato', abrev: 'Fim', data: im.data_fim, meta_data: null,
+      st: !im.data_fim?'pendente': hoje<=new Date(im.data_fim+'T00:00:00')?'ok':'atrasado' },
+  ].filter(Boolean);
 
-  if(im.prazo_repaginacao_dias!=null){
-    const mRep=im.data_inicio?new Date(new Date(im.data_inicio+'T00:00:00').getTime()+im.prazo_repaginacao_dias*86400000).toISOString().split('T')[0]:null;
-    const atr=mRep&&im.data_repaginacao_concluida?diffDias(mRep,im.data_repaginacao_concluida):null;
-    const desde=diffDias(im.data_inicio,im.data_repaginacao_concluida);
-    ms.push({lbl:'Repaginação concluída',data:im.data_repaginacao_concluida,st:im.status_repaginacao,
-      intervalo:desde!=null?`${desde}d após assinatura`:null,
-      nota:mRep?`prazo era ${fmtD(mRep)} (${im.prazo_repaginacao_dias}d)`:null,
-      diag:!im.data_repaginacao_concluida?diag('Pendente','pendente')
-          :atr>0?diag(`⚠️ ${atr}d de atraso em relação ao prazo`,'atrasado')
-          :diag(`✓ Concluída ${Math.abs(atr)}d antes do prazo`,'ok')});
-  }
-
-  const refG=im.data_repaginacao_concluida||im.data_inicio;
-  const dG=diffDias(refG,im.data_gravacao_conteudo);
-  ms.push({lbl:'Gravação de conteúdo',data:im.data_gravacao_conteudo,st:im.data_gravacao_conteudo?'ok':'pendente',
-    intervalo:dG!=null?`${dG}d após ${im.data_repaginacao_concluida?'repaginação':'assinatura'}`:null,nota:null,
-    diag:!im.data_gravacao_conteudo?null
-        :dG>14?diag(`⏱ ${dG}d de espera — acima do normal`,'alerta')
-        :diag(`✓ ${dG}d de espera`,'ok')});
-
-  const dM=diffDias(im.data_gravacao_conteudo,im.data_midia_entregue);
-  ms.push({lbl:'Entrega mídia + Campanha no ar',data:im.data_midia_entregue,st:im.data_midia_entregue?'ok':'pendente',
-    intervalo:dM!=null?`${dM}d após gravação`:null,nota:null,
-    diag:!im.data_midia_entregue?null
-        :dM>10?diag(`⏱ ${dM}d de produção — acima do normal`,'alerta')
-        :diag(`✓ ${dM}d de produção`,'ok')});
-
-  const dJanela=diffDias(im.data_midia_entregue,meta);
-  const dMetaR=meta?diffDias(hStr,meta):null;
-  ms.push({lbl:'Meta interna de venda',data:meta,
-    st:!meta?'pendente':hoje<=new Date(meta+'T00:00:00')?'ok':'atrasado',
-    intervalo:dJanela!=null?`janela de ${dJanela}d para vender`:null,
-    nota:im.prazo_interno_dias?`${im.prazo_interno_dias}d após campanha`:null,
-    diag:!meta?null
-        :dMetaR>=0?diag(`✓ ${dMetaR}d restantes para bater a meta`,'ok')
-        :diag(`⚠️ Meta ultrapassada há ${Math.abs(dMetaR)}d`,'atrasado')});
-
-  const dFimR=im.data_fim?diffDias(hStr,im.data_fim):null;
-  ms.push({lbl:'Fim do contrato',data:im.data_fim,
-    st:!im.data_fim?'pendente':hoje<=new Date(im.data_fim+'T00:00:00')?'ok':'atrasado',
-    intervalo:null,nota:`${im.prazo_contrato_dias||120} dias totais`,
-    diag:!im.data_fim?null
-        :dFimR>=0?diag(`✓ ${dFimR}d restantes de contrato`,'ok')
-        :diag(`⚠️ Contrato vencido há ${Math.abs(dFimR)}d`,'atrasado')});
-
-  return ms.map((m,i)=>{
-    const lc=m.st==='ok'?'var(--green-bar2)':m.st==='atrasado'?'var(--red)':'var(--gray2)';
-    return`<div class="tl-detail-item">
-      ${i>0?`<div class="tl-detail-line" style="border-color:${lc}"></div>`:''}
-      <div class="tl-detail-row">
-        <div class="tl-detail-dot ${m.st}"></div>
-        <div class="tl-detail-body">
-          <div class="tl-detail-lbl">${m.lbl}</div>
-          <div class="tl-detail-data">${m.data?fmtD(m.data):'Não preenchida'}${m.nota?` <span class="tl-detail-meta">· ${m.nota}</span>`:''}</div>
-          ${m.intervalo?`<div class="tl-detail-intervalo">${m.intervalo}</div>`:''}
-          ${m.diag||''}
-        </div>
-      </div>
+  let html = '<div class="tl-horiz"><div class="tl-horiz-inner">';
+  nos.forEach((n,i) => {
+    if(i > 0){
+      const prev = nos[i-1];
+      const dias = diffDias(prev.data, n.data);
+      const lineOk = prev.st==='ok' && n.st==='ok';
+      html += `<div class="tl-connector">
+        <div class="tl-line${lineOk?' ok':''}"></div>
+        <div class="tl-interval">${dias!=null ? dias+'d' : ''}</div>
+      </div>`;
+    }
+    html += `<div class="tl-node">
+      <div class="tl-node-dot ${n.st}"></div>
+      <div class="tl-node-lbl">${n.abrev}</div>
+      <div class="tl-node-data">${n.data ? fmtD(n.data).slice(0,5) : '—'}</div>
     </div>`;
-  }).join('');
-}
-
-  // Dias calculados
-  const diasPrep   = dA&&dC ? Math.round((dC-dA)/86400000) : null;
-  const diasVenda  = dC     ? Math.round((hoje-dC)/86400000) : null;
-  const metaRest   = dM     ? Math.round((dM-hoje)/86400000) : null;
-  const contRest   = dF     ? Math.round((dF-hoje)/86400000) : null;
-
-  const restLabel = !dF?'—':contRest>=0?`${contRest}d restantes`:`${Math.abs(contRest)}d atrasado`;
-  const restColor = !dF?'var(--gray)':contRest<0?'var(--red)':contRest<=20?'var(--red)':'var(--gold-alert)';
-
-  // Posições na barra (% do total do contrato)
-  const pC = dA&&dC ? Math.min(Math.round((dC-dA)/86400000)/total*100,100) : null;
-  const pH = dA     ? Math.min(Math.round((hoje-dA)/86400000)/total*100,100) : 0;
-  const pM = dA&&dM ? Math.min(Math.round((dM-dA)/86400000)/total*100,100) : null;
-
-  return`
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-    <span style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray)">${total} DIAS DE CONTRATO</span>
-    <span style="font-size:11px;font-weight:700;color:${restColor}">${restLabel}</span>
-  </div>
-  <div style="position:relative;background:#edecea;border-radius:4px;height:8px;margin-bottom:6px">
-    ${pC!=null?`<div style="position:absolute;left:0;top:0;height:100%;width:${pC}%;background:#a8c4d4;border-radius:4px 0 0 4px"></div>`:''}
-    ${pC!=null?`<div style="position:absolute;left:${pC}%;top:0;height:100%;width:${Math.max(pH-pC,0)}%;background:var(--green-bar)"></div>`:`<div style="position:absolute;left:0;top:0;height:100%;width:${pH}%;background:var(--green-bar);border-radius:4px 0 0 4px"></div>`}
-    <div style="position:absolute;left:${pH}%;top:-3px;bottom:-3px;width:2px;background:var(--navy);border-radius:2px;transform:translateX(-50%)"></div>
-    ${pM!=null?`<div style="position:absolute;left:${pM}%;top:-3px;bottom:-3px;width:2px;background:var(--gold-alert);border-radius:2px;transform:translateX(-50%)"></div>`:''}
-  </div>
-  <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--gray);margin-bottom:10px">
-    <span>${dA?fmtD(im.data_inicio).slice(0,5):''}</span>
-    ${pC!=null?`<span style="color:#7a9fb0">📷${fmtD(im.data_midia_entregue).slice(0,5)}</span>`:''}
-    ${pM!=null?`<span style="color:var(--gold-alert)">🎯${fmtD(calcMetaInterna(im)).slice(0,5)}</span>`:''}
-    <span>${dF?fmtD(im.data_fim).slice(0,5):''}</span>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-    <div style="background:var(--light);border-radius:8px;padding:8px 10px">
-      <div style="font-size:8px;color:var(--gray);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">Preparo</div>
-      <div style="font-size:16px;font-weight:800;color:#7a9fb0">${diasPrep!=null?diasPrep+'d':'—'}</div>
-      <div style="font-size:9px;color:var(--gray)">assinatura → campanha</div>
-    </div>
-    <div style="background:var(--light);border-radius:8px;padding:8px 10px">
-      <div style="font-size:8px;color:var(--gray);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">Em venda há</div>
-      <div style="font-size:16px;font-weight:800;color:var(--green-bar)">${diasVenda!=null&&diasVenda>=0?diasVenda+'d':'—'}</div>
-      <div style="font-size:9px;color:${metaRest!=null&&metaRest<0?'var(--red)':'var(--gray)'}">
-        ${metaRest!=null?(metaRest>=0?`${metaRest}d p/ meta interna`:`⚠️ ${Math.abs(metaRest)}d além da meta`):'desde campanha'}
-      </div>
-    </div>
-  </div>`;
-}
-
-function marcosMinHtml(im){
-  const hoje=new Date();hoje.setHours(0,0,0,0);
-  const meta=calcMetaInterna(im);
-  const nos=[
-    im.prazo_repaginacao_dias!=null?{abrev:'Rep.',data:im.data_repaginacao_concluida,st:im.status_repaginacao}:null,
-    {abrev:'Grav.',data:im.data_gravacao_conteudo,st:im.data_gravacao_conteudo?'ok':'pendente'},
-    {abrev:'Camp.',data:im.data_midia_entregue,st:im.data_midia_entregue?'ok':'pendente'},
-    {abrev:'Meta',data:meta,st:!meta?'pendente':hoje<=new Date(meta+'T00:00:00')?'ok':'atrasado'},
-    {abrev:'Fim',data:im.data_fim,st:!im.data_fim?'pendente':hoje<=new Date(im.data_fim+'T00:00:00')?'ok':'atrasado'},
-  ].filter(Boolean);
-  let h='<div class="tl-horiz" style="margin-top:10px"><div class="tl-horiz-inner">';
-  nos.forEach((n,i)=>{
-    if(i>0){const p=nos[i-1];const d=diffDias(p.data,n.data);const ok=p.st==='ok'&&n.st==='ok';h+=`<div class="tl-connector"><div class="tl-line${ok?' ok':''}"></div><div class="tl-interval">${d!=null?d+'d':''}</div></div>`;}
-    h+=`<div class="tl-node"><div class="tl-node-dot ${n.st}"></div><div class="tl-node-lbl">${n.abrev}</div><div class="tl-node-data">${n.data?fmtD(n.data).slice(0,5):'—'}</div></div>`;
   });
-  return h+'</div></div>';
+  html += '</div></div>';
+  return html;
 }
 
+// ── TIMELINE DETALHE ────────────────────────────────────────
 function marcosDetailHtml(im){
-  const meta=calcMetaInterna(im);
-  const hoje=new Date();hoje.setHours(0,0,0,0);
-  const hStr=hoje.toISOString().split('T')[0];
-  function diag(msg,t){return`<div class="tl-diag ${t}">${msg}</div>`}
+  const metaInterna = calcMetaInterna(im);
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
 
-  const ms=[];
-
-  ms.push({lbl:'Assinatura do contrato',data:im.data_inicio,st:'ok',intervalo:null,
-    nota:`Contrato de ${im.prazo_contrato_dias||120} dias`,
-    diag:diag(`✓ Contrato de ${im.prazo_contrato_dias||120} dias`,'ok')});
-
-  if(im.prazo_repaginacao_dias!=null){
-    const mRep=im.data_inicio?new Date(new Date(im.data_inicio+'T00:00:00').getTime()+im.prazo_repaginacao_dias*86400000).toISOString().split('T')[0]:null;
-    const atr=mRep&&im.data_repaginacao_concluida?diffDias(mRep,im.data_repaginacao_concluida):null;
-    const desde=diffDias(im.data_inicio,im.data_repaginacao_concluida);
-    ms.push({lbl:'Repaginação concluída',data:im.data_repaginacao_concluida,st:im.status_repaginacao,
-      intervalo:desde!=null?`${desde}d após assinatura`:null,
-      nota:mRep?`prazo era ${fmtD(mRep)} (${im.prazo_repaginacao_dias}d)`:null,
-      diag:!im.data_repaginacao_concluida?diag('Pendente','pendente')
-          :atr>0?diag(`⚠️ ${atr}d de atraso em relação ao prazo`,'atrasado')
-          :diag(`✓ Concluída ${Math.abs(atr)}d antes do prazo`,'ok')});
+  // Helper: diagnóstico de atraso
+  function diagAtraso(diasAtraso, contexto){
+    if(diasAtraso === null || diasAtraso <= 0) return '';
+    return `<div class="tl-diag atrasado">⚠️ ${diasAtraso}d de atraso${contexto?' — '+contexto:''}</div>`;
+  }
+  function diagOk(msg){
+    return `<div class="tl-diag ok">✓ ${msg}</div>`;
   }
 
-  const refG=im.data_repaginacao_concluida||im.data_inicio;
-  const dG=diffDias(refG,im.data_gravacao_conteudo);
-  ms.push({lbl:'Gravação de conteúdo',data:im.data_gravacao_conteudo,st:im.data_gravacao_conteudo?'ok':'pendente',
-    intervalo:dG!=null?`${dG}d após ${im.data_repaginacao_concluida?'repaginação':'assinatura'}`:null,nota:null,
-    diag:!im.data_gravacao_conteudo?null
-        :dG>14?diag(`⏱ ${dG}d de espera — acima do normal`,'alerta')
-        :diag(`✓ ${dG}d de espera`,'ok')});
+  const marcos = [];
 
-  const dM=diffDias(im.data_gravacao_conteudo,im.data_midia_entregue);
-  ms.push({lbl:'Entrega mídia + Campanha no ar',data:im.data_midia_entregue,st:im.data_midia_entregue?'ok':'pendente',
-    intervalo:dM!=null?`${dM}d após gravação`:null,nota:null,
-    diag:!im.data_midia_entregue?null
-        :dM>10?diag(`⏱ ${dM}d de produção — acima do normal`,'alerta')
-        :diag(`✓ ${dM}d de produção`,'ok')});
+  // 1. ASSINATURA (âncora)
+  marcos.push({
+    lbl: 'Assinatura do contrato',
+    data: im.data_inicio,
+    st: 'ok',
+    diag: diagOk(`Contrato de ${im.prazo_contrato_dias||120} dias`),
+    isAnchor: true
+  });
 
-  const dJanela=diffDias(im.data_midia_entregue,meta);
-  const dMetaR=meta?diffDias(hStr,meta):null;
-  ms.push({lbl:'Meta interna de venda',data:meta,
-    st:!meta?'pendente':hoje<=new Date(meta+'T00:00:00')?'ok':'atrasado',
-    intervalo:dJanela!=null?`janela de ${dJanela}d para vender`:null,
-    nota:im.prazo_interno_dias?`${im.prazo_interno_dias}d após campanha`:null,
-    diag:!meta?null
-        :dMetaR>=0?diag(`✓ ${dMetaR}d restantes para bater a meta`,'ok')
-        :diag(`⚠️ Meta ultrapassada há ${Math.abs(dMetaR)}d`,'atrasado')});
+  // 2. REPAGINAÇÃO (se houver)
+  if(im.prazo_repaginacao_dias != null){
+    const metaRep = im.data_inicio
+      ? new Date(new Date(im.data_inicio+'T00:00:00').getTime() + im.prazo_repaginacao_dias*86400000).toISOString().split('T')[0]
+      : null;
+    const atrasoDias = im.data_repaginacao_concluida && metaRep
+      ? diffDias(metaRep, im.data_repaginacao_concluida)
+      : null;
+    const diasDesdeAssinatura = diffDias(im.data_inicio, im.data_repaginacao_concluida);
+    marcos.push({
+      lbl: 'Repaginação concluída',
+      data: im.data_repaginacao_concluida,
+      st: im.status_repaginacao,
+      intervalo: diasDesdeAssinatura != null ? `${diasDesdeAssinatura}d após assinatura` : null,
+      meta_ref: metaRep ? `meta: até ${fmtD(metaRep)} (${im.prazo_repaginacao_dias}d)` : null,
+      diag: atrasoDias > 0
+        ? diagAtraso(atrasoDias, `meta era ${fmtD(metaRep)}`)
+        : im.data_repaginacao_concluida ? diagOk(`Dentro do prazo`) : ''
+    });
+  }
 
-  const dFimR=im.data_fim?diffDias(hStr,im.data_fim):null;
-  ms.push({lbl:'Fim do contrato',data:im.data_fim,
-    st:!im.data_fim?'pendente':hoje<=new Date(im.data_fim+'T00:00:00')?'ok':'atrasado',
-    intervalo:null,nota:`${im.prazo_contrato_dias||120} dias totais`,
-    diag:!im.data_fim?null
-        :dFimR>=0?diag(`✓ ${dFimR}d restantes de contrato`,'ok')
-        :diag(`⚠️ Contrato vencido há ${Math.abs(dFimR)}d`,'atrasado')});
+  // 3. GRAVAÇÃO
+  const diasRepGrav = diffDias(im.data_repaginacao_concluida || im.data_inicio, im.data_gravacao_conteudo);
+  marcos.push({
+    lbl: 'Gravação de conteúdo',
+    data: im.data_gravacao_conteudo,
+    st: im.data_gravacao_conteudo ? 'ok' : 'pendente',
+    intervalo: diasRepGrav != null
+      ? `${diasRepGrav}d após ${im.data_repaginacao_concluida ? 'repaginação' : 'assinatura'}`
+      : null,
+    diag: diasRepGrav != null && diasRepGrav > 7
+      ? `<div class="tl-diag alerta">⏱ ${diasRepGrav}d de espera após repaginação</div>`
+      : im.data_gravacao_conteudo ? diagOk(`Sequência normal`) : ''
+  });
 
-  return ms.map((m,i)=>{
-    const lc=m.st==='ok'?'var(--green-bar2)':m.st==='atrasado'?'var(--red)':'var(--gray2)';
-    return`<div class="tl-detail-item">
-      ${i>0?`<div class="tl-detail-line" style="border-color:${lc}"></div>`:''}
+  // 4. ENTREGA MÍDIA + CAMPANHA
+  const diasGravMid = diffDias(im.data_gravacao_conteudo, im.data_midia_entregue);
+  marcos.push({
+    lbl: 'Entrega mídia + Campanha no ar',
+    data: im.data_midia_entregue,
+    st: im.data_midia_entregue ? 'ok' : 'pendente',
+    intervalo: diasGravMid != null ? `${diasGravMid}d após gravação` : null,
+    diag: diasGravMid != null && diasGravMid > 10
+      ? `<div class="tl-diag alerta">⏱ ${diasGravMid}d de produção — acima da média</div>`
+      : im.data_midia_entregue ? diagOk(`${diasGravMid}d de produção`) : ''
+  });
+
+  // 5. META INTERNA
+  const diasCampMeta = diffDias(im.data_midia_entregue, metaInterna);
+  const diasMetaAtrasado = metaInterna ? diffDias(metaInterna, hoje.toISOString().split('T')[0]) : null;
+  marcos.push({
+    lbl: 'Meta interna de venda',
+    data: metaInterna,
+    st: !metaInterna ? 'pendente' : hoje <= new Date(metaInterna+'T00:00:00') ? 'ok' : 'atrasado',
+    intervalo: diasCampMeta != null ? `${diasCampMeta}d de janela de venda` : null,
+    meta_ref: im.prazo_interno_dias ? `${im.prazo_interno_dias}d após campanha` : null,
+    diag: diasMetaAtrasado > 0
+      ? diagAtraso(diasMetaAtrasado, 'meta de venda ultrapassada')
+      : metaInterna ? diagOk(`${Math.abs(diasMetaAtrasado||0)}d ainda disponíveis`) : ''
+  });
+
+  // 6. FIM DO CONTRATO
+  const diasContratoAtrasado = im.data_fim ? diffDias(im.data_fim, hoje.toISOString().split('T')[0]) : null;
+  marcos.push({
+    lbl: 'Fim do contrato',
+    data: im.data_fim,
+    st: !im.data_fim ? 'pendente' : hoje <= new Date(im.data_fim+'T00:00:00') ? 'ok' : 'atrasado',
+    intervalo: null,
+    meta_ref: `${im.prazo_contrato_dias||120} dias de contrato`,
+    diag: diasContratoAtrasado > 0
+      ? diagAtraso(diasContratoAtrasado, 'contrato vencido')
+      : im.data_fim ? diagOk(`${Math.abs(diasContratoAtrasado||0)}d restantes de contrato`) : ''
+  });
+
+  return marcos.map((m, i) => {
+    const prev = i > 0 ? marcos[i-1] : null;
+    const lineColor = m.st === 'ok' && (!prev || prev.st === 'ok') ? 'var(--green-bar2)' : m.st === 'atrasado' ? 'var(--red)' : 'var(--gray2)';
+    return `
+    <div class="tl-detail-item">
+      ${i > 0 ? `<div class="tl-detail-line" style="border-color:${lineColor}"></div>` : ''}
       <div class="tl-detail-row">
         <div class="tl-detail-dot ${m.st}"></div>
         <div class="tl-detail-body">
           <div class="tl-detail-lbl">${m.lbl}</div>
-          <div class="tl-detail-data">${m.data?fmtD(m.data):'Não preenchida'}${m.nota?` <span class="tl-detail-meta">· ${m.nota}</span>`:''}</div>
-          ${m.intervalo?`<div class="tl-detail-intervalo">${m.intervalo}</div>`:''}
-          ${m.diag||''}
+          <div class="tl-detail-data">${m.data ? fmtD(m.data) : '—'}${m.meta_ref ? ` <span class="tl-detail-meta">${m.meta_ref}</span>` : ''}</div>
+          ${m.intervalo ? `<div class="tl-detail-intervalo">${m.intervalo}</div>` : ''}
+          ${m.diag || ''}
         </div>
       </div>
     </div>`;
@@ -914,18 +876,15 @@ async function saveSnapshot(){
 
 async function loadDashboard(){
   try{
-    const [{data,error}, {data:vis}] = await Promise.all([
-      sb.from('dashboard_imoveis').select('*').order('data_fim',{ascending:true}),
-      sb.from('dashboard_visitas_detalhe').select('*').order('data_visita',{ascending:false})
-    ]);
+    const {data,error}=await sb.from('dashboard_imoveis').select('*').order('dias_restantes',{ascending:true});
     if(error)throw error;
     imoveis=data||[];
-    visitasMap={};
-    (vis||[]).forEach(v=>{
-      if(!v.exclusividade_id)return;
-      if(!visitasMap[v.exclusividade_id])visitasMap[v.exclusividade_id]=[];
-      visitasMap[v.exclusividade_id].push(v);
-    });
+    const ids=imoveis.map(x=>x.imovel_id).filter(Boolean);
+    if(ids.length){
+      const {data:vis}=await sb.from('dashboard_visitas_detalhe').select('*').in('imovel_id',ids).order('data_visita',{ascending:false});
+      visitasMap={};
+      (vis||[]).forEach(v=>{if(!visitasMap[v.imovel_id])visitasMap[v.imovel_id]=[];visitasMap[v.imovel_id].push(v);});
+    }
     calcVGV(imoveis);
     document.getElementById('cardsWrap').innerHTML=imoveis.length>0?imoveis.map(renderCard).join(''):`<div class="vis-empty" style="padding:30px 0">Nenhum imóvel ativo.</div>`;
   }catch(err){
@@ -935,7 +894,7 @@ async function loadDashboard(){
 
 function openDetail(id){
   const im=imoveis.find(x=>x.id===id);if(!im)return;
-  const vis=visitasMap[im.id]||[];
+  const vis=visitasMap[im.imovel_id]||[];
   document.getElementById('detailBody').innerHTML=renderDetail(im,vis);
   document.getElementById('vList').classList.remove('on');
   document.getElementById('vDetail').classList.add('on');
