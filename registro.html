@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Certeiro &mdash; Registro</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#191949;--white:#FFFFFF;--bg:#F5F5F8;--text:#191949;--muted:#8E8EA0;
+  --s2:#ECECF1;--s3:#D9D9E3;--green:#10B981;--green-bg:rgba(16,185,129,0.08);
+  --green-l:#D1FAE5;--red:#EF4444;--red-bg:rgba(239,68,68,0.08);--red-l:#FEE2E2;
+  --yellow:#F59E0B;--yellow-bg:rgba(245,158,11,0.08);--yellow-l:#FEF3C7;
+  --blue:#3B82F6;--blue-bg:rgba(59,130,246,0.08);--blue-l:#DBEAFE;
+  --card-shadow:0 1px 3px rgba(25,25,73,0.06),0 1px 2px rgba(25,25,73,0.04);
+  --card-radius:14px
+}
+html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+
+/* HEADER */
+.hdr{background:var(--navy);display:flex;justify-content:space-between;align-items:center;padding:14px 20px 12px;position:sticky;top:0;z-index:200}
+.hdr-logo .brand{color:#fff;font-size:14px;font-weight:900;letter-spacing:2.2px;text-transform:uppercase}
+.hdr-logo .sub{color:rgba(255,255,255,0.35);font-size:8.5px;letter-spacing:1.6px;text-transform:uppercase;margin-top:2px}
+.hdr-date{text-align:right}
+.hdr-date .d1{color:rgba(255,255,255,0.4);font-size:10px}
+.hdr-date .d2{color:rgba(255,255,255,0.8);font-size:11px;font-weight:700;margin-top:1px}
+
+/* STEP BAR */
+.step-bar{background:var(--navy);border-top:1px solid rgba(255,255,255,0.07);padding:10px 20px;display:flex;align-items:center;gap:6px;overflow-x:auto}
+.step-dot-wrap{display:flex;align-items:center;gap:6px}
+.sdot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;transition:all .2s}
+.sdot.done{background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.6)}
+.sdot.active{background:var(--yellow);color:#fff}
+.sdot.pending{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.25)}
+.step-lbl{font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap}
+.step-lbl.active{color:var(--yellow)}
+.step-lbl.done{color:rgba(255,255,255,0.4)}
+.step-lbl.pending{color:rgba(255,255,255,0.2)}
+.step-sep{color:rgba(255,255,255,0.15);font-size:10px;flex-shrink:0}
+
+/* PAGE */
+.page{padding:16px 16px 100px;max-width:480px;margin:0 auto}
+
+/* CARDS */
+.card{background:var(--white);border-radius:var(--card-radius);padding:18px;border:1px solid var(--s2);box-shadow:var(--card-shadow);margin-bottom:12px}
+.section-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+
+/* TIPO ESCOLHA */
+.tipo-wrap{display:flex;gap:12px}
+.tipo-btn{flex:1;border:2px solid var(--s2);border-radius:14px;padding:20px 12px;text-align:center;cursor:pointer;background:var(--white);transition:all .15s;font-family:'Nunito Sans',sans-serif}
+.tipo-btn:active{transform:scale(0.97)}
+.tipo-btn.sel{border-color:var(--navy);background:var(--navy)}
+.tipo-icon{font-size:28px;margin-bottom:8px}
+.tipo-label{font-size:13px;font-weight:800;color:var(--text)}
+.tipo-sub{font-size:10px;color:var(--muted);margin-top:3px}
+.tipo-btn.sel .tipo-label,.tipo-btn.sel .tipo-sub{color:#fff}
+
+/* IMOVEL SELECTOR */
+.imovel-list{display:flex;flex-direction:column;gap:8px}
+.imovel-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--s2);border-radius:12px;cursor:pointer;background:var(--white);transition:all .15s}
+.imovel-item:active{background:var(--bg)}
+.imovel-item.sel{border-color:var(--navy);background:rgba(25,25,73,0.03)}
+.imovel-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;background:var(--s3)}
+.imovel-item.sel .imovel-dot{background:var(--navy)}
+.imovel-nome{font-size:13px;font-weight:700;color:var(--text);flex:1}
+.imovel-preco{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
+
+/* CORRETOR CARDS */
+.corretor-list{display:flex;gap:12px}
+.corretor-card{flex:1;border:2px solid var(--s2);border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;background:var(--white);transition:all .15s;font-family:'Nunito Sans',sans-serif}
+.corretor-card:active{transform:scale(0.97)}
+.corretor-card.sel{border-color:var(--navy);background:rgba(25,25,73,0.03)}
+.corretor-foto{width:64px;height:64px;border-radius:50%;object-fit:cover;margin:0 auto 8px;display:block;background:var(--s2)}
+.corretor-nome{font-size:11px;font-weight:800;color:var(--text);line-height:1.3}
+.corretor-creci{font-size:9px;color:var(--muted);margin-top:2px}
+
+/* FORM FIELDS */
+.field{margin-bottom:14px}
+.field-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
+.field-lbl .req{color:var(--red)}
+.finput{box-sizing:border-box;width:100%;border:1.5px solid var(--s2);border-radius:10px;padding:12px 14px;font-size:14px;font-family:'Nunito Sans',sans-serif;color:var(--navy);background:var(--white);outline:none;-webkit-appearance:none;min-height:46px;display:block;transition:border-color .15s}
+.finput:focus{border-color:var(--navy)}
+.finput::placeholder{color:var(--s3)}
+textarea.finput{resize:none;min-height:80px;font-size:13px}
+
+/* CHIP BUTTONS */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:8px 13px;border-radius:8px;border:1.5px solid var(--s2);background:var(--white);font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;transition:all .15s;white-space:nowrap}
+.chip.sel{border-color:var(--navy);background:var(--navy);color:#fff}
+.chip.sel-green{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.chip.sel-yellow{border-color:var(--yellow);background:var(--yellow-bg);color:var(--yellow)}
+.chip.sel-red{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+.chip.sel-blue{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
+.chip.sel-muted{border-color:var(--s3);background:var(--s2);color:var(--muted)}
+
+/* QUALIF TOGGLE */
+.toggle-row{display:flex;gap:8px}
+.toggle-btn{flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--s2);background:var(--white);font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center;transition:all .15s}
+.toggle-btn.sel-sim{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.toggle-btn.sel-nao{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+
+/* VALOR INPUT */
+.valor-wrap{display:flex;align-items:center;gap:8px;border:1.5px solid var(--s2);border-radius:10px;background:var(--white);padding:0 14px;transition:border-color .15s}
+.valor-wrap:focus-within{border-color:var(--navy)}
+.valor-prefix{font-size:14px;font-weight:700;color:var(--muted);flex-shrink:0}
+.valor-input{flex:1;border:none;background:transparent;font-size:16px;font-weight:800;color:var(--navy);font-family:'Nunito Sans',sans-serif;padding:12px 0;outline:none;min-width:0}
+
+/* PARCEIRO */
+.parceiro-toggle{display:flex;gap:8px;margin-bottom:10px}
+.parceiro-btn{flex:1;padding:9px;border-radius:10px;border:1.5px solid var(--s2);background:var(--white);font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center;transition:all .15s}
+.parceiro-btn.sel{border-color:var(--navy);background:var(--navy);color:#fff}
+
+/* REVIEW */
+.rev-section{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--s2)}
+.rev-section:last-child{border-bottom:none;margin-bottom:0}
+.rev-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
+.rev-val{font-size:13px;font-weight:700;color:var(--text)}
+.rev-val.big{font-size:18px;font-weight:900;color:var(--navy)}
+.rev-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.rev-chip{font-size:9px;font-weight:700;padding:3px 9px;border-radius:8px;background:var(--bg);color:var(--navy)}
+
+/* PROPOSTA POS-VISITA */
+.proposta-pos{background:var(--yellow-bg);border:1.5px solid var(--yellow-l);border-radius:14px;padding:18px;margin-bottom:12px}
+.proposta-pos-title{font-size:14px;font-weight:800;color:var(--yellow);margin-bottom:4px}
+.proposta-pos-sub{font-size:11px;color:#92400e;margin-bottom:14px}
+.proposta-pos-btns{display:flex;gap:10px}
+.pp-btn{flex:1;padding:12px;border-radius:10px;border:none;font-size:13px;font-weight:800;font-family:'Nunito Sans',sans-serif;cursor:pointer;transition:all .15s;text-align:center}
+.pp-btn:active{transform:scale(0.97)}
+.pp-sim{background:var(--navy);color:#fff}
+.pp-nao{background:var(--white);color:var(--navy);border:1.5px solid var(--s2)!important;border:none}
+
+/* SUCCESS */
+.success-wrap{text-align:center;padding:40px 20px}
+.success-icon{font-size:56px;margin-bottom:16px}
+.success-title{font-size:18px;font-weight:900;color:var(--green);margin-bottom:6px}
+.success-sub{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:28px}
+.novo-btn{display:inline-block;background:var(--navy);color:#fff;border:none;border-radius:12px;padding:14px 28px;font-size:14px;font-weight:800;font-family:'Nunito Sans',sans-serif;cursor:pointer;transition:opacity .15s}
+.novo-btn:active{opacity:0.8}
+
+/* FOOTER ACAO */
+.footer-acao{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--s2);padding:12px 20px env(safe-area-inset-bottom,12px);max-width:480px;margin:0 auto;display:flex;gap:10px;z-index:100}
+.btn-back{background:var(--bg);border:1.5px solid var(--s2);border-radius:12px;padding:13px 18px;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;font-family:'Nunito Sans',sans-serif;transition:all .15s;flex-shrink:0}
+.btn-back:active{background:var(--s2)}
+.btn-next{flex:1;background:var(--navy);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;color:#fff;cursor:pointer;font-family:'Nunito Sans',sans-serif;transition:opacity .15s}
+.btn-next:active{opacity:0.8}
+.btn-next:disabled{opacity:0.4;cursor:not-allowed}
+.btn-next.green{background:var(--green)}
+
+/* LOADING */
+.loading{text-align:center;padding:40px 20px}
+.loading-spin{width:28px;height:28px;border:3px solid var(--s2);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:12px;color:var(--muted)}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;font-size:13px;font-weight:700;padding:12px 22px;border-radius:12px;z-index:500;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+::-webkit-scrollbar{width:0;height:0}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-logo">
+    <div class="brand">Gabriel Certeiro</div>
+    <div class="sub" id="hdrSub">Registro</div>
+  </div>
+  <div class="hdr-date">
+    <div class="d1" id="hdrData">-</div>
+    <div class="d2" id="hdrDia">-</div>
+  </div>
+</div>
+
+<div id="stepBarWrap" class="hidden">
+  <div class="step-bar" id="stepBar"></div>
+</div>
+
+<div class="page" id="mainPage">
+  <div class="loading" id="loadingWrap">
+    <div class="loading-spin"></div>
+    <div class="loading-txt">Carregando...</div>
+  </div>
+</div>
+
+<div class="footer-acao hidden" id="footerAcao">
+  <button class="btn-back" id="btnBack" onclick="voltarPasso()">&#8592;</button>
+  <button class="btn-next" id="btnNext" onclick="avancarPasso()">Continuar</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var SUPA_URL='https://vtykzralkxlbqqkleofl.supabase.co';
+var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0eWt6cmFsa3hsYnFxa2xlb2ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjMyNjAsImV4cCI6MjA4OTkzOTI2MH0.rYBifw2NXqVDGrKbDWKJgrFAIdoruxxsIPc9RXibgy0';
+var sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+
+// Estado global
+var S={
+  tipo:null, // 'visita' | 'proposta'
+  imovel:null,
+  corretor:null,
+  parceiro:null,
+  nome:'',
+  data:'',
+  origem:'',
+  objections:[],
+  observacoes:'',
+  intencao:null,
+  qualif:null,
+  pagto:[],
+  pagto_detalhes:'',
+  // proposta
+  prop_valor:'',
+  prop_pagto:null,
+  prop_status:'em_andamento',
+  prop_obs:'',
+  // fluxo
+  posVisitaProposta:null // true = usuario escolheu registrar proposta apos visita
+};
+
+var imoveis=[];
+var corretores=[];
+var passo=0; // passo atual
+var PASSOS_VISITA=['tipo','imovel','corretor','interessado','feedback','resultado','pagamento','revisao'];
+var PASSOS_PROPOSTA=['tipo','imovel','corretor','proposta_form','revisao_prop'];
+
+function passos(){return S.tipo==='proposta'?PASSOS_PROPOSTA:PASSOS_VISITA;}
+
+// --- INIT ---
+async function init(){
+  initHeader();
+  await Promise.all([loadImoveis(),loadCorretores()]);
+  renderPasso();
+}
+
+function initHeader(){
+  var d=new Date();
+  var m=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  document.getElementById('hdrData').textContent=d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear();
+  document.getElementById('hdrDia').textContent='Dia '+(Math.floor((d-new Date(d.getFullYear(),0,0))/86400000))+' / '+((((d.getFullYear()%4===0&&d.getFullYear()%100!==0)||d.getFullYear()%400===0)?366:365));
+}
+
+async function loadImoveis(){
+  var res=await sb.from('imoveis').select('id,nome,preco,ativo').eq('ativo',true).order('nome');
+  imoveis=(res.data||[]);
+}
+
+async function loadCorretores(){
+  var res=await sb.from('corretores').select('id,nome,creci,foto_url').eq('ativo',true).order('nome');
+  corretores=(res.data||[]);
+}
+
+// --- STEP BAR ---
+function renderStepBar(){
+  var ps=passos();
+  if(ps.length<=1){document.getElementById('stepBarWrap').classList.add('hidden');return;}
+  document.getElementById('stepBarWrap').classList.remove('hidden');
+  var labels={
+    tipo:'Tipo',imovel:'Imovel',corretor:'Corretor',interessado:'Interessado',
+    feedback:'Feedback',resultado:'Resultado',pagamento:'Pagamento',revisao:'Revisao',
+    proposta_form:'Proposta',revisao_prop:'Revisao'
+  };
+  var html='';
+  for(var i=0;i<ps.length;i++){
+    var cls=i<passo?'done':i===passo?'active':'pending';
+    var lblCls=cls;
+    html+='<div class="step-dot-wrap"><div class="sdot '+cls+'">'+(i<passo?'&#10003;':(i+1))+'</div><span class="step-lbl '+lblCls+'">'+labels[ps[i]]+'</span></div>';
+    if(i<ps.length-1)html+='<span class="step-sep">&#8250;</span>';
+  }
+  document.getElementById('stepBar').innerHTML=html;
+}
+
+// --- RENDER PASSO ---
+function renderPasso(){
+  var ps=passos();
+  var current=ps[passo];
+  renderStepBar();
+  document.getElementById('footerAcao').classList.toggle('hidden',current==='tipo'||current==='revisao'||current==='revisao_prop');
+  document.getElementById('btnBack').classList.toggle('hidden',passo===0);
+
+  var page=document.getElementById('mainPage');
+  switch(current){
+    case 'tipo':        page.innerHTML=renderTipo();break;
+    case 'imovel':      page.innerHTML=renderImovel();break;
+    case 'corretor':    page.innerHTML=renderCorretor();break;
+    case 'interessado': page.innerHTML=renderInteressado();break;
+    case 'feedback':    page.innerHTML=renderFeedback();break;
+    case 'resultado':   page.innerHTML=renderResultado();break;
+    case 'pagamento':   page.innerHTML=renderPagamento();break;
+    case 'revisao':     page.innerHTML=renderRevisao();break;
+    case 'proposta_form':page.innerHTML=renderPropostaForm();break;
+    case 'revisao_prop':page.innerHTML=renderRevisaoProp();break;
+  }
+  window.scrollTo({top:0});
+  updateBtnNext();
+}
+
+function updateBtnNext(){
+  var ps=passos();
+  var current=ps[passo];
+  var btn=document.getElementById('btnNext');
+  var isLast=passo===ps.length-2; // penultimo = antes da revisao
+  btn.textContent=isLast?'Revisar':'Continuar';
+  btn.classList.toggle('green',isLast);
+}
+
+// --- PASSOS ---
+function renderTipo(){
+  return '<div style="padding-top:8px"><div class="section-title">O que voce quer registrar?</div>'+
+  '<div class="tipo-wrap">'+
+  '<div class="tipo-btn'+(S.tipo==='visita'?' sel':'')+'" onclick="selTipo(\'visita\')">'+
+    '<div class="tipo-icon">&#127968;</div>'+
+    '<div class="tipo-label">Visita</div>'+
+    '<div class="tipo-sub">Registro completo de visita</div>'+
+  '</div>'+
+  '<div class="tipo-btn'+(S.tipo==='proposta'?' sel':'')+'" onclick="selTipo(\'proposta\')">'+
+    '<div class="tipo-icon">&#128172;</div>'+
+    '<div class="tipo-label">Proposta</div>'+
+    '<div class="tipo-sub">Proposta sem visita presencial</div>'+
+  '</div>'+
+  '</div></div>';
+}
+
+function selTipo(t){
+  S.tipo=t;
+  passo=1;
+  renderPasso();
+}
+
+function renderImovel(){
+  var html='<div class="section-title">Qual imovel?</div><div class="imovel-list">';
+  for(var i=0;i<imoveis.length;i++){
+    var im=imoveis[i];
+    var sel=S.imovel&&S.imovel.id===im.id;
+    html+='<div class="imovel-item'+(sel?' sel':'')+'" onclick="selImovel(\''+im.id+'\',\''+escHtml(im.nome)+'\',\''+escHtml(im.preco||'')+'\')">' +
+      '<div class="imovel-dot"></div>'+
+      '<div class="imovel-nome">'+escHtml(im.nome)+'</div>'+
+      '<div class="imovel-preco">'+(im.preco||'')+'</div>'+
+    '</div>';
+  }
+  html+='</div>';
+  return html;
+}
+
+function selImovel(id,nome,preco){
+  S.imovel={id:id,nome:nome,preco:preco};
+  document.querySelectorAll('.imovel-item').forEach(function(el){el.classList.remove('sel');});
+  event.currentTarget.classList.add('sel');
+  updateBtnNext();
+  setTimeout(avancarPasso,200);
+}
+
+function renderCorretor(){
+  var html='<div class="section-title">Corretor responsavel</div><div class="corretor-list">';
+  for(var i=0;i<corretores.length;i++){
+    var c=corretores[i];
+    var sel=S.corretor&&S.corretor.id===c.id;
+    var ini=c.nome.charAt(0);
+    var fotoHtml=c.foto_url?
+      '<img class="corretor-foto" src="'+c.foto_url+'" alt="'+escHtml(c.nome)+'" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">'+
+      '<div class="corretor-foto" style="display:none;background:var(--navy);align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff">'+ini+'</div>':
+      '<div class="corretor-foto" style="display:flex;background:var(--navy);align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff">'+ini+'</div>';
+    html+='<div class="corretor-card'+(sel?' sel':'')+'" onclick="selCorretor(\''+c.id+'\',\''+escHtml(c.nome)+'\',\''+escHtml(c.creci||'')+'\')">'+
+      fotoHtml+
+      '<div class="corretor-nome">'+escHtml(c.nome)+'</div>'+
+      '<div class="corretor-creci">CRECI '+escHtml(c.creci||'')+'</div>'+
+    '</div>';
+  }
+  html+='</div>';
+  return html;
+}
+
+function selCorretor(id,nome,creci){
+  S.corretor={id:id,nome:nome,creci:creci};
+  document.querySelectorAll('.corretor-card').forEach(function(el){el.classList.remove('sel');});
+  event.currentTarget.classList.add('sel');
+  updateBtnNext();
+  setTimeout(avancarPasso,200);
+}
+
+function renderInteressado(){
+  var origens=['Meta Ads','Google Ads','Instagram Organico','Indicacao','Disparo de base','Corretor parceiro','Site / Organico','YouTube','TikTok','Relacionamento','Outro'];
+  var html='<div class="section-title">Dados do interessado</div>'+
+  '<div class="field"><div class="field-lbl">Nome do interessado <span class="req">*</span></div>'+
+  '<input type="text" class="finput" id="fNome" placeholder="Nome completo" value="'+escHtml(S.nome)+'" oninput="S.nome=this.value;updateBtnNext()"></div>'+
+  '<div class="field"><div class="field-lbl">Data da visita <span class="req">*</span></div>'+
+  '<input type="date" class="finput" id="fData" value="'+(S.data||hoje())+'" onchange="S.data=this.value;updateBtnNext()"></div>'+
+  '<div class="field"><div class="field-lbl">Origem do lead</div>'+
+  '<div class="chips" id="origensWrap">';
+  for(var i=0;i<origens.length;i++){
+    var sel=S.origem===origens[i];
+    html+='<div class="chip'+(sel?' sel':'')+'" onclick="selOrigem(this,\''+escHtml(origens[i])+'\')">'+escHtml(origens[i])+'</div>';
+  }
+  html+='</div></div>';
+
+  // Corretor parceiro
+  html+='<div class="field"><div class="field-lbl">Corretor parceiro?</div>'+
+  '<div class="parceiro-toggle">'+
+  '<div class="parceiro-btn'+(S.parceiro===false?' sel':'')+'" onclick="selParceiro(false)">Nao</div>'+
+  '<div class="parceiro-btn'+(S.parceiro!==false&&S.parceiro!==null||typeof S.parceiro==='string'?' sel':'')+'" onclick="selParceiro(true)">Sim</div>'+
+  '</div>'+
+  '<div id="parceiroNomeWrap" class="'+(typeof S.parceiro==='string'||S.parceiro===true?'':'hidden')+'">'+
+  '<input type="text" class="finput" id="fParceiroNome" placeholder="Nome do corretor parceiro" value="'+(typeof S.parceiro==='string'?escHtml(S.parceiro):'')+'" oninput="S.parceiro=this.value"></div></div>';
+
+  return html;
+}
+
+function selOrigem(el,val){
+  S.origem=val;
+  document.querySelectorAll('#origensWrap .chip').forEach(function(c){c.classList.remove('sel');});
+  el.classList.add('sel');
+}
+
+function selParceiro(sim){
+  if(sim){
+    S.parceiro='';
+    document.getElementById('parceiroNomeWrap').classList.remove('hidden');
+    document.querySelectorAll('.parceiro-btn').forEach(function(b,i){b.classList.toggle('sel',i===1);});
+  } else {
+    S.parceiro=false;
+    document.getElementById('parceiroNomeWrap').classList.add('hidden');
+    document.querySelectorAll('.parceiro-btn').forEach(function(b,i){b.classList.toggle('sel',i===0);});
+  }
+}
+
+function renderFeedback(){
+  var objecoes=['Preco alto','Localizacao','Tamanho','Condominio caro','Precisa reformar','Sem vaga','Sem area de lazer','Documentacao','Nao gostou do imovel','Nao qualificado financeiramente'];
+  var html='<div class="section-title">Feedback da visita</div>'+
+  '<div class="field"><div class="field-lbl">Principais objecoes</div>'+
+  '<div class="chips" id="objWrap">';
+  for(var i=0;i<objecoes.length;i++){
+    var sel=S.objections.indexOf(objecoes[i])>=0;
+    html+='<div class="chip'+(sel?' sel':'')+'" onclick="toggleObj(this,\''+escHtml(objecoes[i])+'\')">'+escHtml(objecoes[i])+'</div>';
+  }
+  html+='</div></div>'+
+  '<div class="field"><div class="field-lbl">Observacoes</div>'+
+  '<textarea class="finput" id="fObs" placeholder="Detalhes da visita, comentarios do interessado...">'+escHtml(S.observacoes)+'</textarea></div>';
+  return html;
+}
+
+function toggleObj(el,val){
+  var idx=S.objections.indexOf(val);
+  if(idx>=0){S.objections.splice(idx,1);el.classList.remove('sel');}
+  else{S.objections.push(val);el.classList.add('sel');}
+}
+
+function renderResultado(){
+  var intencoes=[
+    {v:'Quer comprar',c:'sel-green',icon:'&#9989;'},
+    {v:'Esta pensando',c:'sel-yellow',icon:'&#129300;'},
+    {v:'Quer segunda visita',c:'sel-blue',icon:'&#128198;'},
+    {v:'Nao gostou',c:'sel-red',icon:'&#10060;'}
+  ];
+  var html='<div class="section-title">Resultado da visita</div>'+
+  '<div class="field"><div class="field-lbl">Intencao do interessado <span class="req">*</span></div><div class="chips">';
+  for(var i=0;i<intencoes.length;i++){
+    var it=intencoes[i];
+    var sel=S.intencao===it.v;
+    html+='<div class="chip'+(sel?' '+it.c:'')+'" onclick="selIntencao(this,\''+escHtml(it.v)+'\',\''+it.c+'\')">'+it.icon+' '+escHtml(it.v)+'</div>';
+  }
+  html+='</div></div>'+
+  '<div class="field"><div class="field-lbl">Qualificado financeiramente?</div>'+
+  '<div class="toggle-row">'+
+  '<div class="toggle-btn'+(S.qualif===true?' sel-sim':'')+'" onclick="selQualif(true)">&#10003; Sim, qualificado</div>'+
+  '<div class="toggle-btn'+(S.qualif===false?' sel-nao':'')+'" onclick="selQualif(false)">&#10007; Nao qualificado</div>'+
+  '</div></div>';
+  return html;
+}
+
+function selIntencao(el,val,cls){
+  S.intencao=val;
+  document.querySelectorAll('.field .chip').forEach(function(c){c.classList.remove('sel-green','sel-yellow','sel-blue','sel-red');});
+  el.classList.add(cls);
+  updateBtnNext();
+}
+
+function selQualif(val){
+  S.qualif=val;
+  document.querySelectorAll('.toggle-btn').forEach(function(b,i){
+    b.classList.remove('sel-sim','sel-nao');
+    if(i===0&&val===true)b.classList.add('sel-sim');
+    if(i===1&&val===false)b.classList.add('sel-nao');
+  });
+}
+
+function renderPagamento(){
+  var pagtos=[
+    {v:'a_vista',l:'A vista'},
+    {v:'financiamento',l:'Financiamento'},
+    {v:'parcelamento_direto',l:'Parcelamento direto'},
+    {v:'dacao_a_vista',l:'Dacao + a vista'},
+    {v:'dacao_financiamento',l:'Dacao + financiamento'},
+    {v:'dacao_parcelamento_direto',l:'Dacao + parcelamento'},
+    {v:'parcelamento_direto_financiamento',l:'Parcelamento + financiamento'}
+  ];
+  var html='<div class="section-title">Formas de pagamento de interesse</div>'+
+  '<div class="field"><div class="field-lbl">Pode selecionar mais de uma</div><div class="chips" id="pagtoWrap">';
+  for(var i=0;i<pagtos.length;i++){
+    var p=pagtos[i];
+    var sel=S.pagto.indexOf(p.v)>=0;
+    html+='<div class="chip'+(sel?' sel':'')+'" onclick="togglePagto(this,\''+p.v+'\')">'+escHtml(p.l)+'</div>';
+  }
+  html+='</div></div>'+
+  '<div class="field"><div class="field-lbl">Detalhes de pagamento</div>'+
+  '<textarea class="finput" id="fPagtoObs" placeholder="Ex: entrada de 20%, financiamento CEF...">'+escHtml(S.pagto_detalhes)+'</textarea></div>';
+  return html;
+}
+
+function togglePagto(el,val){
+  var idx=S.pagto.indexOf(val);
+  if(idx>=0){S.pagto.splice(idx,1);el.classList.remove('sel');}
+  else{S.pagto.push(val);el.classList.add('sel');}
+}
+
+function renderRevisao(){
+  var pagtoLabels={a_vista:'A vista',financiamento:'Financiamento',parcelamento_direto:'Parcelamento direto',dacao_a_vista:'Dacao + a vista',dacao_financiamento:'Dacao + financiamento',dacao_parcelamento_direto:'Dacao + parcelamento',parcelamento_direto_financiamento:'Parcelamento + financiamento'};
+  var intBadge={'Quer comprar':'&#9989;','Esta pensando':'&#129300;','Quer segunda visita':'&#128198;','Nao gostou':'&#10060;'};
+
+  var html='<div class="section-title">Revisar antes de salvar</div>'+
+  '<div class="card">'+
+    '<div class="rev-section">'+
+      '<div class="rev-lbl">Imovel</div>'+
+      '<div class="rev-val big">'+(S.imovel?escHtml(S.imovel.nome):'-')+'</div>'+
+    '</div>'+
+    '<div class="rev-section">'+
+      '<div class="rev-lbl">Corretor</div>'+
+      '<div class="rev-val">'+(S.corretor?escHtml(S.corretor.nome)+' &mdash; CRECI '+escHtml(S.corretor.creci):'-')+'</div>'+
+    '</div>'+
+    '<div class="rev-section">'+
+      '<div class="rev-lbl">Interessado</div>'+
+      '<div class="rev-val">'+escHtml(S.nome||'-')+'</div>'+
+      '<div class="rev-val" style="font-size:11px;color:var(--muted);margin-top:2px">'+escHtml(S.data||'-')+(S.origem?' &middot; '+escHtml(S.origem):'')+'</div>'+
+      (typeof S.parceiro==='string'&&S.parceiro?'<div class="rev-val" style="font-size:11px;color:var(--muted);margin-top:2px">Parceiro: '+escHtml(S.parceiro)+'</div>':'')+'</div>'+
+    '<div class="rev-section">'+
+      '<div class="rev-lbl">Resultado</div>'+
+      '<div class="rev-val">'+(S.intencao?(intBadge[S.intencao]||'')+' '+escHtml(S.intencao):'-')+'</div>'+
+      (S.qualif!==null?'<div class="rev-val" style="font-size:11px;color:var(--muted);margin-top:2px">'+(S.qualif?'&#10003; Qualificado financeiramente':'&#10007; Nao qualificado')+'</div>':'')+'</div>'+
+    (S.objections.length?'<div class="rev-section"><div class="rev-lbl">Objecoes</div><div class="rev-chips">'+S.objections.map(function(o){return '<span class="rev-chip">'+escHtml(o)+'</span>';}).join('')+'</div></div>':'')+
+    (S.pagto.length?'<div class="rev-section"><div class="rev-lbl">Pagamento</div><div class="rev-chips">'+S.pagto.map(function(p){return '<span class="rev-chip">'+escHtml(pagtoLabels[p]||p)+'</span>';}).join('')+'</div></div>':'')+
+    (S.observacoes?'<div class="rev-section"><div class="rev-lbl">Observacoes</div><div class="rev-val" style="font-size:12px;font-weight:600">'+escHtml(S.observacoes)+'</div></div>':'')+
+  '</div>'+
+  '<button class="btn-next green" style="width:100%;padding:16px;font-size:15px;border-radius:12px;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px" id="btnSalvarVisita" onclick="salvarVisita()">&#10003; Salvar visita</button>'+
+  '<button class="btn-back" style="width:100%;padding:14px;text-align:center" onclick="voltarPasso()">&#8592; Corrigir</button>';
+
+  return html;
+}
+
+// --- PROPOSTA FORM ---
+function renderPropostaForm(){
+  var pagtos=[
+    {v:'a_vista',l:'A vista'},{v:'financiamento',l:'Financiamento'},
+    {v:'parcelamento_direto',l:'Parcelamento direto'},{v:'dacao_a_vista',l:'Dacao + a vista'},
+    {v:'dacao_financiamento',l:'Dacao + financiamento'},{v:'dacao_parcelamento_direto',l:'Dacao + parcelamento'},
+    {v:'parcelamento_direto_financiamento',l:'Parcelamento + financiamento'}
+  ];
+  var statusOpts=[
+    {v:'em_andamento',l:'Em andamento',c:'sel-yellow'},
+    {v:'aceita',l:'Aceita',c:'sel-green'},
+    {v:'recusada',l:'Recusada',c:'sel-red'},
+    {v:'desistiu',l:'Desistiu',c:'sel-muted'}
+  ];
+  var html='<div class="section-title">Dados da proposta</div>'+
+  '<div class="field"><div class="field-lbl">Nome do interessado <span class="req">*</span></div>'+
+  '<input type="text" class="finput" id="fPropNome" placeholder="Nome completo" value="'+escHtml(S.nome)+'" oninput="S.nome=this.value;updateBtnNext()"></div>'+
+  '<div class="field"><div class="field-lbl">Data <span class="req">*</span></div>'+
+  '<input type="date" class="finput" id="fPropData" value="'+(S.data||hoje())+'" onchange="S.data=this.value"></div>'+
+  '<div class="field"><div class="field-lbl">Valor proposto</div>'+
+  '<div class="valor-wrap"><span class="valor-prefix">R$</span><input type="text" inputmode="numeric" class="valor-input" id="fPropValor" placeholder="0" value="'+escHtml(S.prop_valor)+'" oninput="mascaraValor(this)"></div></div>'+
+  '<div class="field"><div class="field-lbl">Forma de pagamento</div><div class="chips" id="propPagtoWrap">';
+  for(var i=0;i<pagtos.length;i++){
+    var p=pagtos[i];
+    var sel=S.prop_pagto===p.v;
+    html+='<div class="chip'+(sel?' sel':'')+'" onclick="selPropPagto(this,\''+p.v+'\')">'+escHtml(p.l)+'</div>';
+  }
+  html+='</div></div>'+
+  '<div class="field"><div class="field-lbl">Status</div><div class="chips" id="propStatusWrap">';
+  for(var j=0;j<statusOpts.length;j++){
+    var s=statusOpts[j];
+    var ssel=S.prop_status===s.v;
+    html+='<div class="chip'+(ssel?' '+s.c:'')+'" onclick="selPropStatus(this,\''+s.v+'\',\''+s.c+'\')">'+escHtml(s.l)+'</div>';
+  }
+  html+='</div></div>'+
+  '<div class="field"><div class="field-lbl">Observacoes</div>'+
+  '<textarea class="finput" id="fPropObs" placeholder="Condicoes, contrapropostas, detalhes...">'+escHtml(S.prop_obs)+'</textarea></div>';
+  return html;
+}
+
+function selPropPagto(el,val){
+  S.prop_pagto=val;
+  document.querySelectorAll('#propPagtoWrap .chip').forEach(function(c){c.classList.remove('sel');});
+  el.classList.add('sel');
+}
+
+function selPropStatus(el,val,cls){
+  S.prop_status=val;
+  document.querySelectorAll('#propStatusWrap .chip').forEach(function(c){c.classList.remove('sel-yellow','sel-green','sel-red','sel-muted');});
+  el.classList.add(cls);
+}
+
+function mascaraValor(el){
+  var n=el.value.replace(/\D/g,'');
+  el.value=n?parseInt(n,10).toLocaleString('pt-BR'):'';
+  S.prop_valor=el.value;
+}
+
+function renderRevisaoProp(){
+  var pagtoLabels={a_vista:'A vista',financiamento:'Financiamento',parcelamento_direto:'Parcelamento direto',dacao_a_vista:'Dacao + a vista',dacao_financiamento:'Dacao + financiamento',dacao_parcelamento_direto:'Dacao + parcelamento',parcelamento_direto_financiamento:'Parcelamento + financiamento'};
+  var statusLabels={em_andamento:'Em andamento',aceita:'Aceita',recusada:'Recusada',desistiu:'Desistiu'};
+
+  var html='<div class="section-title">Revisar antes de salvar</div>'+
+  '<div class="card">'+
+    '<div class="rev-section"><div class="rev-lbl">Imovel</div><div class="rev-val big">'+(S.imovel?escHtml(S.imovel.nome):'-')+'</div></div>'+
+    '<div class="rev-section"><div class="rev-lbl">Corretor</div><div class="rev-val">'+(S.corretor?escHtml(S.corretor.nome)+' &mdash; CRECI '+escHtml(S.corretor.creci):'-')+'</div></div>'+
+    '<div class="rev-section"><div class="rev-lbl">Interessado</div><div class="rev-val">'+escHtml(S.nome||'-')+'</div><div class="rev-val" style="font-size:11px;color:var(--muted);margin-top:2px">'+escHtml(S.data||'-')+'</div></div>'+
+    (S.prop_valor?'<div class="rev-section"><div class="rev-lbl">Valor proposto</div><div class="rev-val big">R$ '+escHtml(S.prop_valor)+'</div></div>':'')+
+    (S.prop_pagto?'<div class="rev-section"><div class="rev-lbl">Forma de pagamento</div><div class="rev-val">'+escHtml(pagtoLabels[S.prop_pagto]||S.prop_pagto)+'</div></div>':'')+
+    '<div class="rev-section"><div class="rev-lbl">Status</div><div class="rev-val">'+escHtml(statusLabels[S.prop_status]||S.prop_status)+'</div></div>'+
+    (S.prop_obs?'<div class="rev-section"><div class="rev-lbl">Observacoes</div><div class="rev-val" style="font-size:12px;font-weight:600">'+escHtml(S.prop_obs)+'</div></div>':'')+
+  '</div>'+
+  '<button class="btn-next green" style="width:100%;padding:16px;font-size:15px;border-radius:12px;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px" onclick="salvarProposta()">&#10003; Salvar proposta</button>'+
+  '<button class="btn-back" style="width:100%;padding:14px;text-align:center" onclick="voltarPasso()">&#8592; Corrigir</button>';
+
+  return html;
+}
+
+// --- NAVEGACAO ---
+function avancarPasso(){
+  if(!validarPasso())return;
+  coletarDadosPasso();
+  if(passo<passos().length-1){passo++;renderPasso();}
+}
+
+function voltarPasso(){
+  if(passo>0){passo--;renderPasso();}
+}
+
+function validarPasso(){
+  var ps=passos();
+  var current=ps[passo];
+  if(current==='imovel'&&!S.imovel){showToast('Selecione um imovel');return false;}
+  if(current==='corretor'&&!S.corretor){showToast('Selecione o corretor responsavel');return false;}
+  if(current==='interessado'){
+    var nome=document.getElementById('fNome');
+    if(!nome||!nome.value.trim()){showToast('Informe o nome do interessado');return false;}
+  }
+  if(current==='proposta_form'){
+    var pNome=document.getElementById('fPropNome');
+    if(!pNome||!pNome.value.trim()){showToast('Informe o nome do interessado');return false;}
+  }
+  if(current==='resultado'&&!S.intencao){showToast('Selecione a intencao do interessado');return false;}
+  return true;
+}
+
+function coletarDadosPasso(){
+  var ps=passos();
+  var current=ps[passo];
+  if(current==='interessado'){
+    S.nome=document.getElementById('fNome').value.trim();
+    S.data=document.getElementById('fData').value;
+  }
+  if(current==='feedback'){
+    var obs=document.getElementById('fObs');
+    if(obs)S.observacoes=obs.value.trim();
+  }
+  if(current==='pagamento'){
+    var obsP=document.getElementById('fPagtoObs');
+    if(obsP)S.pagto_detalhes=obsP.value.trim();
+  }
+  if(current==='proposta_form'){
+    S.nome=document.getElementById('fPropNome').value.trim();
+    S.data=document.getElementById('fPropData').value;
+    var obsR=document.getElementById('fPropObs');
+    if(obsR)S.prop_obs=obsR.value.trim();
+  }
+}
+
+// --- SALVAR VISITA ---
+async function salvarVisita(){
+  var btn=document.getElementById('btnSalvarVisita');
+  if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+  try{
+    var parceiroVal=typeof S.parceiro==='string'&&S.parceiro?S.parceiro:null;
+    var payload={
+      imovel_id:S.imovel.id,
+      imovel_nome:S.imovel.nome,
+      data_visita:S.data,
+      hora_visita:null,
+      corretor:S.corretor.nome,
+      parceiro:parceiroVal,
+      origem:S.origem||null,
+      nome_interessado:S.nome,
+      objections:S.objections.length?S.objections:null,
+      observacoes:S.observacoes||null,
+      intencao:S.intencao||null,
+      qualificado_financeiramente:S.qualif,
+      formas_pagamento:S.pagto.length?S.pagto:null,
+      pagto_detalhes:S.pagto_detalhes||null
+    };
+    var res=await sb.from('visitas').insert(payload);
+    if(res.error)throw res.error;
+    mostrarSucessoVisita();
+  }catch(e){
+    showToast('Erro: '+e.message);
+    if(btn){btn.disabled=false;btn.textContent='&#10003; Salvar visita';}
+  }
+}
+
+function mostrarSucessoVisita(){
+  document.getElementById('stepBarWrap').classList.add('hidden');
+  document.getElementById('footerAcao').classList.add('hidden');
+  var page=document.getElementById('mainPage');
+  // Se intencao = quer comprar, oferecer registro de proposta
+  if(S.intencao==='Quer comprar'){
+    page.innerHTML='<div class="success-wrap">'+
+      '<div class="success-icon">&#10003;</div>'+
+      '<div class="success-title">Visita registrada!</div>'+
+      '<div class="success-sub">Visita de '+escHtml(S.nome)+' no '+escHtml(S.imovel.nome)+' salva com sucesso.</div>'+
+    '</div>'+
+    '<div class="proposta-pos">'+
+      '<div class="proposta-pos-title">&#128172; Essa visita gerou uma proposta?</div>'+
+      '<div class="proposta-pos-sub">O interessado demonstrou intencao de compra. Quer registrar a proposta agora?</div>'+
+      '<div class="proposta-pos-btns">'+
+        '<button class="pp-btn pp-sim" onclick="iniciarPropostaPosVisita()">Sim, registrar proposta</button>'+
+        '<button class="pp-btn pp-nao" onclick="finalizarSemProposta()">Nao, encerrar</button>'+
+      '</div>'+
+    '</div>';
+  } else {
+    page.innerHTML=renderSucesso('Visita registrada com sucesso!','Visita de '+escHtml(S.nome)+' no '+escHtml(S.imovel.nome)+' salva.');
+  }
+}
+
+function iniciarPropostaPosVisita(){
+  S.tipo='proposta';
+  S.prop_valor='';S.prop_pagto=null;S.prop_status='em_andamento';S.prop_obs='';
+  // Vai direto para proposta_form pulando tipo/imovel/corretor (ja selecionados)
+  var ps=PASSOS_PROPOSTA;
+  passo=ps.indexOf('proposta_form');
+  renderPasso();
+}
+
+function finalizarSemProposta(){
+  document.getElementById('mainPage').innerHTML=renderSucesso('Registro concluido!','Tudo salvo com sucesso.');
+}
+
+// --- SALVAR PROPOSTA ---
+async function salvarProposta(){
+  var btn=document.querySelector('#mainPage .btn-next.green');
+  if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+  try{
+    var valorRaw=S.prop_valor?parseFloat(S.prop_valor.replace(/\./g,'').replace(',','.'))||null:null;
+    var payload={
+      imovel_id:S.imovel.id,
+      nome_interessado:S.nome,
+      data:S.data||null,
+      valor_proposto:valorRaw,
+      forma_pagamento:S.prop_pagto||null,
+      status:S.prop_status||'em_andamento',
+      observacao:S.prop_obs||null
+    };
+    var res=await sb.from('propostas').insert(payload);
+    if(res.error)throw res.error;
+    document.getElementById('stepBarWrap').classList.add('hidden');
+    document.getElementById('footerAcao').classList.add('hidden');
+    document.getElementById('mainPage').innerHTML=renderSucesso('Proposta registrada!','Proposta de '+escHtml(S.nome)+' no '+escHtml(S.imovel.nome)+' salva com sucesso.');
+  }catch(e){
+    showToast('Erro: '+e.message);
+    if(btn){btn.disabled=false;btn.textContent='&#10003; Salvar proposta';}
+  }
+}
+
+function renderSucesso(titulo,sub){
+  return '<div class="success-wrap">'+
+    '<div class="success-icon">&#10003;</div>'+
+    '<div class="success-title">'+escHtml(titulo)+'</div>'+
+    '<div class="success-sub">'+escHtml(sub)+'</div>'+
+    '<button class="novo-btn" onclick="resetar()">&#43; Novo registro</button>'+
+    '&nbsp;&nbsp;'+
+    '<button class="novo-btn" style="background:var(--bg);color:var(--navy);border:1.5px solid var(--s2)" onclick="irDashboard()">&#127968; Dashboard</button>'+
+  '</div>';
+}
+
+function resetar(){
+  S={tipo:null,imovel:null,corretor:null,parceiro:null,nome:'',data:'',origem:'',objections:[],observacoes:'',intencao:null,qualif:null,pagto:[],pagto_detalhes:'',prop_valor:'',prop_pagto:null,prop_status:'em_andamento',prop_obs:''};
+  passo=0;
+  renderPasso();
+}
+
+function irDashboard(){
+  var base=window.location.origin+window.location.pathname.replace('registro.html','');
+  window.location.href=base+'index.html';
+}
+
+// --- UTILS ---
+function hoje(){
+  var d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function escHtml(s){
+  if(!s)return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2800);
+}
+
+// --- START ---
+init();
+</script>
+</body>
+</html>
