@@ -9,14 +9,94 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{--navy:#191949;--white:#FFFFFF;--bg:#F5F5F8;--text:#191949;--muted:#8E8EA0;--s2:#ECECF1;--s3:#D9D9E3;--green:#10B981;--green-bg:rgba(16,185,129,0.08);--green-l:#D1FAE5;--red:#EF4444;--red-bg:rgba(239,68,68,0.08);--red-l:#FEE2E2;--yellow:#F59E0B;--yellow-bg:rgba(245,158,11,0.08);--yellow-l:#FEF3C7;--blue:#3B82F6;--blue-bg:rgba(59,130,246,0.08);--blue-l:#DBEAFE;--navy-l:rgba(25,25,73,0.08);--card-shadow:0 1px 3px rgba(25,25,73,0.06),0 1px 2px rgba(25,25,73,0.04);--card-radius:14px}
+
+/* ========= BASE ========= */
 html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+
+/* ========= HEADER ========= */
 .hdr{background:var(--navy);display:flex;justify-content:space-between;align-items:center;padding:14px 20px 12px;position:sticky;top:0;z-index:200}
 .hdr-logo .brand{color:#fff;font-size:14px;font-weight:900;letter-spacing:2.2px;text-transform:uppercase}
 .hdr-logo .sub{color:rgba(255,255,255,0.35);font-size:8.5px;letter-spacing:1.6px;text-transform:uppercase;margin-top:2px}
 .hdr-date{text-align:right}
 .hdr-date .d1{color:rgba(255,255,255,0.4);font-size:10px}
 .hdr-date .d2{color:rgba(255,255,255,0.8);font-size:11px;font-weight:700;margin-top:1px}
-.page{padding:14px 16px 90px;max-width:480px;margin:0 auto}
+
+/* ========= LAYOUT ========= */
+.app-wrap{display:flex;min-height:calc(100vh - 56px)}
+
+/* Mobile: coluna unica */
+.page{padding:14px 16px 90px;width:100%;max-width:480px;margin:0 auto}
+
+/* ========= DESKTOP ========= */
+@media(min-width:900px){
+  .hdr{padding:16px 40px}
+  .hdr-logo .brand{font-size:16px}
+  .app-wrap{flex-direction:row;align-items:flex-start;max-width:1280px;margin:0 auto;padding:0 24px}
+
+  /* Sidebar nav no desktop */
+  .bottom-nav{
+    position:sticky;top:72px;
+    width:200px;flex-shrink:0;
+    background:var(--white);border:1px solid var(--s2);border-radius:var(--card-radius);
+    box-shadow:var(--card-shadow);
+    display:flex;flex-direction:column;
+    padding:12px 8px;
+    height:fit-content;
+    margin-top:20px;
+    /* reset mobile fixed */
+    left:auto;right:auto;bottom:auto;
+    max-width:none;
+  }
+  .nav-btn{
+    flex-direction:row;justify-content:flex-start;
+    gap:10px;padding:10px 12px;border-radius:10px;
+    min-width:auto;width:100%;
+    transition:background .15s,opacity .15s;
+  }
+  .nav-btn:not(.active){opacity:0.55}
+  .nav-btn.active{opacity:1;background:rgba(25,25,73,0.06)}
+  .nav-btn:hover{background:rgba(25,25,73,0.05);opacity:1}
+  .nav-icon{font-size:17px}
+  .nav-label{font-size:12px;font-weight:700}
+
+  /* Registro: botao destaque no desktop */
+  .nav-btn[data-tab="registro"]{
+    background:var(--navy);margin:8px 0;border-radius:10px;
+  }
+  .nav-btn[data-tab="registro"] .nav-label,
+  .nav-btn[data-tab="registro"] .nav-icon{color:#fff!important}
+  .nav-btn[data-tab="registro"]:not(.active){opacity:0.85}
+
+  /* Content area */
+  .page{
+    flex:1;max-width:none;
+    padding:20px 24px 40px;
+    min-width:0;
+  }
+
+  /* Grid de cards no desktop */
+  #cardsWrap{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  #cardsWrap .icard{margin-bottom:0}
+
+  /* Stats row maior */
+  .stats-row .stat-n{font-size:28px}
+
+  /* Detalhe ocupa largura total */
+  #vDetail .det-topbar,#vEdit .det-topbar{max-width:860px}
+  #detailBody,#editBody{max-width:860px}
+
+  /* Scards em grid 2 col no detalhe */
+  .scard-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .scard-grid .scard{margin-bottom:0}
+}
+
+@media(min-width:1200px){
+  .app-wrap{max-width:1440px}
+  .bottom-nav{width:220px}
+  #cardsWrap{grid-template-columns:repeat(3,1fr)}
+}
+
+/* ========= CARDS ========= */
 .card{background:var(--white);border-radius:var(--card-radius);padding:16px 18px;border:1px solid var(--s2);box-shadow:var(--card-shadow);margin-bottom:12px}
 .card-navy{background:var(--navy);border-radius:var(--card-radius);padding:18px 20px;border:none;margin-bottom:14px}
 .card-navy .lbl{color:rgba(255,255,255,0.4)}
@@ -29,12 +109,13 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 .bar-bg{background:var(--s2);border-radius:4px;height:6px;overflow:hidden}
 .bar-fill{height:100%;border-radius:4px;transition:width .5s ease}
 .icard{background:var(--white);border-radius:var(--card-radius);margin-bottom:12px;overflow:hidden;box-shadow:var(--card-shadow);border:1px solid var(--s2);border-left:4px solid transparent}
-.icard.atencao{border-left-color:var(--yellow)}.icard.melhoria{border-left-color:var(--blue)}.icard.ok{border-left-color:var(--green)}.icard.vendida{border-left-color:var(--green)}.icard.perdida{border-left-color:var(--red)}.icard.encerrada{border-left-color:var(--s3)}
 .icard-inner{padding:16px 16px 0;cursor:pointer}
 .card-actions{display:flex;justify-content:space-between;align-items:center;padding:12px 16px 14px}
 .ver-det{font-size:11px;color:var(--blue);font-weight:700;cursor:pointer}
 .edit-btn-card{background:var(--bg);border:1.5px solid var(--s2);border-radius:10px;padding:7px 14px;font-size:11px;font-weight:700;color:var(--navy);font-family:'Nunito Sans',sans-serif;cursor:pointer;transition:all .15s}
 .edit-btn-card:active{background:var(--s2);transform:scale(0.97)}
+
+/* ========= DETAIL / EDIT ========= */
 .det-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
 .back-btn{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--blue);cursor:pointer;padding:6px 0;background:none;border:none;font-family:'Nunito Sans',sans-serif}
 .back-btn svg{width:16px;height:16px}
@@ -45,20 +126,78 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 .vendedor-btn svg{width:14px;height:14px;flex-shrink:0}
 .scard{background:var(--white);border-radius:var(--card-radius);padding:16px 18px;margin-bottom:12px;box-shadow:var(--card-shadow);border:1px solid var(--s2)}
 .scard-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+
+/* ========= TIMELINE ========= */
 .tl-detail-item{position:relative;padding-left:22px}.tl-detail-line{position:absolute;left:5px;top:-12px;height:20px;border-left:2px dashed var(--s2);z-index:0}.tl-detail-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0 4px;position:relative}.tl-detail-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;position:absolute;left:-18px;top:12px}.tl-detail-dot.ok{background:var(--green);box-shadow:0 0 0 3px var(--green-l)}.tl-detail-dot.pendente{background:var(--s3);box-shadow:0 0 0 3px var(--s2)}.tl-detail-dot.atrasado{background:var(--red);box-shadow:0 0 0 3px var(--red-l)}.tl-detail-body{flex:1;padding-bottom:10px;border-bottom:1px solid var(--s2)}.tl-detail-item:last-child .tl-detail-body{border-bottom:none}.tl-detail-lbl{font-size:12.5px;font-weight:700;color:var(--text)}.tl-detail-data{font-size:11px;color:var(--muted);margin-top:2px}.tl-detail-meta{font-size:10px;color:var(--s3);margin-left:4px}.tl-detail-intervalo{font-size:10px;color:var(--muted);margin-top:3px;font-style:italic}.tl-diag{font-size:10.5px;font-weight:600;margin-top:5px;padding:4px 8px;border-radius:6px;display:inline-block}.tl-diag.ok{background:var(--green-l);color:#065f46}.tl-diag.atrasado{background:var(--red-l);color:#991b1b}.tl-diag.alerta{background:var(--yellow-l);color:#92400e}
+
+/* ========= VISITAS ========= */
 .vis-item{padding:12px 0;border-bottom:1px solid var(--s2)}.vis-item:first-child{padding-top:0}.vis-item:last-child{border-bottom:none;padding-bottom:0}.vis-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}.vis-left{display:flex;align-items:center;gap:9px}.vis-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0}.vis-name{font-size:12px;font-weight:700}.vis-date{font-size:10px;color:var(--muted);margin-top:1px}.vis-tags{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}.vis-tag{font-size:9px;padding:2px 7px;border-radius:8px;background:var(--bg);color:var(--navy);font-weight:600}.vis-obs{font-size:10px;color:#3a4550;background:var(--bg);border-radius:6px;padding:6px 8px;line-height:1.5;margin-top:5px}.vis-empty{font-size:12px;color:var(--muted);padding:8px 0;text-align:center}
+
+/* ========= EDIT FORM ========= */
 .edit-section{background:var(--white);border-radius:var(--card-radius);padding:16px 18px;margin-bottom:12px;box-shadow:var(--card-shadow);border:1px solid var(--s2)}.edit-section-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}.edit-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--s2);gap:8px}.edit-row:last-child{border-bottom:none}.edit-lbl{font-size:12px;color:var(--text);flex:1;line-height:1.3}.edit-lbl small{font-size:10px;color:var(--muted);display:block;margin-top:1px}.edit-input{width:76px;text-align:center;border:1.5px solid var(--s2);border-radius:10px;padding:8px 6px;font-size:14px;font-weight:700;font-family:'Nunito Sans',sans-serif;color:var(--navy);background:var(--bg);outline:none;-webkit-appearance:none;flex-shrink:0;transition:border-color .15s,background .15s}.edit-input:focus{border-color:var(--navy);background:var(--white)}.edit-input.wide{width:110px;font-size:12px}.edit-input.date-input{width:130px;font-size:11px}.edit-meta{font-size:10px;color:var(--s3);text-align:right;margin-top:6px}
+
+/* ========= TOAST ========= */
 .save-toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:13px;font-weight:700;padding:12px 24px;border-radius:12px;z-index:400;opacity:0;transition:opacity .25s;pointer-events:none;font-family:'Nunito Sans',sans-serif;white-space:nowrap;box-shadow:0 4px 16px rgba(25,25,73,0.25)}.save-toast.show{opacity:1}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--s2);display:flex;justify-content:space-around;padding:6px 0 env(safe-area-inset-bottom,8px);z-index:999;max-width:480px;margin:0 auto;box-shadow:0 -2px 8px rgba(25,25,73,0.04)}.nav-btn{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 4px;cursor:pointer;position:relative;transition:opacity .15s;min-width:42px}.nav-btn.active{opacity:1}.nav-btn:not(.active){opacity:0.4}.nav-icon{font-size:16px;line-height:1}.nav-label{font-size:8px;font-weight:700;color:var(--navy)}.nav-badge{position:absolute;top:-2px;right:0;background:var(--red);color:#fff;font-size:8px;font-weight:800;width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+
+/* ========= NAV MOBILE ========= */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--s2);display:flex;justify-content:space-around;padding:6px 0 env(safe-area-inset-bottom,8px);z-index:999;max-width:480px;margin:0 auto;box-shadow:0 -2px 8px rgba(25,25,73,0.04)}
+.nav-btn{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 4px;cursor:pointer;position:relative;transition:opacity .15s;min-width:42px}
+.nav-btn.active{opacity:1}.nav-btn:not(.active){opacity:0.4}
+.nav-icon{font-size:16px;line-height:1}
+.nav-label{font-size:8px;font-weight:700;color:var(--navy)}
+.nav-badge{position:absolute;top:-2px;right:0;background:var(--red);color:#fff;font-size:8px;font-weight:800;width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+
+/* Botao Registro destaque mobile */
+.nav-btn[data-tab="registro"]{background:var(--navy);border-radius:12px;padding:6px 10px}
+.nav-btn[data-tab="registro"] .nav-label,.nav-btn[data-tab="registro"] .nav-icon{color:#fff}
+.nav-btn[data-tab="registro"]:not(.active){opacity:0.9}
+
+/* ========= VIEWS ========= */
 .view{display:none}.view.on{display:block;animation:fadeUp .2s ease}@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.coming-soon{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center}.coming-icon{font-size:48px;margin-bottom:16px;opacity:0.6}.coming-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px}.coming-sub{font-size:12px;color:var(--muted);line-height:1.5;max-width:260px}
+
+/* ========= MAIS (menu drawer) ========= */
+.mais-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:800;display:none}
+.mais-overlay.open{display:block}
+.mais-drawer{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-radius:20px 20px 0 0;padding:20px 16px env(safe-area-inset-bottom,16px);z-index:900;max-width:480px;margin:0 auto;box-shadow:0 -4px 24px rgba(25,25,73,0.12);transform:translateY(100%);transition:transform .25s ease}
+.mais-drawer.open{transform:translateY(0)}
+.mais-handle{width:36px;height:4px;background:var(--s3);border-radius:2px;margin:0 auto 18px}
+.mais-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.mais-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mais-item{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg);border-radius:12px;cursor:pointer;transition:background .15s;border:1.5px solid transparent}
+.mais-item:active{background:var(--s2)}
+.mais-item.disabled{opacity:0.4;cursor:default}
+.mais-icon{font-size:20px;flex-shrink:0}
+.mais-info .mais-lbl{font-size:12px;font-weight:800;color:var(--text)}
+.mais-info .mais-sub{font-size:9px;color:var(--muted);margin-top:1px}
+.mais-badge{font-size:8px;font-weight:700;padding:2px 7px;border-radius:8px;background:var(--s2);color:var(--muted);margin-top:3px;display:inline-block}
+
+/* Desktop: sem drawer, mais-items ficam na sidebar */
+@media(min-width:900px){
+  .mais-overlay,.mais-drawer{display:none!important}
+  .nav-btn[data-tab="mais"]{display:none}
+  .nav-btn[data-tab="registro"]{background:none;border-radius:0;padding:10px 12px}
+  .nav-btn[data-tab="registro"] .nav-label,.nav-btn[data-tab="registro"] .nav-icon{color:var(--text)}
+  .nav-btn[data-tab="registro"].active{background:rgba(25,25,73,0.06)}
+  .desktop-mais{display:block!important}
+}
+.desktop-mais{display:none;padding-top:8px;border-top:1px solid var(--s2);margin-top:4px}
+.desktop-mais-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;cursor:pointer;opacity:0.4;transition:opacity .15s,background .15s}
+.desktop-mais-item:hover{opacity:0.7;background:rgba(25,25,73,0.04)}
+.desktop-mais-icon{font-size:15px}
+.desktop-mais-lbl{font-size:11px;font-weight:700;color:var(--text)}
+
+/* ========= LOADING / ERRO ========= */
 .loading{text-align:center;padding:50px 20px}.loading-spin{width:28px;height:28px;border:3px solid var(--s2);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}@keyframes spin{to{transform:rotate(360deg)}}.loading-txt{font-size:12px;color:var(--muted)}
 .erro-box{background:var(--red-bg);border-radius:12px;padding:18px;margin:20px 0;text-align:center}.erro-box p{font-size:12px;color:var(--red)}.erro-box button{margin-top:10px;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;font-family:'Nunito Sans',sans-serif;cursor:pointer}
+
+/* ========= TABELAS / FUNIL ========= */
 .canais-table{width:100%;border-collapse:collapse;font-size:8.5px}.canais-table th{font-size:7px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;padding:5px 4px;text-align:right;white-space:nowrap}.canais-table th:first-child{text-align:left}.canais-table td{padding:5px 4px;text-align:right;font-size:8.5px;font-weight:600;color:var(--text);border-bottom:1px solid var(--s2)}.canais-table td:first-child{text-align:left;font-size:9px;font-weight:700;color:var(--text)}.canais-table tr.total-row td{border-top:2px solid var(--navy);border-bottom:none;font-weight:800;font-size:9px}
 .mini-funil{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:12px 0}.mini-funil-item{flex:1;text-align:center}.mini-funil-num{font-size:16px;font-weight:900;color:var(--navy);line-height:1}.mini-funil-lbl{font-size:7.5px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-top:3px;letter-spacing:0.5px}.mini-funil-sep{font-size:14px;color:var(--s3);flex-shrink:0}
 .int-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}.int-bar-lbl{width:90px;font-size:9px;font-weight:700;color:var(--text);flex-shrink:0;line-height:1.2}.int-bar-wrap{flex:1;height:6px;background:var(--s2);border-radius:3px;overflow:hidden}.int-bar-fill{height:100%;border-radius:3px}.int-bar-pct{font-size:10px;font-weight:800;flex-shrink:0;width:28px;text-align:right}.int-bar-count{font-size:9px;color:var(--muted);flex-shrink:0}
 .checklist-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--s2)}.checklist-item:last-child{border-bottom:none}.chk-box{width:16px;height:16px;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center}.chk-box.on{background:var(--green)}.chk-box.off{background:var(--s2)}.chk-lbl{font-size:11px;font-weight:600;color:var(--text)}
 .cor-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--s2)}.cor-item:last-child{border-bottom:none}.cor-av{width:28px;height:28px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0}.cor-info{flex:1}.cor-nome{font-size:11px;font-weight:700;color:var(--text)}.cor-stats{display:flex;gap:14px;margin-top:3px}.cor-stat-n{font-size:14px;font-weight:900;color:var(--navy);line-height:1}.cor-stat-l{font-size:7.5px;font-weight:700;text-transform:uppercase;color:var(--muted)}
+
+/* ========= PROPOSTAS ========= */
 .prop-form{background:var(--bg);border-radius:12px;padding:14px;margin-bottom:12px;display:none}.prop-form.open{display:block}
 .prop-field{margin-bottom:12px}.prop-field-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
 .prop-valor-wrap{display:flex;align-items:center;gap:8px;border:1.5px solid var(--s2);border-radius:10px;background:var(--white);padding:0 12px;transition:border-color .15s}.prop-valor-wrap:focus-within{border-color:var(--navy)}
@@ -85,43 +224,215 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 .prop-hint{font-size:9px;color:var(--muted);text-align:right;margin-top:3px}
 .prop-empty{font-size:12px;color:var(--muted);text-align:center;padding:12px 0}
 .prop-nova-btn{display:flex;align-items:center;gap:6px;background:var(--bg);border:1.5px dashed var(--s3);border-radius:10px;padding:10px 14px;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer;font-family:'Nunito Sans',sans-serif;transition:all .15s;width:100%;justify-content:center;margin-bottom:12px}.prop-nova-btn:active{background:var(--s2)}
+
 ::-webkit-scrollbar{width:0;height:0}
 </style>
 </head>
 <body>
-<div class="hdr"><div class="hdr-logo"><div class="brand">Gabriel Certeiro</div><div class="sub">De A Suites - Fazenda e Brava</div></div><div class="hdr-date"><div class="d1" id="hdrData">-</div><div class="d2" id="hdrDia">-</div></div></div>
-<div class="page">
-  <div class="view" id="vAlertas"></div>
-  <div class="view on" id="vList">
-    <div class="card-navy"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px"><div><div class="lbl">VGV em Carteira</div><div id="vgvTotal" style="color:#fff;font-size:30px;font-weight:900;line-height:1;letter-spacing:-0.5px">-</div><div id="vgvSub" style="color:rgba(255,255,255,0.4);font-size:10px;margin-top:5px">carregando...</div></div><div style="text-align:right"><div style="color:rgba(255,255,255,0.5);font-size:10px;margin-bottom:4px">Meta 2026</div><div style="color:#fff;font-size:18px;font-weight:800">R$ 100M</div></div></div><div class="bar-bg" style="background:rgba(255,255,255,0.1)"><div class="bar-fill" id="vgvBar" style="width:0%;background:var(--green)"></div></div><div id="vgvPct" style="color:rgba(255,255,255,0.4);font-size:10px;text-align:right;margin-top:5px">-</div></div>
-    <div class="stats-row"><div class="stat-box"><div class="stat-n" id="stTotal">-</div><div class="stat-l">Total</div></div><div class="stat-box"><div class="stat-n" id="stVenda">-</div><div class="stat-l">Em Venda</div></div><div class="stat-box"><div class="stat-n" id="stProposta">-</div><div class="stat-l">Com Proposta</div></div></div>
-    <div id="cardsWrap"><div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando exclusividades...</div></div></div>
+
+<div class="hdr">
+  <div class="hdr-logo">
+    <div class="brand">Gabriel Certeiro</div>
+    <div class="sub">Plataforma Certeiro</div>
   </div>
-  <div class="view" id="vDetail"><div class="det-topbar"><button class="back-btn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Voltar</button><button class="vendedor-btn" id="vendedorBtn" onclick="openVendedor()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>Vendedor</button></div><div id="detailBody"></div></div>
-  <div class="view" id="vEdit"><div class="det-topbar"><button class="back-btn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Voltar</button><button class="share-btn" id="saveBtn" onclick="saveSnapshot()">Salvar</button></div><div id="editBody"></div></div>
-  <div class="view" id="vCaptacao"><div class="coming-soon"><div class="coming-icon">&#127919;</div><div class="coming-title">Captacao</div><div class="coming-sub">Pipeline de captacao de exclusividades com funil visual e estagios. Em construcao - dados virao do Pipedrive.</div></div></div>
-  <div class="view" id="vVendas"><div class="coming-soon"><div class="coming-icon">&#128176;</div><div class="coming-title">Vendas 2026</div><div class="coming-sub">VGV realizado, ticket medio, breakdown por categoria e mercado. Em construcao - dados virao do Pipedrive.</div></div></div>
-  <div class="view" id="vMarketing"><div class="coming-soon"><div class="coming-icon">&#128227;</div><div class="coming-title">Marketing</div><div class="coming-sub">Meta Ads, Google Ads, CPL, ROI, alcance consolidado. Em construcao - dados virao da API Meta + Google.</div></div></div>
-  <div class="view" id="vContent"><div class="coming-soon"><div class="coming-icon">&#127916;</div><div class="coming-title">Conteudo</div><div class="coming-sub">Producoes, views, publicacoes. Em construcao - dados virao da planilha de producao.</div></div></div>
+  <div class="hdr-date">
+    <div class="d1" id="hdrData">-</div>
+    <div class="d2" id="hdrDia">-</div>
+  </div>
 </div>
-<div class="bottom-nav">
-  <button class="nav-btn" data-tab="alertas" onclick="switchTab('alertas')"><span class="nav-icon">&#9889;</span><span class="nav-label">Alertas</span></button>
-  <button class="nav-btn active" data-tab="excl" onclick="switchTab('excl')"><span class="nav-icon">&#127970;</span><span class="nav-label">Imoveis</span></button>
-  <button class="nav-btn" data-tab="captacao" onclick="switchTab('captacao')"><span class="nav-icon">&#127919;</span><span class="nav-label">Captacao</span></button>
-  <button class="nav-btn" data-tab="vendas" onclick="switchTab('vendas')"><span class="nav-icon">&#128176;</span><span class="nav-label">Vendas</span></button>
-  <button class="nav-btn" data-tab="mkt" onclick="switchTab('mkt')"><span class="nav-icon">&#128227;</span><span class="nav-label">Mkt</span></button>
-  <button class="nav-btn" data-tab="content" onclick="switchTab('content')"><span class="nav-icon">&#127916;</span><span class="nav-label">Content</span></button>
+
+<div class="app-wrap">
+
+  <!-- NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn" data-tab="alertas" onclick="switchTab('alertas')">
+      <span class="nav-icon">&#9889;</span>
+      <span class="nav-label">Alertas</span>
+    </button>
+    <button class="nav-btn active" data-tab="excl" onclick="switchTab('excl')">
+      <span class="nav-icon">&#127968;</span>
+      <span class="nav-label">Imoveis</span>
+    </button>
+    <button class="nav-btn" data-tab="registro" onclick="abrirRegistro()">
+      <span class="nav-icon">&#128203;</span>
+      <span class="nav-label">Registro</span>
+    </button>
+    <button class="nav-btn" data-tab="analise" onclick="switchTab('analise')">
+      <span class="nav-icon">&#128202;</span>
+      <span class="nav-label">Analise</span>
+    </button>
+    <button class="nav-btn" data-tab="mais" onclick="abrirMais()">
+      <span class="nav-icon">&#8943;</span>
+      <span class="nav-label">Mais</span>
+    </button>
+
+    <!-- Itens extras visíveis só no desktop -->
+    <div class="desktop-mais">
+      <div class="desktop-mais-item" onclick="abrirRegistro()">
+        <span class="desktop-mais-icon">&#128203;</span>
+        <span class="desktop-mais-lbl">Registro</span>
+      </div>
+      <div class="desktop-mais-item">
+        <span class="desktop-mais-icon">&#127919;</span>
+        <span class="desktop-mais-lbl">Captacao</span>
+      </div>
+      <div class="desktop-mais-item">
+        <span class="desktop-mais-icon">&#128176;</span>
+        <span class="desktop-mais-lbl">Vendas</span>
+      </div>
+      <div class="desktop-mais-item">
+        <span class="desktop-mais-icon">&#128227;</span>
+        <span class="desktop-mais-lbl">Marketing</span>
+      </div>
+      <div class="desktop-mais-item">
+        <span class="desktop-mais-icon">&#127916;</span>
+        <span class="desktop-mais-lbl">Conteudo</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CONTENT -->
+  <div class="page">
+    <div class="view" id="vAlertas"></div>
+
+    <div class="view on" id="vList">
+      <div class="card-navy">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+          <div>
+            <div class="lbl">VGV em Carteira</div>
+            <div id="vgvTotal" style="color:#fff;font-size:30px;font-weight:900;line-height:1;letter-spacing:-0.5px">-</div>
+            <div id="vgvSub" style="color:rgba(255,255,255,0.4);font-size:10px;margin-top:5px">carregando...</div>
+          </div>
+          <div style="text-align:right">
+            <div style="color:rgba(255,255,255,0.5);font-size:10px;margin-bottom:4px">Meta 2026</div>
+            <div style="color:#fff;font-size:18px;font-weight:800">R$ 100M</div>
+          </div>
+        </div>
+        <div class="bar-bg" style="background:rgba(255,255,255,0.1)">
+          <div class="bar-fill" id="vgvBar" style="width:0%;background:var(--green)"></div>
+        </div>
+        <div id="vgvPct" style="color:rgba(255,255,255,0.4);font-size:10px;text-align:right;margin-top:5px">-</div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-n" id="stTotal">-</div><div class="stat-l">Total</div></div>
+        <div class="stat-box"><div class="stat-n" id="stVenda">-</div><div class="stat-l">Em Venda</div></div>
+        <div class="stat-box"><div class="stat-n" id="stProposta">-</div><div class="stat-l">Com Proposta</div></div>
+      </div>
+      <div id="cardsWrap">
+        <div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando exclusividades...</div></div>
+      </div>
+    </div>
+
+    <div class="view" id="vDetail">
+      <div class="det-topbar">
+        <button class="back-btn" onclick="goBack()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Voltar
+        </button>
+        <button class="vendedor-btn" id="vendedorBtn" onclick="openVendedor()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>Vendedor
+        </button>
+      </div>
+      <div id="detailBody"></div>
+    </div>
+
+    <div class="view" id="vEdit">
+      <div class="det-topbar">
+        <button class="back-btn" onclick="goBack()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Voltar
+        </button>
+        <button class="share-btn" id="saveBtn" onclick="saveSnapshot()">Salvar</button>
+      </div>
+      <div id="editBody"></div>
+    </div>
+
+    <div class="view" id="vAnalise">
+      <div style="text-align:center;padding:60px 20px">
+        <div style="font-size:48px;margin-bottom:16px;opacity:0.6">&#128202;</div>
+        <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px">Analise</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5;max-width:260px;margin:0 auto">Visao consolidada de visitas, propostas, funil e conversoes. Em construcao.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app-wrap -->
+
+<!-- DRAWER MAIS (mobile) -->
+<div class="mais-overlay" id="maisOverlay" onclick="fecharMais()"></div>
+<div class="mais-drawer" id="maisDrawer">
+  <div class="mais-handle"></div>
+  <div class="mais-title">Mais modulos</div>
+  <div class="mais-grid">
+    <div class="mais-item" onclick="abrirRegistro();fecharMais()">
+      <span class="mais-icon">&#128203;</span>
+      <div class="mais-info">
+        <div class="mais-lbl">Registro</div>
+        <div class="mais-sub">Visitas e propostas</div>
+      </div>
+    </div>
+    <div class="mais-item disabled">
+      <span class="mais-icon">&#127919;</span>
+      <div class="mais-info">
+        <div class="mais-lbl">Captacao</div>
+        <div class="mais-badge">Em breve</div>
+      </div>
+    </div>
+    <div class="mais-item disabled">
+      <span class="mais-icon">&#128176;</span>
+      <div class="mais-info">
+        <div class="mais-lbl">Vendas</div>
+        <div class="mais-badge">Em breve</div>
+      </div>
+    </div>
+    <div class="mais-item disabled">
+      <span class="mais-icon">&#128227;</span>
+      <div class="mais-info">
+        <div class="mais-lbl">Marketing</div>
+        <div class="mais-badge">Em breve</div>
+      </div>
+    </div>
+    <div class="mais-item disabled">
+      <span class="mais-icon">&#127916;</span>
+      <div class="mais-info">
+        <div class="mais-lbl">Conteudo</div>
+        <div class="mais-badge">Em breve</div>
+      </div>
+    </div>
+  </div>
 </div>
+
 <script>
 var SUPA_URL='https://vtykzralkxlbqqkleofl.supabase.co';
 var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0eWt6cmFsa3hsYnFxa2xlb2ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjMyNjAsImV4cCI6MjA4OTkzOTI2MH0.rYBifw2NXqVDGrKbDWKJgrFAIdoruxxsIPc9RXibgy0';
 var sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 var imoveis=[],visitasMap={},editingId=null,currentTab='excl',detailStack=null,currentDetailId=null;
-var tabMap={alertas:'vAlertas',excl:'vList',captacao:'vCaptacao',vendas:'vVendas',mkt:'vMarketing',content:'vContent'};
+var tabMap={alertas:'vAlertas',excl:'vList',analise:'vAnalise'};
+
+function abrirRegistro(){
+  var base=window.location.origin+window.location.pathname.replace('index.html','');
+  window.location.href=base+'registro.html';
+}
+
+function abrirMais(){
+  document.getElementById('maisOverlay').classList.add('open');
+  document.getElementById('maisDrawer').classList.add('open');
+}
+function fecharMais(){
+  document.getElementById('maisOverlay').classList.remove('open');
+  document.getElementById('maisDrawer').classList.remove('open');
+}
 
 function openVendedor(){if(!currentDetailId)return;var base=window.location.origin+window.location.pathname.replace('index.html','');var url=base+'vendedor.html?id='+currentDetailId+'&from=internal';window.open(url,'_blank');}
 
-function switchTab(tab){document.querySelectorAll('.view').forEach(function(v){v.classList.remove('on');});var target=tabMap[tab];if(target)document.getElementById(target).classList.add('on');document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tab===tab);});currentTab=tab;detailStack=null;window.scrollTo({top:0});if(tab==='alertas'&&imoveis.length>0)renderAlertas();}
+function switchTab(tab){
+  if(tab==='registro'){abrirRegistro();return;}
+  if(tab==='mais'){abrirMais();return;}
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('on');});
+  var target=tabMap[tab];
+  if(target)document.getElementById(target).classList.add('on');
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tab===tab);});
+  currentTab=tab;detailStack=null;window.scrollTo({top:0});
+  if(tab==='alertas'&&imoveis.length>0)renderAlertas();
+}
 
 function hoje(){var d=new Date(),m=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear();}
 function diaDoAno(d){d=d||new Date();return Math.floor((d-new Date(d.getFullYear(),0,0))/86400000);}
@@ -132,7 +443,6 @@ function avatarCor(n){var c=['#10B981','#3B82F6','#8B5CF6','#F59E0B','#191949','
 function inicial(n){return(n||'?').charAt(0).toUpperCase();}
 function g(id){var el=document.getElementById('ef_'+id);return el?parseFloat(el.value)||0:0;}
 function gStr(id){var el=document.getElementById('ef_'+id);return el?el.value||null:null;}
-function statusLabel(s){return{vendida:'Vendida',perdida:'Perdida',encerrada:'Encerrada'}[s]||null;}
 function diffDias(d1,d2){if(!d1||!d2)return null;return Math.round((new Date(d2+'T00:00:00')-new Date(d1+'T00:00:00'))/86400000);}
 function calcMetaInterna(im){if(!im.data_midia_entregue||!im.prazo_interno_dias)return null;var d=new Date(im.data_midia_entregue+'T00:00:00');d.setDate(d.getDate()+parseInt(im.prazo_interno_dias));return d.toISOString().split('T')[0];}
 function initHeader(){var d=new Date();document.getElementById('hdrData').textContent=hoje();document.getElementById('hdrDia').textContent='Dia '+diaDoAno(d)+' / '+diasNoAno();}
@@ -163,7 +473,7 @@ function campanhaMeta(im){var anuncios=im.num_anuncios||im.anuncios_ativos||'-';
 
 function conversoesHtml(im){var cvLV=parseFloat(im.conv_lead_visita)||0;var cvVP=parseFloat(im.conv_visita_prop)||0;function box(lbl,val){return '<div style="flex:1;background:#F5F5F8;border-radius:10px;padding:11px 12px"><div style="font-size:8.5px;color:#8E8EA0;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;margin-bottom:5px">'+lbl+'</div><div style="font-size:18px;font-weight:900;color:#191949">'+val+'%</div></div>';}return '<div style="display:flex;gap:8px">'+box('Lead &#8594; Visita',cvLV)+box('Visita &#8594; Proposta',cvVP)+'</div>';}
 
-function grupoCor(nome){if(nome==='Gabriel Certeiro'||nome==='Rafaela Ariadrina')return 'Gabriel Certeiro';if(nome==='Robson Souza')return 'Robson Souza';return 'Outro';}
+function grupoCor(nome){if(nome==='Gabriel Certeiro')return 'Gabriel Certeiro';if(nome==='Robson Souza')return 'Robson Souza';return 'Outro';}
 
 function corretoresHtml(vis){var grupos={};for(var i=0;i<vis.length;i++){var v=vis[i];var gr=grupoCor(v.corretor||'');if(!grupos[gr])grupos[gr]={visitas:0,propostas:0};grupos[gr].visitas++;if(v.intencao==='Quer comprar')grupos[gr].propostas++;}var keys=Object.keys(grupos);if(!keys.length)return '<div class="vis-empty">Sem dados de visita.</div>';var html='';for(var k=0;k<keys.length;k++){var nome=keys[k],d=grupos[nome];var propColor=d.propostas>0?'#10B981':'#8E8EA0';html+='<div class="cor-item"><div class="cor-av">'+nome.charAt(0)+'</div><div class="cor-info"><div class="cor-nome">'+nome+'</div><div class="cor-stats"><div><div class="cor-stat-n">'+d.visitas+'</div><div class="cor-stat-l">Visitas</div></div><div><div class="cor-stat-n" style="color:'+propColor+'">'+d.propostas+'</div><div class="cor-stat-l">Propostas</div></div></div></div></div>';}return html;}
 
@@ -206,77 +516,15 @@ function propSelPagto(val,imId){propFormState.pagto=val;var btns=document.queryS
 function propSelStatus(val,imId){propFormState.status=val;var btns=document.querySelectorAll('#propFormStatus_'+imId+' .prop-btn');btns.forEach(function(b){b.classList.remove('sel-yellow','sel-green','sel-red','sel-muted');if(b.dataset.val===val)b.classList.add(STATUS_BTN_CLS[val]||'sel');});}
 function propValorInput(el){el.value=fmtValorMascara(el.value);propFormState.valor=el.value;}
 
-async function salvarProposta(imId){
-  var btn=document.getElementById('propSaveBtn_'+imId);
-  if(btn){btn.disabled=true;btn.textContent='Salvando...';}
-  var nomeEl=document.getElementById('propNome_'+imId);
-  var dataEl=document.getElementById('propData_'+imId);
-  var obsEl=document.getElementById('propObs_'+imId);
-  var nome=nomeEl?nomeEl.value.trim():'';
-  if(!nome){showToast('Informe o nome');if(btn){btn.disabled=false;btn.textContent='Salvar proposta';}return;}
-  var im=imoveis.find(function(x){return x.id===imId;});
-  if(!im){if(btn){btn.disabled=false;btn.textContent='Salvar proposta';}return;}
-  var valorRaw=propFormState.valor?propFormState.valor.replace(/\./g,'').replace(',','.'):null;
-  var payload={imovel_id:im.imovel_id,nome_interessado:nome,data:dataEl&&dataEl.value?dataEl.value:null,valor_proposto:valorRaw?parseFloat(valorRaw)||null:null,forma_pagamento:propFormState.pagto||null,status:propFormState.status||'em_andamento',observacao:obsEl&&obsEl.value.trim()?obsEl.value.trim():null};
-  try{
-    var res=await sb.from('propostas').insert(payload);
-    if(res.error)throw res.error;
-    showToast('Proposta salva!');
-    propFormState={valor:'',pagto:'',status:'em_andamento',obs:''};
-    var n2=document.getElementById('propNome_'+imId);if(n2)n2.value='';
-    var d2=document.getElementById('propData_'+imId);if(d2)d2.value='';
-    var v2=document.getElementById('propValor_'+imId);if(v2)v2.value='';
-    var o2=document.getElementById('propObs_'+imId);if(o2)o2.value='';
-    var form=document.getElementById('propForm_'+imId);if(form)form.classList.remove('open');
-    await reloadPropostas(imId);
-  }catch(err){showToast('Erro: '+err.message);}
-  finally{if(btn){btn.disabled=false;btn.textContent='Salvar proposta';}}
-}
+async function salvarProposta(imId){var btn=document.getElementById('propSaveBtn_'+imId);if(btn){btn.disabled=true;btn.textContent='Salvando...';}var nomeEl=document.getElementById('propNome_'+imId);var dataEl=document.getElementById('propData_'+imId);var obsEl=document.getElementById('propObs_'+imId);var nome=nomeEl?nomeEl.value.trim():'';if(!nome){showToast('Informe o nome');if(btn){btn.disabled=false;btn.textContent='Salvar proposta';}return;}var im=imoveis.find(function(x){return x.id===imId;});if(!im){if(btn){btn.disabled=false;btn.textContent='Salvar proposta';}return;}var valorRaw=propFormState.valor?propFormState.valor.replace(/\./g,'').replace(',','.'):null;var payload={imovel_id:im.imovel_id,nome_interessado:nome,data:dataEl&&dataEl.value?dataEl.value:null,valor_proposto:valorRaw?parseFloat(valorRaw)||null:null,forma_pagamento:propFormState.pagto||null,status:propFormState.status||'em_andamento',observacao:obsEl&&obsEl.value.trim()?obsEl.value.trim():null};try{var res=await sb.from('propostas').insert(payload);if(res.error)throw res.error;showToast('Proposta salva!');propFormState={valor:'',pagto:'',status:'em_andamento',obs:''};var n2=document.getElementById('propNome_'+imId);if(n2)n2.value='';var d2=document.getElementById('propData_'+imId);if(d2)d2.value='';var v2=document.getElementById('propValor_'+imId);if(v2)v2.value='';var o2=document.getElementById('propObs_'+imId);if(o2)o2.value='';var form=document.getElementById('propForm_'+imId);if(form)form.classList.remove('open');await reloadPropostas(imId);}catch(err){showToast('Erro: '+err.message);}finally{if(btn){btn.disabled=false;btn.textContent='Salvar proposta';}}}
 
-async function reloadPropostas(imId){
-  var im=imoveis.find(function(x){return x.id===imId;});
-  if(!im||!im.imovel_id)return;
-  var res=await sb.from('propostas').select('*').eq('imovel_id',im.imovel_id).order('data',{ascending:false});
-  var props=res.data||[];
-  propostasMap[im.imovel_id]=props;
-  var el=document.getElementById('propLista_'+imId);
-  if(el)el.innerHTML=renderPropostasLista(props,imId);
-  var titulo=document.getElementById('propTitulo_'+imId);
-  if(titulo)titulo.textContent='PROPOSTAS ('+props.length+')';
-}
+async function reloadPropostas(imId){var im=imoveis.find(function(x){return x.id===imId;});if(!im||!im.imovel_id)return;var res=await sb.from('propostas').select('*').eq('imovel_id',im.imovel_id).order('data',{ascending:false});var props=res.data||[];propostasMap[im.imovel_id]=props;var el=document.getElementById('propLista_'+imId);if(el)el.innerHTML=renderPropostasLista(props,imId);var titulo=document.getElementById('propTitulo_'+imId);if(titulo)titulo.textContent='PROPOSTAS ('+props.length+')';}
 
-function renderPropostasLista(props,imId){
-  if(!props.length)return '<div class="prop-empty">Nenhuma proposta registrada.</div>';
-  var html='';
-  for(var i=0;i<props.length;i++){
-    var p=props[i];
-    var cor=avatarCor(p.nome_interessado);
-    var ini=inicial(p.nome_interessado);
-    var stCls=STATUS_CLS[p.status]||'em_andamento';
-    var stLbl=STATUS_LABELS[p.status]||p.status;
-    var pagtoLbl=PAGTO_LABELS[p.forma_pagamento]||p.forma_pagamento||'-';
-    var pid='pdet_'+imId+'_'+i;
-    html+='<div class="prop-item"><div class="prop-item-top" onclick="propToggle(\''+pid+'\')"><div class="prop-item-left"><div class="prop-av" style="background:'+cor+'">'+ini+'</div><div><div class="prop-nome">'+(p.nome_interessado||'-')+'</div><div class="prop-data">'+fmtD(p.data)+'</div></div></div><span class="prop-badge '+stCls+'">'+stLbl+'</span></div><div class="prop-hint">Toque para ver detalhes</div><div class="prop-detail" id="'+pid+'"><div class="prop-detail-row"><span class="prop-detail-lbl">Valor</span><span class="prop-valor-big">'+fmtValorDisplay(p.valor_proposto)+'</span></div><div class="prop-detail-row"><span class="prop-detail-lbl">Pagamento</span><span class="prop-detail-val">'+pagtoLbl+'</span></div>'+(p.observacao?'<div class="prop-obs">'+p.observacao+'</div>':'')+'</div></div>';
-  }
-  return html;
-}
+function renderPropostasLista(props,imId){if(!props.length)return '<div class="prop-empty">Nenhuma proposta registrada.</div>';var html='';for(var i=0;i<props.length;i++){var p=props[i];var cor=avatarCor(p.nome_interessado);var ini=inicial(p.nome_interessado);var stCls=STATUS_CLS[p.status]||'em_andamento';var stLbl=STATUS_LABELS[p.status]||p.status;var pagtoLbl=PAGTO_LABELS[p.forma_pagamento]||p.forma_pagamento||'-';var pid='pdet_'+imId+'_'+i;html+='<div class="prop-item"><div class="prop-item-top" onclick="propToggle(\''+pid+'\')"><div class="prop-item-left"><div class="prop-av" style="background:'+cor+'">'+ini+'</div><div><div class="prop-nome">'+(p.nome_interessado||'-')+'</div><div class="prop-data">'+fmtD(p.data)+'</div></div></div><span class="prop-badge '+stCls+'">'+stLbl+'</span></div><div class="prop-hint">Toque para ver detalhes</div><div class="prop-detail" id="'+pid+'"><div class="prop-detail-row"><span class="prop-detail-lbl">Valor</span><span class="prop-valor-big">'+fmtValorDisplay(p.valor_proposto)+'</span></div><div class="prop-detail-row"><span class="prop-detail-lbl">Pagamento</span><span class="prop-detail-val">'+pagtoLbl+'</span></div>'+(p.observacao?'<div class="prop-obs">'+p.observacao+'</div>':'')+'</div></div>';}return html;}
 
-function renderPropostasSection(im){
-  var props=propostasMap[im.imovel_id]||[];
-  var imId=im.id;
-  var pagtos=[{v:'a_vista',l:'A vista'},{v:'financiamento',l:'Financiamento'},{v:'parcelamento_direto',l:'Parcelamento direto'},{v:'dacao_a_vista',l:'Dacao + a vista'},{v:'dacao_financiamento',l:'Dacao + financiamento'},{v:'dacao_parcelamento_direto',l:'Dacao + parcelamento'},{v:'parcelamento_direto_financiamento',l:'Parcelamento + financiamento'}];
-  var statusOpts=[{v:'em_andamento',l:'Em andamento',c:'sel-yellow'},{v:'aceita',l:'Aceita',c:'sel-green'},{v:'recusada',l:'Recusada',c:'sel-red'},{v:'desistiu',l:'Desistiu',c:'sel-muted'}];
-  var pagtoHtml=pagtos.map(function(p){return '<button class="prop-btn" data-val="'+p.v+'" onclick="propSelPagto(\''+p.v+'\',\''+imId+'\')">'+p.l+'</button>';}).join('');
-  var statusHtml=statusOpts.map(function(s){return '<button class="prop-btn'+(s.v==='em_andamento'?' '+s.c:'')+'" data-val="'+s.v+'" onclick="propSelStatus(\''+s.v+'\',\''+imId+'\')">'+s.l+'</button>';}).join('');
-  var ist='box-sizing:border-box;width:100%;border:1.5px solid var(--s2);border-radius:10px;padding:12px 14px;font-size:13px;font-family:\'Nunito Sans\',sans-serif;color:var(--navy);background:var(--white);outline:none;-webkit-appearance:none;min-height:46px;display:block;';
-  return '<div class="scard"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div class="scard-title" id="propTitulo_'+imId+'" style="margin-bottom:0">PROPOSTAS ('+props.length+')</div></div><button class="prop-nova-btn" onclick="document.getElementById(\'propForm_'+imId+'\').classList.toggle(\'open\')">&#43; Nova proposta</button><div class="prop-form" id="propForm_'+imId+'"><div class="prop-field"><div class="prop-field-lbl">Nome do interessado</div><input type="text" id="propNome_'+imId+'" placeholder="Nome completo" style="'+ist+'"></div><div class="prop-field"><div class="prop-field-lbl">Data</div><input type="date" id="propData_'+imId+'" style="'+ist+'"></div><div class="prop-field"><div class="prop-field-lbl">Valor proposto</div><div class="prop-valor-wrap"><span class="prop-valor-prefix">R$</span><input type="text" inputmode="numeric" id="propValor_'+imId+'" class="prop-valor-input" placeholder="0" oninput="propValorInput(this)"></div></div><div class="prop-field"><div class="prop-field-lbl">Forma de pagamento</div><div class="prop-btns" id="propFormPagto_'+imId+'">'+pagtoHtml+'</div></div><div class="prop-field"><div class="prop-field-lbl">Status</div><div class="prop-btns" id="propFormStatus_'+imId+'">'+statusHtml+'</div></div><div class="prop-field"><div class="prop-field-lbl">Observacao</div><textarea class="prop-textarea" id="propObs_'+imId+'" placeholder="Detalhes, condicoes, contrapropostas..."></textarea></div><button class="prop-save-btn" id="propSaveBtn_'+imId+'" onclick="salvarProposta(\''+imId+'\')">Salvar proposta</button></div><div id="propLista_'+imId+'">'+renderPropostasLista(props,imId)+'</div></div>';
-}
+function renderPropostasSection(im){var props=propostasMap[im.imovel_id]||[];var imId=im.id;var pagtos=[{v:'a_vista',l:'A vista'},{v:'financiamento',l:'Financiamento'},{v:'parcelamento_direto',l:'Parcelamento direto'},{v:'dacao_a_vista',l:'Dacao + a vista'},{v:'dacao_financiamento',l:'Dacao + financiamento'},{v:'dacao_parcelamento_direto',l:'Dacao + parcelamento'},{v:'parcelamento_direto_financiamento',l:'Parcelamento + financiamento'}];var statusOpts=[{v:'em_andamento',l:'Em andamento',c:'sel-yellow'},{v:'aceita',l:'Aceita',c:'sel-green'},{v:'recusada',l:'Recusada',c:'sel-red'},{v:'desistiu',l:'Desistiu',c:'sel-muted'}];var pagtoHtml=pagtos.map(function(p){return '<button class="prop-btn" data-val="'+p.v+'" onclick="propSelPagto(\''+p.v+'\',\''+imId+'\')">'+p.l+'</button>';}).join('');var statusHtml=statusOpts.map(function(s){return '<button class="prop-btn'+(s.v==='em_andamento'?' '+s.c:'')+'" data-val="'+s.v+'" onclick="propSelStatus(\''+s.v+'\',\''+imId+'\')">'+s.l+'</button>';}).join('');var ist='box-sizing:border-box;width:100%;border:1.5px solid var(--s2);border-radius:10px;padding:12px 14px;font-size:13px;font-family:\'Nunito Sans\',sans-serif;color:var(--navy);background:var(--white);outline:none;-webkit-appearance:none;min-height:46px;display:block;';return '<div class="scard"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div class="scard-title" id="propTitulo_'+imId+'" style="margin-bottom:0">PROPOSTAS ('+props.length+')</div></div><button class="prop-nova-btn" onclick="document.getElementById(\'propForm_'+imId+'\').classList.toggle(\'open\')">&#43; Nova proposta</button><div class="prop-form" id="propForm_'+imId+'"><div class="prop-field"><div class="prop-field-lbl">Nome do interessado</div><input type="text" id="propNome_'+imId+'" placeholder="Nome completo" style="'+ist+'"></div><div class="prop-field"><div class="prop-field-lbl">Data</div><input type="date" id="propData_'+imId+'" style="'+ist+'"></div><div class="prop-field"><div class="prop-field-lbl">Valor proposto</div><div class="prop-valor-wrap"><span class="prop-valor-prefix">R$</span><input type="text" inputmode="numeric" id="propValor_'+imId+'" class="prop-valor-input" placeholder="0" oninput="propValorInput(this)"></div></div><div class="prop-field"><div class="prop-field-lbl">Forma de pagamento</div><div class="prop-btns" id="propFormPagto_'+imId+'">'+pagtoHtml+'</div></div><div class="prop-field"><div class="prop-field-lbl">Status</div><div class="prop-btns" id="propFormStatus_'+imId+'">'+statusHtml+'</div></div><div class="prop-field"><div class="prop-field-lbl">Observacao</div><textarea class="prop-textarea" id="propObs_'+imId+'" placeholder="Detalhes, condicoes, contrapropostas..."></textarea></div><button class="prop-save-btn" id="propSaveBtn_'+imId+'" onclick="salvarProposta(\''+imId+'\')">Salvar proposta</button></div><div id="propLista_'+imId+'">'+renderPropostasLista(props,imId)+'</div></div>';}
 
-async function loadPropostas(imovelId){
-  if(!imovelId)return;
-  var res=await sb.from('propostas').select('*').eq('imovel_id',imovelId).order('data',{ascending:false});
-  propostasMap[imovelId]=res.data||[];
-}
+async function loadPropostas(imovelId){if(!imovelId)return;var res=await sb.from('propostas').select('*').eq('imovel_id',imovelId).order('data',{ascending:false});propostasMap[imovelId]=res.data||[];}
 
 initHeader();
 loadDashboard();
