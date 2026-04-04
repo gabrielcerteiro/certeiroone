@@ -35,32 +35,41 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 .step-lbl.done{color:rgba(255,255,255,0.4)}
 .step-lbl.pending{color:rgba(255,255,255,0.2)}
 .step-sep{color:rgba(255,255,255,0.15);font-size:10px;flex-shrink:0}
-.page{padding:16px 16px 100px;max-width:480px;margin:0 auto}
+/* page com espaco para bottom nav (56px) + footer-acao (80px) quando visivel */
+.page{padding:16px 16px 140px;max-width:480px;margin:0 auto}
+.page.sem-footer{padding-bottom:80px}
 .card{background:var(--white);border-radius:var(--card-radius);padding:18px;border:1px solid var(--s2);box-shadow:var(--card-shadow);margin-bottom:12px}
 .section-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
 .tipo-wrap{display:flex;gap:12px}
-.tipo-btn{flex:1;border:2px solid var(--s2);border-radius:14px;padding:20px 12px;text-align:center;cursor:pointer;background:var(--white);transition:all .15s;font-family:'Nunito Sans',sans-serif}
+.tipo-btn{flex:1;border:2px solid var(--s2);border-radius:14px;padding:24px 12px;text-align:center;cursor:pointer;background:var(--white);transition:all .15s;font-family:'Nunito Sans',sans-serif}
 .tipo-btn:active{transform:scale(0.97)}
 .tipo-btn.sel{border-color:var(--navy);background:var(--navy)}
-.tipo-icon{font-size:28px;margin-bottom:8px}
-.tipo-label{font-size:13px;font-weight:800;color:var(--text)}
-.tipo-sub{font-size:10px;color:var(--muted);margin-top:3px}
+.tipo-icon{font-size:32px;margin-bottom:10px}
+.tipo-label{font-size:14px;font-weight:800;color:var(--text)}
+.tipo-sub{font-size:10px;color:var(--muted);margin-top:4px}
 .tipo-btn.sel .tipo-label,.tipo-btn.sel .tipo-sub{color:#fff}
+/* IMOVEL */
 .imovel-list{display:flex;flex-direction:column;gap:8px}
-.imovel-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--s2);border-radius:12px;cursor:pointer;background:var(--white);transition:all .15s}
+.imovel-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1.5px solid var(--s2);border-radius:12px;cursor:pointer;background:var(--white);transition:all .15s}
 .imovel-item:active{background:var(--bg)}
 .imovel-item.sel{border-color:var(--navy);background:rgba(25,25,73,0.03)}
 .imovel-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;background:var(--s3)}
 .imovel-item.sel .imovel-dot{background:var(--navy)}
-.imovel-nome{font-size:13px;font-weight:700;color:var(--text);flex:1}
-.imovel-preco{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
-.corretor-list{display:flex;gap:12px}
-.corretor-card{flex:1;border:2px solid var(--s2);border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;background:var(--white);transition:all .15s;font-family:'Nunito Sans',sans-serif}
-.corretor-card:active{transform:scale(0.97)}
+.imovel-nome{font-size:14px;font-weight:700;color:var(--text);flex:1}
+.imovel-preco{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
+/* CORRETOR — horizontal com foto grande */
+.corretor-list{display:flex;flex-direction:column;gap:10px}
+.corretor-card{display:flex;align-items:center;gap:16px;padding:16px 18px;border:2px solid var(--s2);border-radius:14px;cursor:pointer;background:var(--white);transition:all .15s;font-family:'Nunito Sans',sans-serif}
+.corretor-card:active{transform:scale(0.98)}
 .corretor-card.sel{border-color:var(--navy);background:rgba(25,25,73,0.03)}
-.corretor-foto{width:64px;height:64px;border-radius:50%;object-fit:cover;margin:0 auto 8px;display:block;background:var(--s2)}
-.corretor-nome{font-size:11px;font-weight:800;color:var(--text);line-height:1.3}
-.corretor-creci{font-size:9px;color:var(--muted);margin-top:2px}
+.corretor-foto{width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--s2)}
+.corretor-av-fallback{width:56px;height:56px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;flex-shrink:0}
+.corretor-info{flex:1}
+.corretor-nome{font-size:15px;font-weight:800;color:var(--text);line-height:1.2}
+.corretor-creci{font-size:10px;color:var(--muted);margin-top:3px}
+.corretor-sel-icon{font-size:18px;color:var(--navy);opacity:0;transition:opacity .15s;flex-shrink:0}
+.corretor-card.sel .corretor-sel-icon{opacity:1}
+/* FIELDS */
 .field{margin-bottom:14px}
 .field-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
 .field-lbl .req{color:var(--red)}
@@ -77,7 +86,7 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 .chip.sel-blue{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
 .chip.sel-muted{border-color:var(--s3);background:var(--s2);color:var(--muted)}
 .toggle-row{display:flex;gap:8px}
-.toggle-btn{flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--s2);background:var(--white);font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center;transition:all .15s}
+.toggle-btn{flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--s2);background:var(--white);font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center;transition:all .15s}
 .toggle-btn.sel-sim{border-color:var(--green);background:var(--green-bg);color:var(--green)}
 .toggle-btn.sel-nao{border-color:var(--red);background:var(--red-bg);color:var(--red)}
 .valor-wrap{display:flex;align-items:center;gap:8px;border:1.5px solid var(--s2);border-radius:10px;background:var(--white);padding:0 14px;transition:border-color .15s}
@@ -85,8 +94,9 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 .valor-prefix{font-size:14px;font-weight:700;color:var(--muted);flex-shrink:0}
 .valor-input{flex:1;border:none;background:transparent;font-size:16px;font-weight:800;color:var(--navy);font-family:'Nunito Sans',sans-serif;padding:12px 0;outline:none;min-width:0}
 .parceiro-toggle{display:flex;gap:8px;margin-bottom:10px}
-.parceiro-btn{flex:1;padding:9px;border-radius:10px;border:1.5px solid var(--s2);background:var(--white);font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center;transition:all .15s}
+.parceiro-btn{flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--s2);background:var(--white);font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center;transition:all .15s}
 .parceiro-btn.sel{border-color:var(--navy);background:var(--navy);color:#fff}
+/* REVIEW */
 .rev-section{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--s2)}
 .rev-section:last-child{border-bottom:none;margin-bottom:0}
 .rev-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
@@ -94,34 +104,46 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 .rev-val.big{font-size:18px;font-weight:900;color:var(--navy)}
 .rev-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
 .rev-chip{font-size:9px;font-weight:700;padding:3px 9px;border-radius:8px;background:var(--bg);color:var(--navy)}
+/* PROPOSTA POS-VISITA */
 .proposta-pos{background:var(--yellow-bg);border:1.5px solid var(--yellow-l);border-radius:14px;padding:18px;margin-bottom:12px}
 .proposta-pos-title{font-size:14px;font-weight:800;color:var(--yellow);margin-bottom:4px}
 .proposta-pos-sub{font-size:11px;color:#92400e;margin-bottom:14px}
 .proposta-pos-btns{display:flex;gap:10px}
-.pp-btn{flex:1;padding:12px;border-radius:10px;border:none;font-size:13px;font-weight:800;font-family:'Nunito Sans',sans-serif;cursor:pointer;transition:all .15s;text-align:center}
+.pp-btn{flex:1;padding:13px;border-radius:10px;border:none;font-size:13px;font-weight:800;font-family:'Nunito Sans',sans-serif;cursor:pointer;transition:all .15s;text-align:center}
 .pp-btn:active{transform:scale(0.97)}
 .pp-sim{background:var(--navy);color:#fff}
 .pp-nao{background:var(--white);color:var(--navy);border:1.5px solid var(--s2)}
+/* SUCCESS */
 .success-wrap{text-align:center;padding:40px 20px}
 .success-icon{font-size:56px;margin-bottom:16px}
 .success-title{font-size:18px;font-weight:900;color:var(--green);margin-bottom:6px}
 .success-sub{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:28px}
 .novo-btn{display:inline-block;background:var(--navy);color:#fff;border:none;border-radius:12px;padding:14px 28px;font-size:14px;font-weight:800;font-family:'Nunito Sans',sans-serif;cursor:pointer;transition:opacity .15s}
 .novo-btn:active{opacity:0.8}
-.footer-acao{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--s2);padding:12px 20px env(safe-area-inset-bottom,12px);max-width:480px;margin:0 auto;display:flex;gap:10px;z-index:100}
+/* FOOTER ACAO (botoes continuar/voltar) */
+.footer-acao{position:fixed;bottom:56px;left:0;right:0;background:var(--white);border-top:1px solid var(--s2);padding:10px 16px;max-width:480px;margin:0 auto;display:flex;gap:10px;z-index:100}
 .btn-back{background:var(--bg);border:1.5px solid var(--s2);border-radius:12px;padding:13px 18px;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;font-family:'Nunito Sans',sans-serif;transition:all .15s;flex-shrink:0}
 .btn-back:active{background:var(--s2)}
 .btn-next{flex:1;background:var(--navy);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;color:#fff;cursor:pointer;font-family:'Nunito Sans',sans-serif;transition:opacity .15s}
 .btn-next:active{opacity:0.8}
 .btn-next:disabled{opacity:0.4;cursor:not-allowed}
 .btn-next.green{background:var(--green)}
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--s2);display:flex;justify-content:space-around;padding:6px 0 env(safe-area-inset-bottom,8px);z-index:999;max-width:480px;margin:0 auto;box-shadow:0 -2px 8px rgba(25,25,73,0.04)}
+.nav-btn{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px;cursor:pointer;position:relative;transition:opacity .15s;min-width:44px}
+.nav-btn.active{opacity:1}
+.nav-btn:not(.active){opacity:0.4}
+.nav-icon{font-size:16px;line-height:1}
+.nav-label{font-size:8px;font-weight:700;color:var(--navy)}
+/* LOADING / ERRO */
 .loading{text-align:center;padding:60px 20px}
 .loading-spin{width:28px;height:28px;border:3px solid var(--s2);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-txt{font-size:12px;color:var(--muted)}
 .erro-init{text-align:center;padding:40px 20px}
 .erro-init p{font-size:13px;color:var(--red);margin-bottom:16px;font-weight:600}
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;font-size:13px;font-weight:700;padding:12px 22px;border-radius:12px;z-index:500;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+/* TOAST */
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;font-size:13px;font-weight:700;padding:12px 22px;border-radius:12px;z-index:600;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
 ::-webkit-scrollbar{width:0;height:0}
 .hidden{display:none!important}
@@ -156,6 +178,15 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
   <button class="btn-next" id="btnNext" onclick="avancarPasso()">Continuar</button>
 </div>
 
+<!-- BOTTOM NAV — igual ao index.html -->
+<div class="bottom-nav">
+  <button class="nav-btn" onclick="irDashboard('alertas')"><span class="nav-icon">&#9889;</span><span class="nav-label">Alertas</span></button>
+  <button class="nav-btn" onclick="irDashboard('excl')"><span class="nav-icon">&#127970;</span><span class="nav-label">Imoveis</span></button>
+  <button class="nav-btn active"><span class="nav-icon">&#128203;</span><span class="nav-label">Registro</span></button>
+  <button class="nav-btn" onclick="irDashboard('analise')"><span class="nav-icon">&#128202;</span><span class="nav-label">Analise</span></button>
+  <button class="nav-btn" onclick="irDashboard('mais')"><span class="nav-icon">&#8943;</span><span class="nav-label">Mais</span></button>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -176,10 +207,10 @@ async function init(){
   initHeader();
   try{
     await Promise.all([loadImoveis(),loadCorretores()]);
-    renderPasso(); // <-- so chama apos dados carregados
+    renderPasso();
   }catch(e){
     document.getElementById('mainPage').innerHTML=
-      '<div class="erro-init"><p>Erro ao carregar dados:<br>'+e.message+'</p>'+
+      '<div class="erro-init"><p>Erro ao carregar:<br>'+e.message+'</p>'+
       '<button class="novo-btn" onclick="init()">Tentar novamente</button></div>';
   }
 }
@@ -212,7 +243,7 @@ function renderStepBar(){
   wrap.classList.remove('hidden');
   var labels={tipo:'Tipo',imovel:'Imovel',corretor:'Corretor',interessado:'Interessado',feedback:'Feedback',resultado:'Resultado',pagamento:'Pagamento',revisao:'Revisao',proposta_form:'Proposta',revisao_prop:'Revisao'};
   var html='';
-  for(var i=1;i<ps.length;i++){ // começa do 1 pois tipo nao aparece na step bar
+  for(var i=1;i<ps.length;i++){
     var cls=i<passo?'done':i===passo?'active':'pending';
     html+='<div class="step-dot-wrap"><div class="sdot '+cls+'">'+(i<passo?'&#10003;':i)+'</div><span class="step-lbl '+cls+'">'+labels[ps[i]]+'</span></div>';
     if(i<ps.length-1)html+='<span class="step-sep">&#8250;</span>';
@@ -224,12 +255,12 @@ function renderPasso(){
   var ps=passos();
   var current=ps[passo];
   renderStepBar();
-
   var temFooter=current!=='tipo'&&current!=='revisao'&&current!=='revisao_prop';
   document.getElementById('footerAcao').classList.toggle('hidden',!temFooter);
   document.getElementById('btnBack').classList.toggle('hidden',passo<=1);
-
+  // ajuste padding da page
   var page=document.getElementById('mainPage');
+  page.classList.toggle('sem-footer',!temFooter);
   switch(current){
     case 'tipo':         page.innerHTML=renderTipo();break;
     case 'imovel':       page.innerHTML=renderImovel();break;
@@ -308,13 +339,17 @@ function renderCorretor(){
     var c=corretores[i];
     var sel=S.corretor&&S.corretor.id===c.id;
     var ini=c.nome.charAt(0);
-    var av=c.foto_url?
+    var fotoHtml=c.foto_url?
       '<img class="corretor-foto" src="'+c.foto_url+'" alt="'+escHtml(c.nome)+'" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">'+
-      '<div class="corretor-foto" style="display:none;background:var(--navy);align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff">'+ini+'</div>':
-      '<div class="corretor-foto" style="display:flex;background:var(--navy);align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff">'+ini+'</div>';
+      '<div class="corretor-av-fallback" style="display:none">'+ini+'</div>':
+      '<div class="corretor-av-fallback">'+ini+'</div>';
     html+='<div class="corretor-card'+(sel?' sel':'')+'" onclick="selCorretor(this,\''+c.id+'\',\''+escHtml(c.nome)+'\',\''+escHtml(c.creci||'')+'\')">'+
-      av+'<div class="corretor-nome">'+escHtml(c.nome)+'</div>'+
-      '<div class="corretor-creci">CRECI '+escHtml(c.creci||'')+'</div>'+
+      fotoHtml+
+      '<div class="corretor-info">'+
+        '<div class="corretor-nome">'+escHtml(c.nome)+'</div>'+
+        '<div class="corretor-creci">CRECI '+escHtml(c.creci||'')+'</div>'+
+      '</div>'+
+      '<div class="corretor-sel-icon">&#10003;</div>'+
     '</div>';
   }
   html+='</div>';
@@ -325,7 +360,7 @@ function selCorretor(el,id,nome,creci){
   S.corretor={id:id,nome:nome,creci:creci};
   document.querySelectorAll('.corretor-card').forEach(function(e){e.classList.remove('sel');});
   el.classList.add('sel');
-  setTimeout(avancarPasso,200);
+  setTimeout(avancarPasso,300);
 }
 
 function renderInteressado(){
@@ -562,12 +597,8 @@ function coletarPasso(){
     S.nome=(document.getElementById('fNome')||{}).value||'';
     S.data=(document.getElementById('fData')||{}).value||'';
   }
-  if(current==='feedback'){
-    S.observacoes=((document.getElementById('fObs')||{}).value||'').trim();
-  }
-  if(current==='pagamento'){
-    S.pagto_detalhes=((document.getElementById('fPagtoObs')||{}).value||'').trim();
-  }
+  if(current==='feedback'){S.observacoes=((document.getElementById('fObs')||{}).value||'').trim();}
+  if(current==='pagamento'){S.pagto_detalhes=((document.getElementById('fPagtoObs')||{}).value||'').trim();}
   if(current==='proposta_form'){
     S.nome=((document.getElementById('fPropNome')||{}).value||'').trim();
     S.data=(document.getElementById('fPropData')||{}).value||'';
@@ -669,7 +700,7 @@ function renderSucesso(titulo,sub){
     '<div class="success-sub">'+escHtml(sub)+'</div>'+
     '<button class="novo-btn" onclick="resetar()">&#43; Novo registro</button>'+
     ' &nbsp; '+
-    '<button class="novo-btn" style="background:var(--bg);color:var(--navy);border:1.5px solid var(--s2)" onclick="irDashboard()">&#127968; Dashboard</button>'+
+    '<button class="novo-btn" style="background:var(--bg);color:var(--navy);border:1.5px solid var(--s2)" onclick="irDashboard(\'excl\')">&#127968; Imoveis</button>'+
   '</div>';
 }
 
@@ -677,11 +708,13 @@ function resetar(){
   S={tipo:null,imovel:null,corretor:null,parceiro:null,nome:'',data:'',origem:'',objections:[],observacoes:'',intencao:null,qualif:null,pagto:[],pagto_detalhes:'',prop_valor:'',prop_pagto:null,prop_status:'em_andamento',prop_obs:''};
   passo=0;
   document.getElementById('stepBarWrap').classList.add('hidden');
+  document.getElementById('footerAcao').classList.add('hidden');
   renderPasso();
 }
 
-function irDashboard(){
-  window.location.href=window.location.pathname.replace('registro.html','')+'index.html';
+function irDashboard(tab){
+  var base=window.location.pathname.replace('registro.html','');
+  window.location.href=base+'index.html'+(tab?'#'+tab:'');
 }
 
 function hoje(){
