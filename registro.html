@@ -8,15 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{
-  --navy:#191949;--white:#FFFFFF;--bg:#F5F5F8;--text:#191949;--muted:#8E8EA0;
-  --s2:#ECECF1;--s3:#D9D9E3;--green:#10B981;--green-bg:rgba(16,185,129,0.08);
-  --green-l:#D1FAE5;--red:#EF4444;--red-bg:rgba(239,68,68,0.08);--red-l:#FEE2E2;
-  --yellow:#F59E0B;--yellow-bg:rgba(245,158,11,0.08);--yellow-l:#FEF3C7;
-  --blue:#3B82F6;--blue-bg:rgba(59,130,246,0.08);--blue-l:#DBEAFE;
-  --card-shadow:0 1px 3px rgba(25,25,73,0.06),0 1px 2px rgba(25,25,73,0.04);
-  --card-radius:14px
-}
+:root{--navy:#191949;--white:#FFFFFF;--bg:#F5F5F8;--text:#191949;--muted:#8E8EA0;--s2:#ECECF1;--s3:#D9D9E3;--green:#10B981;--green-bg:rgba(16,185,129,0.08);--green-l:#D1FAE5;--red:#EF4444;--red-bg:rgba(239,68,68,0.08);--red-l:#FEE2E2;--yellow:#F59E0B;--yellow-bg:rgba(245,158,11,0.08);--yellow-l:#FEF3C7;--blue:#3B82F6;--blue-bg:rgba(59,130,246,0.08);--blue-l:#DBEAFE;--card-shadow:0 1px 3px rgba(25,25,73,0.06),0 1px 2px rgba(25,25,73,0.04);--card-radius:14px}
 html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
 .hdr{background:var(--navy);display:flex;justify-content:space-between;align-items:center;padding:14px 20px 12px;position:sticky;top:0;z-index:200}
 .hdr-logo .brand{color:#fff;font-size:14px;font-weight:900;letter-spacing:2.2px;text-transform:uppercase}
@@ -31,15 +23,13 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 .sdot.active{background:var(--yellow);color:#fff}
 .sdot.pending{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.25)}
 .step-lbl{font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap}
-.step-lbl.active{color:var(--yellow)}
-.step-lbl.done{color:rgba(255,255,255,0.4)}
-.step-lbl.pending{color:rgba(255,255,255,0.2)}
+.step-lbl.active{color:var(--yellow)}.step-lbl.done{color:rgba(255,255,255,0.4)}.step-lbl.pending{color:rgba(255,255,255,0.2)}
 .step-sep{color:rgba(255,255,255,0.15);font-size:10px;flex-shrink:0}
-/* page com espaco para bottom nav (56px) + footer-acao (80px) quando visivel */
 .page{padding:16px 16px 140px;max-width:480px;margin:0 auto}
 .page.sem-footer{padding-bottom:80px}
 .card{background:var(--white);border-radius:var(--card-radius);padding:18px;border:1px solid var(--s2);box-shadow:var(--card-shadow);margin-bottom:12px}
 .section-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+/* TIPO */
 .tipo-wrap{display:flex;gap:12px}
 .tipo-btn{flex:1;border:2px solid var(--s2);border-radius:14px;padding:24px 12px;text-align:center;cursor:pointer;background:var(--white);transition:all .15s;font-family:'Nunito Sans',sans-serif}
 .tipo-btn:active{transform:scale(0.97)}
@@ -57,7 +47,7 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 .imovel-item.sel .imovel-dot{background:var(--navy)}
 .imovel-nome{font-size:14px;font-weight:700;color:var(--text);flex:1}
 .imovel-preco{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
-/* CORRETOR — horizontal com foto grande */
+/* CORRETOR */
 .corretor-list{display:flex;flex-direction:column;gap:10px}
 .corretor-card{display:flex;align-items:center;gap:16px;padding:16px 18px;border:2px solid var(--s2);border-radius:14px;cursor:pointer;background:var(--white);transition:all .15s;font-family:'Nunito Sans',sans-serif}
 .corretor-card:active{transform:scale(0.98)}
@@ -77,6 +67,7 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 .finput:focus{border-color:var(--navy)}
 .finput::placeholder{color:var(--s3)}
 textarea.finput{resize:none;min-height:80px;font-size:13px}
+/* CHIPS */
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{padding:8px 13px;border-radius:8px;border:1.5px solid var(--s2);background:var(--white);font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;transition:all .15s;white-space:nowrap}
 .chip.sel{border-color:var(--navy);background:var(--navy);color:#fff}
@@ -85,17 +76,34 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 .chip.sel-red{border-color:var(--red);background:var(--red-bg);color:var(--red)}
 .chip.sel-blue{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
 .chip.sel-muted{border-color:var(--s3);background:var(--s2);color:var(--muted)}
+/* OBJECAO LIVRE */
+.obj-add-row{display:flex;gap:8px;margin-top:8px}
+.obj-add-input{flex:1;border:1.5px solid var(--s2);border-radius:8px;padding:9px 12px;font-size:12px;font-family:'Nunito Sans',sans-serif;color:var(--navy);background:var(--white);outline:none;min-height:38px}
+.obj-add-input:focus{border-color:var(--navy)}
+.obj-add-btn{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-size:12px;font-weight:700;font-family:'Nunito Sans',sans-serif;cursor:pointer;flex-shrink:0;white-space:nowrap}
+/* RESULTADO — botoes grandes */
+.intencao-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.intencao-btn{padding:18px 12px;border-radius:12px;border:2px solid var(--s2);background:var(--white);font-size:13px;font-weight:800;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center;transition:all .15s;line-height:1.3}
+.intencao-btn .int-icon{font-size:24px;display:block;margin-bottom:6px}
+.intencao-btn:active{transform:scale(0.97)}
+.intencao-btn.sel-green{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.intencao-btn.sel-yellow{border-color:var(--yellow);background:var(--yellow-bg);color:var(--yellow)}
+.intencao-btn.sel-blue{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
+.intencao-btn.sel-red{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+/* QUALIF */
 .toggle-row{display:flex;gap:8px}
-.toggle-btn{flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--s2);background:var(--white);font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center;transition:all .15s}
+.toggle-btn{flex:1;padding:14px 12px;border-radius:10px;border:2px solid var(--s2);background:var(--white);font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center;transition:all .15s}
 .toggle-btn.sel-sim{border-color:var(--green);background:var(--green-bg);color:var(--green)}
 .toggle-btn.sel-nao{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+/* PARCEIRO */
+.parceiro-toggle{display:flex;gap:8px;margin-bottom:10px}
+.parceiro-btn{flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--s2);background:var(--white);font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center;transition:all .15s}
+.parceiro-btn.sel{border-color:var(--navy);background:var(--navy);color:#fff}
+/* VALOR */
 .valor-wrap{display:flex;align-items:center;gap:8px;border:1.5px solid var(--s2);border-radius:10px;background:var(--white);padding:0 14px;transition:border-color .15s}
 .valor-wrap:focus-within{border-color:var(--navy)}
 .valor-prefix{font-size:14px;font-weight:700;color:var(--muted);flex-shrink:0}
 .valor-input{flex:1;border:none;background:transparent;font-size:16px;font-weight:800;color:var(--navy);font-family:'Nunito Sans',sans-serif;padding:12px 0;outline:none;min-width:0}
-.parceiro-toggle{display:flex;gap:8px;margin-bottom:10px}
-.parceiro-btn{flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--s2);background:var(--white);font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center;transition:all .15s}
-.parceiro-btn.sel{border-color:var(--navy);background:var(--navy);color:#fff}
 /* REVIEW */
 .rev-section{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--s2)}
 .rev-section:last-child{border-bottom:none;margin-bottom:0}
@@ -104,7 +112,7 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 .rev-val.big{font-size:18px;font-weight:900;color:var(--navy)}
 .rev-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
 .rev-chip{font-size:9px;font-weight:700;padding:3px 9px;border-radius:8px;background:var(--bg);color:var(--navy)}
-/* PROPOSTA POS-VISITA */
+/* PROPOSTA POS */
 .proposta-pos{background:var(--yellow-bg);border:1.5px solid var(--yellow-l);border-radius:14px;padding:18px;margin-bottom:12px}
 .proposta-pos-title{font-size:14px;font-weight:800;color:var(--yellow);margin-bottom:4px}
 .proposta-pos-sub{font-size:11px;color:#92400e;margin-bottom:14px}
@@ -120,7 +128,7 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 .success-sub{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:28px}
 .novo-btn{display:inline-block;background:var(--navy);color:#fff;border:none;border-radius:12px;padding:14px 28px;font-size:14px;font-weight:800;font-family:'Nunito Sans',sans-serif;cursor:pointer;transition:opacity .15s}
 .novo-btn:active{opacity:0.8}
-/* FOOTER ACAO (botoes continuar/voltar) */
+/* FOOTER ACAO */
 .footer-acao{position:fixed;bottom:56px;left:0;right:0;background:var(--white);border-top:1px solid var(--s2);padding:10px 16px;max-width:480px;margin:0 auto;display:flex;gap:10px;z-index:100}
 .btn-back{background:var(--bg);border:1.5px solid var(--s2);border-radius:12px;padding:13px 18px;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;font-family:'Nunito Sans',sans-serif;transition:all .15s;flex-shrink:0}
 .btn-back:active{background:var(--s2)}
@@ -130,12 +138,14 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 .btn-next.green{background:var(--green)}
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--s2);display:flex;justify-content:space-around;padding:6px 0 env(safe-area-inset-bottom,8px);z-index:999;max-width:480px;margin:0 auto;box-shadow:0 -2px 8px rgba(25,25,73,0.04)}
-.nav-btn{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px;cursor:pointer;position:relative;transition:opacity .15s;min-width:44px}
-.nav-btn.active{opacity:1}
+@media(min-width:600px){.bottom-nav{left:50%;right:auto;transform:translateX(-50%);width:480px;border-radius:0 0 0 0}}
+.nav-btn{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 8px;cursor:pointer;transition:all .15s;min-width:44px;border-radius:8px}
+.nav-btn .nav-icon{font-size:18px;line-height:1}
+.nav-btn .nav-label{font-size:8px;font-weight:700;color:var(--muted)}
+.nav-btn.active .nav-label{color:var(--navy)}
 .nav-btn:not(.active){opacity:0.4}
-.nav-icon{font-size:16px;line-height:1}
-.nav-label{font-size:8px;font-weight:700;color:var(--navy)}
-/* LOADING / ERRO */
+.nav-btn.active{opacity:1;background:rgba(25,25,73,0.06)}
+/* LOADING */
 .loading{text-align:center;padding:60px 20px}
 .loading-spin{width:28px;height:28px;border:3px solid var(--s2);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -167,10 +177,7 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 </div>
 
 <div class="page" id="mainPage">
-  <div class="loading">
-    <div class="loading-spin"></div>
-    <div class="loading-txt">Carregando...</div>
-  </div>
+  <div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando...</div></div>
 </div>
 
 <div class="footer-acao hidden" id="footerAcao">
@@ -178,13 +185,12 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
   <button class="btn-next" id="btnNext" onclick="avancarPasso()">Continuar</button>
 </div>
 
-<!-- BOTTOM NAV — igual ao index.html -->
-<div class="bottom-nav">
-  <button class="nav-btn" onclick="irDashboard('alertas')"><span class="nav-icon">&#9889;</span><span class="nav-label">Alertas</span></button>
-  <button class="nav-btn" onclick="irDashboard('excl')"><span class="nav-icon">&#127970;</span><span class="nav-label">Imoveis</span></button>
-  <button class="nav-btn active"><span class="nav-icon">&#128203;</span><span class="nav-label">Registro</span></button>
-  <button class="nav-btn" onclick="irDashboard('analise')"><span class="nav-icon">&#128202;</span><span class="nav-label">Analise</span></button>
-  <button class="nav-btn" onclick="irDashboard('mais')"><span class="nav-icon">&#8943;</span><span class="nav-label">Mais</span></button>
+<div class="bottom-nav" id="bottomNav">
+  <button class="nav-btn" id="nav-alertas" onclick="irDashboard('alertas')"><span class="nav-icon">&#9889;</span><span class="nav-label">Alertas</span></button>
+  <button class="nav-btn" id="nav-imoveis" onclick="irDashboard('excl')"><span class="nav-icon">&#127970;</span><span class="nav-label">Imoveis</span></button>
+  <button class="nav-btn active" id="nav-registro"><span class="nav-icon">&#128203;</span><span class="nav-label">Registro</span></button>
+  <button class="nav-btn" id="nav-analise" onclick="irDashboard('analise')"><span class="nav-icon">&#128202;</span><span class="nav-label">Analise</span></button>
+  <button class="nav-btn" id="nav-mais" onclick="irDashboard('mais')"><span class="nav-icon">&#8943;</span><span class="nav-label">Mais</span></button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -258,7 +264,6 @@ function renderPasso(){
   var temFooter=current!=='tipo'&&current!=='revisao'&&current!=='revisao_prop';
   document.getElementById('footerAcao').classList.toggle('hidden',!temFooter);
   document.getElementById('btnBack').classList.toggle('hidden',passo<=1);
-  // ajuste padding da page
   var page=document.getElementById('mainPage');
   page.classList.toggle('sem-footer',!temFooter);
   switch(current){
@@ -292,38 +297,21 @@ function renderTipo(){
   return '<div style="padding-top:8px">'+
   '<div class="section-title">O que voce quer registrar?</div>'+
   '<div class="tipo-wrap">'+
-    '<div class="tipo-btn" onclick="selTipo(\'visita\')">'+
-      '<div class="tipo-icon">&#127968;</div>'+
-      '<div class="tipo-label">Visita</div>'+
-      '<div class="tipo-sub">Registro completo de visita</div>'+
-    '</div>'+
-    '<div class="tipo-btn" onclick="selTipo(\'proposta\')">'+
-      '<div class="tipo-icon">&#128172;</div>'+
-      '<div class="tipo-label">Proposta</div>'+
-      '<div class="tipo-sub">Proposta sem visita presencial</div>'+
-    '</div>'+
+    '<div class="tipo-btn" onclick="selTipo(\'visita\')"><div class="tipo-icon">&#127968;</div><div class="tipo-label">Visita</div><div class="tipo-sub">Registro completo de visita</div></div>'+
+    '<div class="tipo-btn" onclick="selTipo(\'proposta\')"><div class="tipo-icon">&#128172;</div><div class="tipo-label">Proposta</div><div class="tipo-sub">Proposta sem visita presencial</div></div>'+
   '</div></div>';
 }
 
-function selTipo(t){
-  S.tipo=t;
-  passo=1;
-  renderPasso();
-}
+function selTipo(t){S.tipo=t;passo=1;renderPasso();}
 
 function renderImovel(){
   var html='<div class="section-title">Qual imovel?</div><div class="imovel-list">';
   for(var i=0;i<imoveis.length;i++){
-    var im=imoveis[i];
-    var sel=S.imovel&&S.imovel.id===im.id;
+    var im=imoveis[i];var sel=S.imovel&&S.imovel.id===im.id;
     html+='<div class="imovel-item'+(sel?' sel':'')+'" onclick="selImovel(this,\''+im.id+'\',\''+escHtml(im.nome)+'\',\''+escHtml(im.preco||'')+'\')">'+
-      '<div class="imovel-dot"></div>'+
-      '<div class="imovel-nome">'+escHtml(im.nome)+'</div>'+
-      '<div class="imovel-preco">'+escHtml(im.preco||'')+'</div>'+
-    '</div>';
+      '<div class="imovel-dot"></div><div class="imovel-nome">'+escHtml(im.nome)+'</div><div class="imovel-preco">'+escHtml(im.preco||'')+'</div></div>';
   }
-  html+='</div>';
-  return html;
+  return html+'</div>';
 }
 
 function selImovel(el,id,nome,preco){
@@ -336,24 +324,15 @@ function selImovel(el,id,nome,preco){
 function renderCorretor(){
   var html='<div class="section-title">Corretor responsavel</div><div class="corretor-list">';
   for(var i=0;i<corretores.length;i++){
-    var c=corretores[i];
-    var sel=S.corretor&&S.corretor.id===c.id;
-    var ini=c.nome.charAt(0);
+    var c=corretores[i];var sel=S.corretor&&S.corretor.id===c.id;var ini=c.nome.charAt(0);
     var fotoHtml=c.foto_url?
-      '<img class="corretor-foto" src="'+c.foto_url+'" alt="'+escHtml(c.nome)+'" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">'+
-      '<div class="corretor-av-fallback" style="display:none">'+ini+'</div>':
+      '<img class="corretor-foto" src="'+c.foto_url+'" alt="'+escHtml(c.nome)+'" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="corretor-av-fallback" style="display:none">'+ini+'</div>':
       '<div class="corretor-av-fallback">'+ini+'</div>';
     html+='<div class="corretor-card'+(sel?' sel':'')+'" onclick="selCorretor(this,\''+c.id+'\',\''+escHtml(c.nome)+'\',\''+escHtml(c.creci||'')+'\')">'+
-      fotoHtml+
-      '<div class="corretor-info">'+
-        '<div class="corretor-nome">'+escHtml(c.nome)+'</div>'+
-        '<div class="corretor-creci">CRECI '+escHtml(c.creci||'')+'</div>'+
-      '</div>'+
-      '<div class="corretor-sel-icon">&#10003;</div>'+
-    '</div>';
+      fotoHtml+'<div class="corretor-info"><div class="corretor-nome">'+escHtml(c.nome)+'</div><div class="corretor-creci">CRECI '+escHtml(c.creci||'')+'</div></div>'+
+      '<div class="corretor-sel-icon">&#10003;</div></div>';
   }
-  html+='</div>';
-  return html;
+  return html+'</div>';
 }
 
 function selCorretor(el,id,nome,creci){
@@ -375,45 +354,37 @@ function renderInteressado(){
     var s=S.origem===origens[i];
     html+='<div class="chip'+(s?' sel':'')+'" onclick="selOrigem(this,\''+escHtml(origens[i])+'\')">'+escHtml(origens[i])+'</div>';
   }
-  html+='</div></div>'+
-  '<div class="field"><div class="field-lbl">Corretor parceiro?</div>'+
-  '<div class="parceiro-toggle">'+
-    '<div class="parceiro-btn'+(S.parceiro===false?' sel':'')+'" onclick="selParceiro(false)">Nao</div>'+
-    '<div class="parceiro-btn'+(typeof S.parceiro==='string'?' sel':'')+'" onclick="selParceiro(true)">Sim</div>'+
-  '</div>'+
+  html+='</div></div><div class="field"><div class="field-lbl">Corretor parceiro?</div>'+
+  '<div class="parceiro-toggle"><div class="parceiro-btn'+(S.parceiro===false?' sel':'')+'" onclick="selParceiro(false)">Nao</div>'+
+  '<div class="parceiro-btn'+(typeof S.parceiro==='string'?' sel':'')+'" onclick="selParceiro(true)">Sim</div></div>'+
   '<div id="parceiroNomeWrap" '+(typeof S.parceiro!=='string'?'class="hidden"':'')+'>'+
-  '<input type="text" class="finput" id="fParceiroNome" placeholder="Nome do corretor parceiro" value="'+(typeof S.parceiro==='string'?escHtml(S.parceiro):'')+'" oninput="S.parceiro=this.value">'+
-  '</div></div>';
+  '<input type="text" class="finput" id="fParceiroNome" placeholder="Nome do corretor parceiro" value="'+(typeof S.parceiro==='string'?escHtml(S.parceiro):'')+'" oninput="S.parceiro=this.value"></div></div>';
   return html;
 }
 
-function selOrigem(el,val){
-  S.origem=val;
-  document.querySelectorAll('#origensWrap .chip').forEach(function(c){c.classList.remove('sel');});
-  el.classList.add('sel');
-}
+function selOrigem(el,val){S.origem=val;document.querySelectorAll('#origensWrap .chip').forEach(function(c){c.classList.remove('sel');});el.classList.add('sel');}
 
 function selParceiro(sim){
-  if(sim){
-    S.parceiro='';
-    document.getElementById('parceiroNomeWrap').classList.remove('hidden');
-    document.querySelectorAll('.parceiro-btn').forEach(function(b,i){b.classList.toggle('sel',i===1);});
-  }else{
-    S.parceiro=false;
-    document.getElementById('parceiroNomeWrap').classList.add('hidden');
-    document.querySelectorAll('.parceiro-btn').forEach(function(b,i){b.classList.toggle('sel',i===0);});
-  }
+  if(sim){S.parceiro='';document.getElementById('parceiroNomeWrap').classList.remove('hidden');document.querySelectorAll('.parceiro-btn').forEach(function(b,i){b.classList.toggle('sel',i===1);});}
+  else{S.parceiro=false;document.getElementById('parceiroNomeWrap').classList.add('hidden');document.querySelectorAll('.parceiro-btn').forEach(function(b,i){b.classList.toggle('sel',i===0);});}
 }
 
 function renderFeedback(){
-  var obs=['Preco alto','Localizacao','Tamanho','Condominio caro','Precisa reformar','Sem vaga','Sem area de lazer','Documentacao','Nao gostou do imovel','Nao qualificado financeiramente'];
+  var presets=['Preco alto','Localizacao','Tamanho','Condominio caro','Precisa reformar','Sem vaga','Sem area de lazer','Documentacao','Nao gostou do imovel','Nao qualificado financeiramente'];
   var html='<div class="section-title">Feedback da visita</div>'+
   '<div class="field"><div class="field-lbl">Principais objecoes</div><div class="chips" id="objWrap">';
-  for(var i=0;i<obs.length;i++){
-    var sel=S.objections.indexOf(obs[i])>=0;
-    html+='<div class="chip'+(sel?' sel':'')+'" onclick="toggleObj(this,\''+escHtml(obs[i])+'\')">'+escHtml(obs[i])+'</div>';
+  for(var i=0;i<presets.length;i++){
+    var sel=S.objections.indexOf(presets[i])>=0;
+    html+='<div class="chip'+(sel?' sel':'')+'" onclick="toggleObj(this,\''+escHtml(presets[i])+'\')">'+escHtml(presets[i])+'</div>';
   }
-  html+='</div></div>'+
+  // chips de objecoes personalizadas ja adicionadas
+  for(var j=0;j<S.objections.length;j++){
+    if(presets.indexOf(S.objections[j])<0){
+      html+='<div class="chip sel" onclick="toggleObj(this,\''+escHtml(S.objections[j])+'\')">'+escHtml(S.objections[j])+'</div>';
+    }
+  }
+  html+='</div>'+
+  '<div class="obj-add-row"><input type="text" class="obj-add-input" id="objCustomInput" placeholder="Outra objecao..."><button class="obj-add-btn" onclick="addObjCustom()">+ Add</button></div></div>'+
   '<div class="field"><div class="field-lbl">Observacoes</div>'+
   '<textarea class="finput" id="fObs" placeholder="Detalhes da visita, comentarios do interessado...">'+escHtml(S.observacoes)+'</textarea></div>';
   return html;
@@ -425,26 +396,50 @@ function toggleObj(el,val){
   else{S.objections.push(val);el.classList.add('sel');}
 }
 
+function addObjCustom(){
+  var inp=document.getElementById('objCustomInput');
+  if(!inp)return;
+  var val=inp.value.trim();
+  if(!val)return;
+  if(S.objections.indexOf(val)<0){
+    S.objections.push(val);
+    var wrap=document.getElementById('objWrap');
+    var chip=document.createElement('div');
+    chip.className='chip sel';
+    chip.textContent=val;
+    chip.onclick=function(){toggleObj(chip,val);};
+    wrap.appendChild(chip);
+  }
+  inp.value='';
+}
+
 function renderResultado(){
-  var its=[{v:'Quer comprar',c:'sel-green',icon:'&#9989;'},{v:'Esta pensando',c:'sel-yellow',icon:'&#129300;'},{v:'Quer segunda visita',c:'sel-blue',icon:'&#128198;'},{v:'Nao gostou',c:'sel-red',icon:'&#10060;'}];
+  var its=[
+    {v:'Quer comprar',c:'sel-green',icon:'&#9989;'},
+    {v:'Esta pensando',c:'sel-yellow',icon:'&#129300;'},
+    {v:'Quer segunda visita',c:'sel-blue',icon:'&#128198;'},
+    {v:'Nao gostou',c:'sel-red',icon:'&#10060;'}
+  ];
   var html='<div class="section-title">Resultado da visita</div>'+
-  '<div class="field"><div class="field-lbl">Intencao do interessado <span class="req">*</span></div><div class="chips" id="intWrap">';
+  '<div class="field"><div class="field-lbl">Intencao do interessado <span class="req">*</span></div>'+
+  '<div class="intencao-grid" id="intWrap">';
   for(var i=0;i<its.length;i++){
     var it=its[i];var sel=S.intencao===it.v;
-    html+='<div class="chip'+(sel?' '+it.c:'')+'" onclick="selIntencao(this,\''+escHtml(it.v)+'\',\''+it.c+'\')">'+it.icon+' '+escHtml(it.v)+'</div>';
+    html+='<div class="intencao-btn'+(sel?' '+it.c:'')+'" onclick="selIntencao(this,\''+escHtml(it.v)+'\',\''+it.c+'\')">'+
+      '<span class="int-icon">'+it.icon+'</span>'+escHtml(it.v)+'</div>';
   }
   html+='</div></div>'+
   '<div class="field"><div class="field-lbl">Qualificado financeiramente?</div>'+
   '<div class="toggle-row">'+
-    '<div class="toggle-btn'+(S.qualif===true?' sel-sim':'')+'" onclick="selQualif(true)">&#10003; Sim, qualificado</div>'+
-    '<div class="toggle-btn'+(S.qualif===false?' sel-nao':'')+'" onclick="selQualif(false)">&#10007; Nao qualificado</div>'+
+  '<div class="toggle-btn'+(S.qualif===true?' sel-sim':'')+'" onclick="selQualif(true)">&#10003; Sim, qualificado</div>'+
+  '<div class="toggle-btn'+(S.qualif===false?' sel-nao':'')+'" onclick="selQualif(false)">&#10007; Nao qualificado</div>'+
   '</div></div>';
   return html;
 }
 
 function selIntencao(el,val,cls){
   S.intencao=val;
-  document.querySelectorAll('#intWrap .chip').forEach(function(c){c.classList.remove('sel-green','sel-yellow','sel-blue','sel-red');});
+  document.querySelectorAll('#intWrap .intencao-btn').forEach(function(c){c.classList.remove('sel-green','sel-yellow','sel-blue','sel-red');});
   el.classList.add(cls);
 }
 
@@ -459,15 +454,16 @@ function selQualif(val){
 
 function renderPagamento(){
   var pts=[{v:'a_vista',l:'A vista'},{v:'financiamento',l:'Financiamento'},{v:'parcelamento_direto',l:'Parcelamento direto'},{v:'dacao_a_vista',l:'Dacao + a vista'},{v:'dacao_financiamento',l:'Dacao + financiamento'},{v:'dacao_parcelamento_direto',l:'Dacao + parcelamento'},{v:'parcelamento_direto_financiamento',l:'Parcelamento + financiamento'}];
-  var html='<div class="section-title">Formas de pagamento de interesse</div>'+
-  '<div class="field"><div class="field-lbl">Pode selecionar mais de uma</div><div class="chips" id="pagtoWrap">';
+  var html='<div class="section-title">Formas de pagamento mencionadas</div>'+
+  '<div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5">Selecione tudo que o interessado mencionou durante a visita. Na proposta formal, sera escolhida uma forma definitiva.</div>'+
+  '<div class="field"><div class="chips" id="pagtoWrap">';
   for(var i=0;i<pts.length;i++){
     var p=pts[i];var sel=S.pagto.indexOf(p.v)>=0;
     html+='<div class="chip'+(sel?' sel':'')+'" onclick="togglePagto(this,\''+p.v+'\')">'+escHtml(p.l)+'</div>';
   }
   html+='</div></div>'+
-  '<div class="field"><div class="field-lbl">Detalhes de pagamento</div>'+
-  '<textarea class="finput" id="fPagtoObs" placeholder="Ex: entrada de 20%, financiamento CEF...">'+escHtml(S.pagto_detalhes)+'</textarea></div>';
+  '<div class="field"><div class="field-lbl">Detalhes</div>'+
+  '<textarea class="finput" id="fPagtoObs" placeholder="Ex: tem FGTS, precisa de financiamento maior que 70%...">'+escHtml(S.pagto_detalhes)+'</textarea></div>';
   return html;
 }
 
@@ -494,7 +490,7 @@ function renderRevisao(){
       (S.qualif!==null?'<div class="rev-val" style="font-size:11px;color:var(--muted);margin-top:2px">'+(S.qualif?'&#10003; Qualificado':'&#10007; Nao qualificado')+'</div>':'')+
     '</div>'+
     (S.objections.length?'<div class="rev-section"><div class="rev-lbl">Objecoes</div><div class="rev-chips">'+S.objections.map(function(o){return '<span class="rev-chip">'+escHtml(o)+'</span>';}).join('')+'</div></div>':'')+
-    (S.pagto.length?'<div class="rev-section"><div class="rev-lbl">Pagamento</div><div class="rev-chips">'+S.pagto.map(function(p){return '<span class="rev-chip">'+escHtml(pL[p]||p)+'</span>';}).join('')+'</div></div>':'')+
+    (S.pagto.length?'<div class="rev-section"><div class="rev-lbl">Pagamento mencionado</div><div class="rev-chips">'+S.pagto.map(function(p){return '<span class="rev-chip">'+escHtml(pL[p]||p)+'</span>';}).join('')+'</div></div>':'')+
     (S.observacoes?'<div class="rev-section"><div class="rev-lbl">Observacoes</div><div class="rev-val" style="font-size:12px;font-weight:600">'+escHtml(S.observacoes)+'</div></div>':'')+
   '</div>'+
   '<button class="btn-next green" style="width:100%;padding:16px;font-size:15px;border-radius:12px;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px" id="btnSalvarVisita" onclick="salvarVisita()">&#10003; Salvar visita</button>'+
@@ -512,38 +508,17 @@ function renderPropostaForm(){
   '<div class="field"><div class="field-lbl">Valor proposto</div>'+
   '<div class="valor-wrap"><span class="valor-prefix">R$</span><input type="text" inputmode="numeric" class="valor-input" id="fPropValor" placeholder="0" value="'+escHtml(S.prop_valor)+'" oninput="mascaraValor(this)"></div></div>'+
   '<div class="field"><div class="field-lbl">Forma de pagamento</div><div class="chips" id="propPagtoWrap">';
-  for(var i=0;i<pts.length;i++){
-    var p=pts[i];var sel=S.prop_pagto===p.v;
-    html+='<div class="chip'+(sel?' sel':'')+'" onclick="selPropPagto(this,\''+p.v+'\')">'+escHtml(p.l)+'</div>';
-  }
+  for(var i=0;i<pts.length;i++){var p=pts[i];var sel=S.prop_pagto===p.v;html+='<div class="chip'+(sel?' sel':'')+'" onclick="selPropPagto(this,\''+p.v+'\')">'+escHtml(p.l)+'</div>';}
   html+='</div></div><div class="field"><div class="field-lbl">Status</div><div class="chips" id="propStatusWrap">';
-  for(var j=0;j<sts.length;j++){
-    var s=sts[j];var ss=S.prop_status===s.v;
-    html+='<div class="chip'+(ss?' '+s.c:'')+'" onclick="selPropStatus(this,\''+s.v+'\',\''+s.c+'\')">'+escHtml(s.l)+'</div>';
-  }
-  html+='</div></div>'+
-  '<div class="field"><div class="field-lbl">Observacoes</div>'+
+  for(var j=0;j<sts.length;j++){var s=sts[j];var ss=S.prop_status===s.v;html+='<div class="chip'+(ss?' '+s.c:'')+'" onclick="selPropStatus(this,\''+s.v+'\',\''+s.c+'\')">'+escHtml(s.l)+'</div>';}
+  html+='</div></div><div class="field"><div class="field-lbl">Observacoes</div>'+
   '<textarea class="finput" id="fPropObs" placeholder="Condicoes, contrapropostas, detalhes...">'+escHtml(S.prop_obs)+'</textarea></div>';
   return html;
 }
 
-function selPropPagto(el,val){
-  S.prop_pagto=val;
-  document.querySelectorAll('#propPagtoWrap .chip').forEach(function(c){c.classList.remove('sel');});
-  el.classList.add('sel');
-}
-
-function selPropStatus(el,val,cls){
-  S.prop_status=val;
-  document.querySelectorAll('#propStatusWrap .chip').forEach(function(c){c.classList.remove('sel-yellow','sel-green','sel-red','sel-muted');});
-  el.classList.add(cls);
-}
-
-function mascaraValor(el){
-  var n=el.value.replace(/\D/g,'');
-  el.value=n?parseInt(n,10).toLocaleString('pt-BR'):'';
-  S.prop_valor=el.value;
-}
+function selPropPagto(el,val){S.prop_pagto=val;document.querySelectorAll('#propPagtoWrap .chip').forEach(function(c){c.classList.remove('sel');});el.classList.add('sel');}
+function selPropStatus(el,val,cls){S.prop_status=val;document.querySelectorAll('#propStatusWrap .chip').forEach(function(c){c.classList.remove('sel-yellow','sel-green','sel-red','sel-muted');});el.classList.add(cls);}
+function mascaraValor(el){var n=el.value.replace(/\D/g,'');el.value=n?parseInt(n,10).toLocaleString('pt-BR'):'';S.prop_valor=el.value;}
 
 function renderRevisaoProp(){
   var pL={a_vista:'A vista',financiamento:'Financiamento',parcelamento_direto:'Parcelamento direto',dacao_a_vista:'Dacao + a vista',dacao_financiamento:'Dacao + financiamento',dacao_parcelamento_direto:'Dacao + parcelamento',parcelamento_direto_financiamento:'Parcelamento + financiamento'};
@@ -579,31 +554,18 @@ function validarPasso(){
   var current=passos()[passo];
   if(current==='imovel'&&!S.imovel){showToast('Selecione um imovel');return false;}
   if(current==='corretor'&&!S.corretor){showToast('Selecione o corretor responsavel');return false;}
-  if(current==='interessado'){
-    var el=document.getElementById('fNome');
-    if(!el||!el.value.trim()){showToast('Informe o nome do interessado');return false;}
-  }
-  if(current==='proposta_form'){
-    var el2=document.getElementById('fPropNome');
-    if(!el2||!el2.value.trim()){showToast('Informe o nome do interessado');return false;}
-  }
+  if(current==='interessado'){var el=document.getElementById('fNome');if(!el||!el.value.trim()){showToast('Informe o nome do interessado');return false;}}
+  if(current==='proposta_form'){var el2=document.getElementById('fPropNome');if(!el2||!el2.value.trim()){showToast('Informe o nome do interessado');return false;}}
   if(current==='resultado'&&!S.intencao){showToast('Selecione a intencao do interessado');return false;}
   return true;
 }
 
 function coletarPasso(){
   var current=passos()[passo];
-  if(current==='interessado'){
-    S.nome=(document.getElementById('fNome')||{}).value||'';
-    S.data=(document.getElementById('fData')||{}).value||'';
-  }
+  if(current==='interessado'){S.nome=(document.getElementById('fNome')||{}).value||'';S.data=(document.getElementById('fData')||{}).value||'';}
   if(current==='feedback'){S.observacoes=((document.getElementById('fObs')||{}).value||'').trim();}
   if(current==='pagamento'){S.pagto_detalhes=((document.getElementById('fPagtoObs')||{}).value||'').trim();}
-  if(current==='proposta_form'){
-    S.nome=((document.getElementById('fPropNome')||{}).value||'').trim();
-    S.data=(document.getElementById('fPropData')||{}).value||'';
-    S.prop_obs=((document.getElementById('fPropObs')||{}).value||'').trim();
-  }
+  if(current==='proposta_form'){S.nome=((document.getElementById('fPropNome')||{}).value||'').trim();S.data=(document.getElementById('fPropData')||{}).value||'';S.prop_obs=((document.getElementById('fPropObs')||{}).value||'').trim();}
 }
 
 // ---- SALVAR ----
@@ -612,25 +574,11 @@ async function salvarVisita(){
   var btn=document.getElementById('btnSalvarVisita');
   if(btn){btn.disabled=true;btn.textContent='Salvando...';}
   try{
-    var payload={
-      imovel_id:S.imovel.id,imovel_nome:S.imovel.nome,
-      data_visita:S.data,hora_visita:null,
-      corretor:S.corretor.nome,
-      parceiro:typeof S.parceiro==='string'&&S.parceiro?S.parceiro:null,
-      origem:S.origem||null,nome_interessado:S.nome,
-      objections:S.objections.length?S.objections:null,
-      observacoes:S.observacoes||null,intencao:S.intencao||null,
-      qualificado_financeiramente:S.qualif,
-      formas_pagamento:S.pagto.length?S.pagto:null,
-      pagto_detalhes:S.pagto_detalhes||null
-    };
+    var payload={imovel_id:S.imovel.id,imovel_nome:S.imovel.nome,data_visita:S.data,hora_visita:null,corretor:S.corretor.nome,parceiro:typeof S.parceiro==='string'&&S.parceiro?S.parceiro:null,origem:S.origem||null,nome_interessado:S.nome,objections:S.objections.length?S.objections:null,observacoes:S.observacoes||null,intencao:S.intencao||null,qualificado_financeiramente:S.qualif,formas_pagamento:S.pagto.length?S.pagto:null,pagto_detalhes:S.pagto_detalhes||null};
     var res=await sb.from('visitas').insert(payload);
     if(res.error)throw res.error;
     mostrarSucessoVisita();
-  }catch(e){
-    showToast('Erro ao salvar: '+e.message);
-    if(btn){btn.disabled=false;btn.textContent='&#10003; Salvar visita';}
-  }
+  }catch(e){showToast('Erro ao salvar: '+e.message);if(btn){btn.disabled=false;btn.textContent='&#10003; Salvar visita';}}
 }
 
 function mostrarSucessoVisita(){
@@ -638,70 +586,40 @@ function mostrarSucessoVisita(){
   document.getElementById('footerAcao').classList.add('hidden');
   var page=document.getElementById('mainPage');
   if(S.intencao==='Quer comprar'){
-    page.innerHTML=
-      '<div class="success-wrap">'+
-        '<div class="success-icon">&#10003;</div>'+
-        '<div class="success-title">Visita registrada!</div>'+
-        '<div class="success-sub">Visita de '+escHtml(S.nome)+' em '+escHtml(S.imovel.nome)+' salva com sucesso.</div>'+
-      '</div>'+
-      '<div class="proposta-pos">'+
-        '<div class="proposta-pos-title">&#128172; Essa visita gerou uma proposta?</div>'+
-        '<div class="proposta-pos-sub">Interessado demonstrou intencao de compra. Registrar proposta agora?</div>'+
-        '<div class="proposta-pos-btns">'+
-          '<button class="pp-btn pp-sim" onclick="iniciarPropostaPosVisita()">Sim, registrar</button>'+
-          '<button class="pp-btn pp-nao" onclick="finalizarSemProposta()">Nao, encerrar</button>'+
-        '</div>'+
-      '</div>';
-  }else{
-    page.innerHTML=renderSucesso('Visita registrada!','Visita de '+escHtml(S.nome)+' em '+escHtml(S.imovel.nome)+' salva.');
-  }
+    page.innerHTML='<div class="success-wrap"><div class="success-icon">&#10003;</div><div class="success-title">Visita registrada!</div><div class="success-sub">Visita de '+escHtml(S.nome)+' em '+escHtml(S.imovel.nome)+' salva com sucesso.</div></div>'+
+    '<div class="proposta-pos"><div class="proposta-pos-title">&#128172; Essa visita gerou uma proposta?</div><div class="proposta-pos-sub">Interessado demonstrou intencao de compra. Registrar proposta agora?</div>'+
+    '<div class="proposta-pos-btns"><button class="pp-btn pp-sim" onclick="iniciarPropostaPosVisita()">Sim, registrar</button><button class="pp-btn pp-nao" onclick="finalizarSemProposta()">Nao, encerrar</button></div></div>';
+  }else{page.innerHTML=renderSucesso('Visita registrada!','Visita de '+escHtml(S.nome)+' em '+escHtml(S.imovel.nome)+' salva.');}
 }
 
 function iniciarPropostaPosVisita(){
-  S.tipo='proposta';
-  S.prop_valor='';S.prop_pagto=null;S.prop_status='em_andamento';S.prop_obs='';
+  S.tipo='proposta';S.prop_valor='';S.prop_pagto=null;S.prop_status='em_andamento';S.prop_obs='';
   passo=PASSOS_PROPOSTA.indexOf('proposta_form');
   document.getElementById('stepBarWrap').classList.remove('hidden');
   document.getElementById('footerAcao').classList.remove('hidden');
   renderPasso();
 }
 
-function finalizarSemProposta(){
-  document.getElementById('mainPage').innerHTML=renderSucesso('Registro concluido!','Tudo salvo com sucesso.');
-}
+function finalizarSemProposta(){document.getElementById('mainPage').innerHTML=renderSucesso('Registro concluido!','Tudo salvo com sucesso.');}
 
 async function salvarProposta(){
   var btn=document.querySelector('#mainPage .btn-next.green');
   if(btn){btn.disabled=true;btn.textContent='Salvando...';}
   try{
     var vRaw=S.prop_valor?parseFloat(S.prop_valor.replace(/\./g,'').replace(',','.'))||null:null;
-    var payload={
-      imovel_id:S.imovel.id,nome_interessado:S.nome,
-      data:S.data||null,valor_proposto:vRaw,
-      forma_pagamento:S.prop_pagto||null,
-      status:S.prop_status||'em_andamento',
-      observacao:S.prop_obs||null
-    };
+    var payload={imovel_id:S.imovel.id,nome_interessado:S.nome,data:S.data||null,valor_proposto:vRaw,forma_pagamento:S.prop_pagto||null,status:S.prop_status||'em_andamento',observacao:S.prop_obs||null};
     var res=await sb.from('propostas').insert(payload);
     if(res.error)throw res.error;
     document.getElementById('stepBarWrap').classList.add('hidden');
     document.getElementById('footerAcao').classList.add('hidden');
     document.getElementById('mainPage').innerHTML=renderSucesso('Proposta registrada!','Proposta de '+escHtml(S.nome)+' em '+escHtml(S.imovel.nome)+' salva.');
-  }catch(e){
-    showToast('Erro ao salvar: '+e.message);
-    if(btn){btn.disabled=false;btn.textContent='&#10003; Salvar proposta';}
-  }
+  }catch(e){showToast('Erro ao salvar: '+e.message);if(btn){btn.disabled=false;btn.textContent='&#10003; Salvar proposta';}}
 }
 
 function renderSucesso(titulo,sub){
-  return '<div class="success-wrap">'+
-    '<div class="success-icon">&#10003;</div>'+
-    '<div class="success-title">'+escHtml(titulo)+'</div>'+
-    '<div class="success-sub">'+escHtml(sub)+'</div>'+
-    '<button class="novo-btn" onclick="resetar()">&#43; Novo registro</button>'+
-    ' &nbsp; '+
-    '<button class="novo-btn" style="background:var(--bg);color:var(--navy);border:1.5px solid var(--s2)" onclick="irDashboard(\'excl\')">&#127968; Imoveis</button>'+
-  '</div>';
+  return '<div class="success-wrap"><div class="success-icon">&#10003;</div><div class="success-title">'+escHtml(titulo)+'</div><div class="success-sub">'+escHtml(sub)+'</div>'+
+  '<button class="novo-btn" onclick="resetar()">&#43; Novo registro</button> &nbsp; '+
+  '<button class="novo-btn" style="background:var(--bg);color:var(--navy);border:1.5px solid var(--s2)" onclick="irDashboard(\'excl\')">&#127968; Imoveis</button></div>';
 }
 
 function resetar(){
@@ -717,21 +635,9 @@ function irDashboard(tab){
   window.location.href=base+'index.html'+(tab?'#'+tab:'');
 }
 
-function hoje(){
-  var d=new Date();
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
-
-function escHtml(s){
-  if(!s)return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function showToast(msg){
-  var t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(function(){t.classList.remove('show');},2800);
-}
+function hoje(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function escHtml(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
 
 init();
 </script>
