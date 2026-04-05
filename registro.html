@@ -4,10 +4,41 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Certeiro &mdash; Registro</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#191949">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Certeiro One">
+<link rel="apple-touch-icon" href="./icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+.auth-overlay{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px}
+.auth-box{background:#fff;border-radius:20px;padding:32px 24px;width:100%;max-width:340px;text-align:center}
+.auth-logo{font-size:13px;font-weight:900;letter-spacing:2.2px;text-transform:uppercase;color:var(--navy);margin-bottom:4px}
+.auth-sub{font-size:9px;color:#8E8EA0;letter-spacing:1.4px;text-transform:uppercase;margin-bottom:28px}
+.auth-lbl{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);text-align:left;margin-bottom:6px}
+.auth-input{width:100%;border:1.5px solid #ECECF1;border-radius:12px;padding:14px 16px;font-size:15px;font-family:'Nunito Sans',sans-serif;color:var(--navy);outline:none;text-align:left;margin-bottom:14px;-webkit-appearance:none;background:#fff;letter-spacing:normal}
+.auth-input:focus{border-color:var(--navy)}
+.auth-btn{width:100%;background:var(--navy);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;font-family:'Nunito Sans',sans-serif;cursor:pointer}
+.auth-err{font-size:12px;color:#EF4444;font-weight:700;margin-top:10px;min-height:18px}
+.auth-link{font-size:11px;color:var(--muted);cursor:pointer;display:block;margin-top:12px;text-decoration:underline}
+.mais-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:800;display:none}
+.mais-overlay.open{display:block}
+.mais-drawer{position:fixed;bottom:56px;left:0;right:0;background:var(--white);border-radius:20px 20px 0 0;padding:20px 16px 24px;z-index:900;box-shadow:0 -4px 24px rgba(25,25,73,0.12);transform:translateY(calc(100% + 56px));transition:transform .25s ease;max-height:80vh;overflow-y:auto}
+.mais-drawer.open{transform:translateY(0)}
+.mais-handle{width:36px;height:4px;background:var(--s3);border-radius:2px;margin:0 auto 18px}
+.mais-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.mais-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mais-item{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg);border-radius:12px;cursor:pointer;transition:background .15s}
+.mais-item:active{background:var(--s2)}
+.mais-item.disabled{opacity:0.4;cursor:default}
+.mais-icon{font-size:20px;flex-shrink:0}
+.mais-info .mais-lbl{font-size:12px;font-weight:800;color:var(--text)}
+.mais-info .mais-sub{font-size:9px;color:var(--muted);margin-top:1px}
+.mais-badge{font-size:8px;font-weight:700;padding:2px 7px;border-radius:8px;background:var(--s2);color:var(--muted);margin-top:3px;display:inline-block}
 :root{--navy:#191949;--white:#FFFFFF;--bg:#F5F5F8;--text:#191949;--muted:#8E8EA0;--s2:#ECECF1;--s3:#D9D9E3;--green:#10B981;--green-bg:rgba(16,185,129,0.08);--green-l:#D1FAE5;--red:#EF4444;--red-bg:rgba(239,68,68,0.08);--red-l:#FEE2E2;--yellow:#F59E0B;--yellow-bg:rgba(245,158,11,0.08);--yellow-l:#FEF3C7;--blue:#3B82F6;--blue-bg:rgba(59,130,246,0.08);--blue-l:#DBEAFE;--card-shadow:0 1px 3px rgba(25,25,73,0.06),0 1px 2px rgba(25,25,73,0.04);--card-radius:14px}
 html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
 .hdr{background:var(--navy);display:flex;justify-content:space-between;align-items:center;padding:14px 20px 12px;position:sticky;top:0;z-index:200}
@@ -137,14 +168,34 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 .btn-next:disabled{opacity:0.4;cursor:not-allowed}
 .btn-next.green{background:var(--green)}
 /* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--s2);display:flex;justify-content:space-around;padding:6px 0 env(safe-area-inset-bottom,8px);z-index:999;max-width:480px;margin:0 auto;box-shadow:0 -2px 8px rgba(25,25,73,0.04)}
-@media(min-width:600px){.bottom-nav{left:50%;right:auto;transform:translateX(-50%);width:480px;border-radius:0 0 0 0}}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--s2);display:flex;justify-content:space-around;padding:6px 0 env(safe-area-inset-bottom,8px);z-index:999;box-shadow:0 -2px 8px rgba(25,25,73,0.04)}
 .nav-btn{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 8px;cursor:pointer;transition:all .15s;min-width:44px;border-radius:8px}
 .nav-btn .nav-icon{font-size:18px;line-height:1}
 .nav-btn .nav-label{font-size:8px;font-weight:700;color:var(--muted)}
-.nav-btn.active .nav-label{color:var(--navy)}
-.nav-btn:not(.active){opacity:0.4}
-.nav-btn.active{opacity:1;background:rgba(25,25,73,0.06)}
+.nav-btn:not(.active) .nav-icon,.nav-btn:not(.active) .nav-label{opacity:0.3;color:var(--muted)}
+.nav-btn.active{opacity:1;background:var(--navy);border-radius:12px;padding:5px 8px}
+.nav-btn.active .nav-icon,.nav-btn.active .nav-label{color:#fff}
+/* IMOVEL MGMT */
+.mgmt-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.mgmt-h1{font-size:16px;font-weight:900;color:var(--navy)}
+.btn-novo-im{background:var(--navy);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:800;font-family:'Nunito Sans',sans-serif;cursor:pointer}
+.btn-voltar-mgmt{background:none;border:none;color:var(--navy);font-size:13px;font-weight:700;font-family:'Nunito Sans',sans-serif;cursor:pointer;padding:0;display:flex;align-items:center;gap:4px}
+.btn-inat-toggle{width:100%;background:none;border:1.5px solid var(--s2);border-radius:10px;padding:12px 14px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:left;display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.im-card{background:var(--white);border-radius:14px;padding:16px 18px;border:1px solid var(--s2);box-shadow:var(--card-shadow);margin-bottom:10px}
+.im-nome{font-size:14px;font-weight:800;color:var(--navy);margin-bottom:2px}
+.im-sub{font-size:11px;color:var(--muted)}
+.im-btns{display:flex;gap:8px;margin-top:12px}
+.im-edit{flex:1;background:var(--bg);border:1.5px solid var(--s2);border-radius:8px;padding:10px;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center}
+.im-desat{flex:1;background:transparent;border:1.5px solid var(--red-l);border-radius:8px;padding:10px;font-size:12px;font-weight:700;color:var(--red);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center}
+.im-del{background:transparent;border:1.5px solid var(--s2);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;flex-shrink:0;line-height:1}
+/* MODAL IMOVEL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;display:flex;align-items:flex-end;justify-content:center}
+.modal-ov.hidden{display:none!important}
+.modal-sh{background:var(--white);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto}
+.modal-tit{font-size:16px;font-weight:900;color:var(--navy);margin-bottom:20px}
+.modal-btns{display:flex;gap:10px;margin-top:20px}
+.modal-cancel{flex:1;background:var(--bg);border:1.5px solid var(--s2);border-radius:12px;padding:14px;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;font-family:'Nunito Sans',sans-serif}
+.modal-save{flex:1;background:var(--navy);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;color:#fff;cursor:pointer;font-family:'Nunito Sans',sans-serif}
 /* LOADING */
 .loading{text-align:center;padding:60px 20px}
 .loading-spin{width:28px;height:28px;border:3px solid var(--s2);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
@@ -157,13 +208,52 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 .toast.show{opacity:1}
 ::-webkit-scrollbar{width:0;height:0}
 .hidden{display:none!important}
+.app-wrap{display:block}
+.nav-sep{display:none}
+.nav-badge-soon{display:none}
+.nav-module{display:none}
+@media(min-width:900px){
+  .hdr{padding:16px 40px}
+  .app-wrap{display:flex;align-items:flex-start;max-width:1440px;margin:0 auto;padding:0 32px}
+  .bottom-nav{position:sticky;top:72px;width:210px;min-width:210px;flex-shrink:0;background:var(--white);border:1px solid var(--s2);border-radius:var(--card-radius);box-shadow:var(--card-shadow);flex-direction:column;justify-content:flex-start;align-items:stretch;padding:8px 6px;height:fit-content;margin-top:20px;left:auto;right:auto;bottom:auto;z-index:10;border-top:none;box-shadow:var(--card-shadow)}
+  .nav-btn{flex-direction:row;justify-content:flex-start;gap:10px;padding:10px 12px;border-radius:8px;min-width:auto;width:100%;border-left:3px solid transparent;transition:background .15s,border-color .15s}
+  .nav-btn .nav-icon,.nav-btn .nav-label{opacity:0.45;color:var(--text)}
+  .nav-btn:not(.active):not([disabled]):hover{background:rgba(25,25,73,0.04)}
+  .nav-btn:not(.active):not([disabled]):hover .nav-icon,.nav-btn:not(.active):not([disabled]):hover .nav-label{opacity:0.8}
+  .nav-btn.active{background:rgba(25,25,73,0.06);border-left-color:var(--navy);border-radius:0 8px 8px 0;padding:10px 12px}
+  .nav-btn.active .nav-icon,.nav-btn.active .nav-label{opacity:1;color:var(--text);font-weight:700}
+  .nav-btn[id="nav-mais"]{display:none}
+  .mais-overlay,.mais-drawer{display:none!important}
+  .nav-btn .nav-label{font-size:12px;font-weight:700;color:var(--text)}
+  .nav-btn .nav-icon{font-size:17px}
+  .nav-sep{display:block;height:1px;background:var(--s2);margin:6px 8px}
+  .nav-module.role-vis{display:flex;opacity:0.5}
+  .nav-module[disabled]{cursor:default}
+  .nav-badge-soon{font-size:8px;font-weight:700;padding:2px 6px;border-radius:6px;background:var(--s2);color:var(--muted);margin-left:auto}
+  .page{flex:1;max-width:none;min-width:0;padding:20px 0 80px 28px}
+  .footer-acao{left:274px;bottom:0;border-top:none;border-top:1px solid var(--s2)}
+  .step-bar{max-width:none}
+}
 </style>
 </head>
 <body>
+<div class="auth-overlay" id="authOverlay" style="display:none">
+  <div class="auth-box">
+    <div class="auth-logo">Certeiro One</div>
+    <div class="auth-sub">Registro</div>
+    <label class="auth-lbl">Email</label>
+    <input type="email" class="auth-input" id="authEmail" placeholder="seu@email.com" autocomplete="username">
+    <label class="auth-lbl">Senha</label>
+    <input type="password" class="auth-input" id="authSenha" placeholder="••••••" onkeydown="if(event.key==='Enter')loginUser()" autocomplete="current-password">
+    <button class="auth-btn" id="authBtn" onclick="loginUser()">Entrar</button>
+    <div class="auth-err" id="authErr"></div>
+    <span class="auth-link" onclick="recuperarSenha()">Esqueci minha senha</span>
+  </div>
+</div>
 
 <div class="hdr">
   <div class="hdr-logo">
-    <div class="brand">Gabriel Certeiro</div>
+    <div class="brand">Certeiro One</div>
     <div class="sub">Registro</div>
   </div>
   <div class="hdr-date">
@@ -176,8 +266,25 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
   <div class="step-bar" id="stepBar"></div>
 </div>
 
+<div class="app-wrap">
+<nav class="bottom-nav" id="bottomNav">
+  <button class="nav-btn" id="nav-alertas" onclick="irDashboard('alertas')"><span class="nav-icon">&#9889;</span><span class="nav-label">Alertas</span></button>
+  <button class="nav-btn" id="nav-imoveis" onclick="irDashboard('excl')"><span class="nav-icon">&#127968;</span><span class="nav-label">Exclusividades</span></button>
+  <button class="nav-btn active" id="nav-registro"><span class="nav-icon">&#128203;</span><span class="nav-label">Registro</span></button>
+  <button class="nav-btn" id="nav-mais" onclick="abrirMais()"><span class="nav-icon">&#8943;</span><span class="nav-label">Mais</span></button>
+  <div class="nav-sep"></div>
+  <button class="nav-btn nav-module" id="navModCaptacao" onclick="irModulo('captacao')"><span class="nav-icon">&#127919;</span><span class="nav-label">Captacao</span></button>
+  <button class="nav-btn nav-module" id="navModVendas" onclick="irModulo('vendas')"><span class="nav-icon">&#128176;</span><span class="nav-label">Vendas</span></button>
+  <button class="nav-btn nav-module" id="navModMarketing" onclick="irModulo('marketing')"><span class="nav-icon">&#128227;</span><span class="nav-label">Marketing</span></button>
+  <button class="nav-btn nav-module" id="navModConteudo" onclick="irModulo('conteudo')"><span class="nav-icon">&#127916;</span><span class="nav-label">Conteudo</span></button>
+  <button class="nav-btn nav-module" id="navModFinanceiro" onclick="irModulo('financeiro')"><span class="nav-icon">&#128202;</span><span class="nav-label">Financeiro</span></button>
+  <button class="nav-btn nav-module" id="navModUsuarios" onclick="irDashboard('usuarios')"><span class="nav-icon">&#128100;</span><span class="nav-label">Usuarios</span></button>
+  <div class="nav-sep"></div>
+  <button class="nav-btn nav-module" onclick="logoutUser()"><span class="nav-icon">&#128275;</span><span class="nav-label" id="navNomeLabel">Sair</span></button>
+</nav>
 <div class="page" id="mainPage">
   <div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando...</div></div>
+</div>
 </div>
 
 <div class="footer-acao hidden" id="footerAcao">
@@ -185,12 +292,40 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
   <button class="btn-next" id="btnNext" onclick="avancarPasso()">Continuar</button>
 </div>
 
-<div class="bottom-nav" id="bottomNav">
-  <button class="nav-btn" id="nav-alertas" onclick="irDashboard('alertas')"><span class="nav-icon">&#9889;</span><span class="nav-label">Alertas</span></button>
-  <button class="nav-btn" id="nav-imoveis" onclick="irDashboard('excl')"><span class="nav-icon">&#127970;</span><span class="nav-label">Imoveis</span></button>
-  <button class="nav-btn active" id="nav-registro"><span class="nav-icon">&#128203;</span><span class="nav-label">Registro</span></button>
-  <button class="nav-btn" id="nav-analise" onclick="irDashboard('analise')"><span class="nav-icon">&#128202;</span><span class="nav-label">Analise</span></button>
-  <button class="nav-btn" id="nav-mais" onclick="irDashboard('mais')"><span class="nav-icon">&#8943;</span><span class="nav-label">Mais</span></button>
+<div class="mais-overlay" id="maisOverlay" onclick="fecharMais()"></div>
+<div class="mais-drawer" id="maisDrawer">
+  <div class="mais-handle"></div>
+  <div class="mais-title">Modulos</div>
+  <div class="mais-grid">
+    <div class="mais-item active-item"><span class="mais-icon">&#128203;</span><div class="mais-info"><div class="mais-lbl">Registro</div><div class="mais-sub">Visitas e propostas</div></div></div>
+    <div class="mais-item" onclick="irDashboard('excl');fecharMais()"><span class="mais-icon">&#127968;</span><div class="mais-info"><div class="mais-lbl">Exclusividades</div><div class="mais-sub">Ver todos imoveis</div></div></div>
+    <div class="mais-item" id="maisItemCaptacao" style="display:none" onclick="irModulo('captacao')"><span class="mais-icon">&#127919;</span><div class="mais-info"><div class="mais-lbl">Captacao</div><div class="mais-sub">Pipeline de captacao</div></div></div>
+    <div class="mais-item" id="maisItemVendas" style="display:none" onclick="irModulo('vendas')"><span class="mais-icon">&#128176;</span><div class="mais-info"><div class="mais-lbl">Vendas</div><div class="mais-sub">VGV e vendas fechadas</div></div></div>
+    <div class="mais-item" id="maisItemMarketing" style="display:none" onclick="irModulo('marketing')"><span class="mais-icon">&#128227;</span><div class="mais-info"><div class="mais-lbl">Marketing</div><div class="mais-sub">Canais e investimento</div></div></div>
+    <div class="mais-item" id="maisItemConteudo" style="display:none" onclick="irModulo('conteudo')"><span class="mais-icon">&#127916;</span><div class="mais-info"><div class="mais-lbl">Conteudo</div><div class="mais-sub">Producoes e publicacoes</div></div></div>
+    <div class="mais-item" id="maisItemFinanceiro" style="display:none" onclick="irModulo('financeiro')"><span class="mais-icon">&#128202;</span><div class="mais-info"><div class="mais-lbl">Financeiro</div><div class="mais-sub">Resultado e custos</div></div></div>
+    <div class="mais-item" id="maisItemUsuarios" style="display:none" onclick="irDashboard('usuarios');fecharMais()"><span class="mais-icon">&#128100;</span><div class="mais-info"><div class="mais-lbl">Usuarios</div><div class="mais-sub">Gerenciar acessos</div></div></div>
+    <div class="mais-item" onclick="logoutUser();fecharMais()"><span class="mais-icon">&#128275;</span><div class="mais-info"><div class="mais-lbl">Sair</div><div class="mais-sub" id="maisSubNome">-</div></div></div>
+  </div>
+</div>
+
+<div class="modal-ov hidden" id="modalImovel">
+  <div class="modal-sh">
+    <div class="modal-tit" id="modalImovelTit">Novo Imovel</div>
+    <div class="field"><div class="field-lbl">Nome <span class="req">*</span></div><input type="text" class="finput" id="mNome" placeholder="Ex: Cezanne 1701"></div>
+    <div class="field"><div class="field-lbl">Proprietario</div><input type="text" class="finput" id="mProp" placeholder="Nome do proprietario"></div>
+    <div class="field"><div class="field-lbl">Bairro / Localizacao</div><input type="text" class="finput" id="mBairro" placeholder="Ex: Fazenda, Praia Brava..."></div>
+    <div class="field"><div class="field-lbl">Tipo</div><div class="chips" id="mTipoWrap"><div class="chip" onclick="selMTipo(this,'Mobiliado')">Mobiliado</div><div class="chip" onclick="selMTipo(this,'Vazio')">Vazio</div><div class="chip" onclick="selMTipo(this,'Repaginado')">Repaginado</div></div></div>
+    <div class="field"><div class="field-lbl">Preco</div><input type="text" class="finput" id="mPreco" placeholder="Ex: R$ 1,2M"></div>
+    <div id="mExclFields">
+      <div class="field"><div class="field-lbl">Data de assinatura</div><input type="date" class="finput" id="mDataInicio"></div>
+      <div class="field"><div class="field-lbl">Dias de contrato</div><input type="number" class="finput" id="mDiasContrato" value="120" min="1"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="fecharModalImovel()">Cancelar</button>
+      <button class="modal-save" id="modalSaveBtn" onclick="salvarImovelModal()">Salvar</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -199,6 +334,8 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 var SUPA_URL='https://vtykzralkxlbqqkleofl.supabase.co';
 var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0eWt6cmFsa3hsYnFxa2xlb2ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjMyNjAsImV4cCI6MjA4OTkzOTI2MH0.rYBifw2NXqVDGrKbDWKJgrFAIdoruxxsIPc9RXibgy0';
 var sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+var _logUser=null;
+function logReg(action,entityNome,detalhes){if(!_logUser)return;sb.from('activity_log').insert({user_id:_logUser.id,user_nome:_logUser._nome||_logUser.email,action:action,entity_type:action==='visita_cadastrada'?'visita':'proposta',entity_nome:entityNome||null,detalhes:detalhes||null}).then(function(){});}
 
 var S={tipo:null,imovel:null,corretor:null,parceiro:null,nome:'',data:'',origem:'',objections:[],observacoes:'',intencao:null,qualif:null,pagto:[],pagto_detalhes:'',prop_valor:'',prop_pagto:null,prop_status:'em_andamento',prop_obs:''};
 var imoveis=[];
@@ -263,7 +400,7 @@ function renderPasso(){
   renderStepBar();
   var temFooter=current!=='tipo'&&current!=='revisao'&&current!=='revisao_prop';
   document.getElementById('footerAcao').classList.toggle('hidden',!temFooter);
-  document.getElementById('btnBack').classList.toggle('hidden',passo<=1);
+  document.getElementById('btnBack').classList.toggle('hidden',passo===0);
   var page=document.getElementById('mainPage');
   page.classList.toggle('sem-footer',!temFooter);
   switch(current){
@@ -297,12 +434,17 @@ function renderTipo(){
   return '<div style="padding-top:8px">'+
   '<div class="section-title">O que voce quer registrar?</div>'+
   '<div class="tipo-wrap">'+
-    '<div class="tipo-btn" onclick="selTipo(\'visita\')"><div class="tipo-icon">&#127968;</div><div class="tipo-label">Visita</div><div class="tipo-sub">Registro completo de visita</div></div>'+
-    '<div class="tipo-btn" onclick="selTipo(\'proposta\')"><div class="tipo-icon">&#128172;</div><div class="tipo-label">Proposta</div><div class="tipo-sub">Proposta sem visita presencial</div></div>'+
+    '<div class="tipo-btn" style="padding:18px 8px" onclick="selTipo(\'visita\')"><div class="tipo-icon">&#127970;</div><div class="tipo-label">Visita</div><div class="tipo-sub">Registre uma visita</div></div>'+
+    '<div class="tipo-btn" style="padding:18px 8px" onclick="selTipo(\'proposta\')"><div class="tipo-icon">&#128203;</div><div class="tipo-label">Proposta</div><div class="tipo-sub">Registre uma proposta</div></div>'+
+    ((currentRole==='admin'||currentRole==='editor')?'<div class="tipo-btn" style="padding:18px 8px" onclick="selTipo(\'imovel_mgmt\')"><div class="tipo-icon">&#128193;</div><div class="tipo-label">Imoveis</div><div class="tipo-sub">Cadastrar ou editar</div></div>':'')+
   '</div></div>';
 }
 
-function selTipo(t){S.tipo=t;passo=1;renderPasso();}
+function selTipo(t){
+  S.tipo=t;
+  if(t==='imovel_mgmt'){renderImovelMgmt();return;}
+  passo=1;renderPasso();
+}
 
 function renderImovel(){
   var html='<div class="section-title">Qual imovel?</div><div class="imovel-list">';
@@ -577,6 +719,7 @@ async function salvarVisita(){
     var payload={imovel_id:S.imovel.id,imovel_nome:S.imovel.nome,data_visita:S.data,hora_visita:null,corretor:S.corretor.nome,parceiro:typeof S.parceiro==='string'&&S.parceiro?S.parceiro:null,origem:S.origem||null,nome_interessado:S.nome,objections:S.objections.length?S.objections:null,observacoes:S.observacoes||null,intencao:S.intencao||null,qualificado_financeiramente:S.qualif,formas_pagamento:S.pagto.length?S.pagto:null,pagto_detalhes:S.pagto_detalhes||null};
     var res=await sb.from('visitas').insert(payload);
     if(res.error)throw res.error;
+    logReg('visita_cadastrada',S.imovel.nome,{interessado:S.nome,corretor:S.corretor&&S.corretor.nome});
     mostrarSucessoVisita();
   }catch(e){showToast('Erro ao salvar: '+e.message);if(btn){btn.disabled=false;btn.textContent='&#10003; Salvar visita';}}
 }
@@ -607,9 +750,10 @@ async function salvarProposta(){
   if(btn){btn.disabled=true;btn.textContent='Salvando...';}
   try{
     var vRaw=S.prop_valor?parseFloat(S.prop_valor.replace(/\./g,'').replace(',','.'))||null:null;
-    var payload={imovel_id:S.imovel.id,nome_interessado:S.nome,data:S.data||null,valor_proposto:vRaw,forma_pagamento:S.prop_pagto||null,status:S.prop_status||'em_andamento',observacao:S.prop_obs||null};
+    var payload={imovel_id:S.imovel.id,nome_interessado:S.nome,data:S.data||null,valor_proposto:vRaw,forma_pagamento:S.prop_pagto||null,status:S.prop_status||'em_andamento',observacao:S.prop_obs||null,corretor:S.corretor?S.corretor.nome:null};
     var res=await sb.from('propostas').insert(payload);
     if(res.error)throw res.error;
+    logReg('proposta_cadastrada',S.imovel.nome,{interessado:S.nome});
     document.getElementById('stepBarWrap').classList.add('hidden');
     document.getElementById('footerAcao').classList.add('hidden');
     document.getElementById('mainPage').innerHTML=renderSucesso('Proposta registrada!','Proposta de '+escHtml(S.nome)+' em '+escHtml(S.imovel.nome)+' salva.');
@@ -634,12 +778,235 @@ function irDashboard(tab){
   var base=window.location.pathname.replace('registro.html','');
   window.location.href=base+'index.html'+(tab?'#'+tab:'');
 }
+function irModulo(tab){irDashboard(tab);}
 
 function hoje(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function escHtml(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
 
-init();
+// ---- GESTAO DE IMOVEIS ----
+
+var imoveisAll=[];
+var editingImovelId=null;
+var mTipoSel='';
+
+function voltarMgmt(){passo=0;renderPasso();}
+function toggleInativos(btn){var list=document.getElementById('inat-list');var arrow=btn.querySelector('span:last-child');if(list.style.display==='none'){list.style.display='block';arrow.textContent='\u2039';}else{list.style.display='none';arrow.textContent='\u203a';}}
+
+async function renderImovelMgmt(){
+  document.getElementById('stepBarWrap').classList.add('hidden');
+  document.getElementById('footerAcao').classList.add('hidden');
+  var page=document.getElementById('mainPage');
+  page.classList.remove('sem-footer');
+  page.innerHTML='<div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando...</div></div>';
+  try{
+    var res=await sb.from('imoveis').select('*').order('nome');
+    if(res.error)throw res.error;
+    imoveisAll=res.data||[];
+    var ativos=imoveisAll.filter(function(im){return im.ativo!==false;});
+    var inat=imoveisAll.filter(function(im){return im.ativo===false;});
+    var html='<div class="mgmt-hdr"><button class="btn-voltar-mgmt" onclick="voltarMgmt()">&#8592; Voltar</button><button class="btn-novo-im" onclick="abrirModalNovo()">+ Novo Imovel</button></div>';
+    if(!ativos.length)html+='<div style="text-align:center;padding:30px 0;color:var(--muted);font-size:13px">Nenhum imovel ativo.</div>';
+    ativos.forEach(function(im){html+=renderImCard(im,false);});
+    if(inat.length){
+      html+='<button class="btn-inat-toggle" onclick="toggleInativos(this)"><span>Inativos ('+inat.length+')</span><span>&#8250;</span></button>';
+      html+='<div id="inat-list" style="display:none">';
+      inat.forEach(function(im){html+=renderImCard(im,true);});
+      html+='</div>';
+    }
+    page.innerHTML=html;
+  }catch(e){page.innerHTML='<div style="color:var(--red);padding:20px;font-size:13px">Erro: '+escHtml(e.message)+'</div>';}
+}
+
+function renderImCard(im,inativo){
+  var sub=[im.proprietario,im.bairro,im.preco].filter(Boolean).join(' \u00b7 ');
+  return '<div class="im-card">'+
+    (inativo?'<div style="font-size:9px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">Inativo</div>':'')+
+    '<div class="im-nome">'+escHtml(im.nome)+'</div>'+
+    (sub?'<div class="im-sub">'+escHtml(sub)+'</div>':'')+
+    '<div class="im-btns">'+
+      '<button class="im-edit" onclick="abrirModalEditar(\''+im.id+'\')">&#9998; Editar</button>'+
+      (inativo?
+        '<button class="im-edit" onclick="reativarImovel(\''+im.id+'\')">&#10003; Reativar</button>':
+        '<button class="im-desat" onclick="desativarImovel(\''+im.id+'\')">Desativar</button>'
+      )+
+      '<button class="im-del" onclick="excluirImovel(\''+im.id+'\',\''+escHtml(im.nome)+'\')" title="Excluir">&#128465;</button>'+
+    '</div></div>';
+}
+
+function abrirModalNovo(){
+  editingImovelId=null;mTipoSel='';
+  document.getElementById('modalImovelTit').textContent='Novo Imovel';
+  document.getElementById('mNome').value='';
+  document.getElementById('mProp').value='';
+  document.getElementById('mBairro').value='';
+  document.getElementById('mPreco').value='';
+  document.getElementById('mDataInicio').value=hoje();
+  document.getElementById('mDiasContrato').value='120';
+  document.getElementById('mExclFields').style.display='';
+  document.querySelectorAll('#mTipoWrap .chip').forEach(function(c){c.classList.remove('sel');});
+  document.getElementById('modalSaveBtn').textContent='Criar exclusividade';
+  document.getElementById('modalImovel').classList.remove('hidden');
+}
+
+function abrirModalEditar(id){
+  var im=imoveisAll.find(function(x){return x.id===id;});
+  if(!im)return;
+  editingImovelId=id;mTipoSel=im.status||'';
+  document.getElementById('modalImovelTit').textContent='Editar Imovel';
+  document.getElementById('mNome').value=im.nome||'';
+  document.getElementById('mProp').value=im.proprietario||'';
+  document.getElementById('mBairro').value=im.bairro||'';
+  document.getElementById('mPreco').value=im.preco||'';
+  document.getElementById('mExclFields').style.display='none';
+  document.querySelectorAll('#mTipoWrap .chip').forEach(function(c){c.classList.toggle('sel',c.textContent===im.status);});
+  document.getElementById('modalSaveBtn').textContent='Salvar';
+  document.getElementById('modalImovel').classList.remove('hidden');
+}
+
+function fecharModalImovel(){document.getElementById('modalImovel').classList.add('hidden');}
+
+function selMTipo(el,val){mTipoSel=val;document.querySelectorAll('#mTipoWrap .chip').forEach(function(c){c.classList.remove('sel');});el.classList.add('sel');}
+
+async function salvarImovelModal(){
+  var btn=document.getElementById('modalSaveBtn');
+  var originalTxt=btn.textContent;
+  btn.disabled=true;btn.textContent='Salvando...';
+  var nome=document.getElementById('mNome').value.trim();
+  if(!nome){showToast('Informe o nome');btn.disabled=false;btn.textContent=originalTxt;return;}
+  try{
+    if(editingImovelId){
+      var res=await sb.from('imoveis').update({nome:nome,proprietario:document.getElementById('mProp').value.trim()||null,bairro:document.getElementById('mBairro').value.trim()||null,status:mTipoSel||null,preco:document.getElementById('mPreco').value.trim()||null}).eq('id',editingImovelId);
+      if(res.error)throw res.error;
+      showToast('Imovel atualizado!');
+    }else{
+      var ri=await sb.from('imoveis').insert({nome:nome,proprietario:document.getElementById('mProp').value.trim()||null,bairro:document.getElementById('mBairro').value.trim()||null,status:mTipoSel||null,preco:document.getElementById('mPreco').value.trim()||null,ativo:true}).select('id').single();
+      if(ri.error)throw ri.error;
+      var imovelId=ri.data.id;
+      var dataInicio=document.getElementById('mDataInicio').value||null;
+      var diasContrato=parseInt(document.getElementById('mDiasContrato').value)||120;
+      var re=await sb.from('exclusividades').insert({imovel_id:imovelId,data_inicio:dataInicio,dias_contrato:diasContrato,status:'ativa'}).select('id').single();
+      if(re.error)throw re.error;
+      var rf=await sb.from('funil_snapshot').insert({exclusividade_id:re.data.id,imovel_nome:nome,fonte:'manual'});
+      if(rf.error)throw rf.error;
+      showToast('Exclusividade criada!');
+    }
+    fecharModalImovel();
+    await renderImovelMgmt();
+  }catch(e){showToast('Erro: '+e.message);}
+  finally{btn.disabled=false;btn.textContent=originalTxt;}
+}
+
+async function desativarImovel(id){
+  if(!confirm('Desativar este imovel?'))return;
+  var res=await sb.from('imoveis').update({ativo:false}).eq('id',id);
+  if(res.error){showToast('Erro: '+res.error.message);return;}
+  showToast('Imovel desativado.');
+  renderImovelMgmt();
+}
+
+async function reativarImovel(id){
+  var res=await sb.from('imoveis').update({ativo:true}).eq('id',id);
+  if(res.error){showToast('Erro: '+res.error.message);return;}
+  showToast('Imovel reativado.');
+  renderImovelMgmt();
+}
+
+async function excluirImovel(id,nome){
+  if(!confirm('Excluir "'+nome+'" permanentemente? Esta acao nao pode ser desfeita.'))return;
+  // Get exclusividade IDs for this imovel first
+  var exclRes=await sb.from('exclusividades').select('id').eq('imovel_id',id);
+  if(exclRes.data&&exclRes.data.length){
+    var exclIds=exclRes.data.map(function(e){return e.id;});
+    await sb.from('funil_snapshot').delete().in('exclusividade_id',exclIds);
+    await sb.from('exclusividades').delete().eq('imovel_id',id);
+  }
+  var res=await sb.from('imoveis').delete().eq('id',id);
+  if(res.error){showToast('Erro: '+res.error.message);return;}
+  showToast('Imovel excluido.');
+  renderImovelMgmt();
+}
+
+// AUTH
+var currentRole='padrao';var currentNome='';
+
+async function loginUser(){
+  var email=document.getElementById('authEmail').value.trim();
+  var senha=document.getElementById('authSenha').value;
+  var btn=document.getElementById('authBtn');
+  var err=document.getElementById('authErr');
+  if(!email||!senha){err.textContent='Preencha email e senha';return;}
+  btn.disabled=true;btn.textContent='Entrando...';err.textContent='';
+  var r=await sb.auth.signInWithPassword({email:email,password:senha});
+  if(r.error){err.textContent=r.error.message;btn.disabled=false;btn.textContent='Entrar';return;}
+}
+
+async function recuperarSenha(){
+  var email=document.getElementById('authEmail').value.trim();
+  if(!email){document.getElementById('authErr').textContent='Digite seu email primeiro';return;}
+  await sb.auth.resetPasswordForEmail(email);
+  document.getElementById('authErr').style.color='var(--green)';
+  document.getElementById('authErr').textContent='Email de recuperacao enviado!';
+}
+
+async function logoutUser(){
+  await sb.auth.signOut();
+  window.location.href='./index.html';
+}
+
+function applyRoleUI(){
+  var isAdmin=currentRole==='admin';var isEditor=currentRole==='editor';var canEdit=isAdmin||isEditor;
+  // Mais drawer
+  ['maisItemCaptacao','maisItemVendas','maisItemMarketing','maisItemConteudo'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=canEdit?'flex':'none';});
+  var fin=document.getElementById('maisItemFinanceiro');if(fin)fin.style.display=isAdmin?'flex':'none';
+  var usr=document.getElementById('maisItemUsuarios');if(usr)usr.style.display=isAdmin?'flex':'none';
+  var sub=document.getElementById('maisSubNome');if(sub)sub.textContent=currentNome;
+  // Desktop sidebar modules (use class to not override mobile display:none)
+  ['navModCaptacao','navModVendas','navModMarketing','navModConteudo'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.toggle('role-vis',canEdit);});
+  var fin2=document.getElementById('navModFinanceiro');if(fin2)fin2.classList.toggle('role-vis',isAdmin);
+  var usr2=document.getElementById('navModUsuarios');if(usr2)usr2.classList.toggle('role-vis',isAdmin);
+  var nm=document.getElementById('navNomeLabel');if(nm)nm.textContent=currentNome?'Sair ('+currentNome+')':'Sair';
+  var sairBtn=document.querySelector('#bottomNav .nav-btn[onclick="logoutUser()"]');if(sairBtn)sairBtn.classList.add('role-vis');
+}
+
+function abrirMais(){var d=document.getElementById('maisDrawer');if(d.classList.contains('open')){fecharMais();return;}document.getElementById('maisOverlay').classList.add('open');d.classList.add('open');}
+function fecharMais(){document.getElementById('maisOverlay').classList.remove('open');document.getElementById('maisDrawer').classList.remove('open');}
+
+var _initialized=false;
+sb.auth.onAuthStateChange(function(event,session){
+  if((event==='SIGNED_IN'||event==='INITIAL_SESSION')&&session&&session.user){
+    _logUser=session.user;
+    sb.from('perfis').select('*').eq('id',session.user.id).single().then(function(pr){
+      if(pr.data){currentRole=pr.data.role||'padrao';currentNome=pr.data.nome||session.user.email;}
+      else{currentRole='padrao';currentNome=session.user.email;}
+      _logUser._nome=currentNome;
+      applyRoleUI();
+      document.getElementById('authOverlay').style.display='none';
+      if(!_initialized){_initialized=true;init();}
+    });
+  }else if(event==='SIGNED_OUT'){
+    _initialized=false;
+    document.getElementById('authOverlay').style.display='flex';
+  }
+});
+
+(function(){
+  sb.auth.getSession().then(function(r){
+    if(!r.data.session){
+      document.getElementById('authOverlay').style.display='flex';
+    }else{
+      _logUser=r.data.session.user;
+      sb.from('perfis').select('*').eq('id',_logUser.id).single().then(function(pr){
+        if(pr.data){currentRole=pr.data.role||'padrao';currentNome=pr.data.nome||_logUser.email;}
+        else{currentRole='padrao';currentNome=_logUser.email;}
+        _logUser._nome=currentNome;
+        applyRoleUI();
+        if(!_initialized){_initialized=true;init();}
+      });
+    }
+  });
+})();
 </script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(function(){});}</script>
 </body>
 </html>

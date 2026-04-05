@@ -1,0 +1,26 @@
+{
+  "name": "Certeiro One",
+  "short_name": "Certeiro",
+  "description": "Dashboard operacional — Gabriel Certeiro Imóveis",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#191949",
+  "theme_color": "#191949",
+  "orientation": "portrait-primary",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
