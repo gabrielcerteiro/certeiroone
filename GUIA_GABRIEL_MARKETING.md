@@ -90,7 +90,7 @@ Se ele pedir aprovação para executar SQL no Supabase, copie o SQL,
 abra supabase.com → SQL Editor → cole → Run.
 Se aparecer "Success. No rows returned", está certo. Confirme para ele continuar.
 
-### ETAPA 6 — Fazer push
+### ETAPA 6 — Fazer push dos arquivos alterados
 Quando o Claude Code terminar, mande:
 
 ```
@@ -100,19 +100,33 @@ Nao use push_files para arquivos grandes.
 Antes de cada push, faca get_file_contents para obter o SHA atual.
 ```
 
-### ETAPA 7 — Validar no sistema
+### ETAPA 7 — Atualizar o CONTEXTO_CLAUDE_CODE.md (OBRIGATORIO)
+Esta etapa garante que a proxima sessao comece com o contexto correto.
+Se pular isso, o Claude Code vai trabalhar com informacao desatualizada.
+
+Apos o push dos arquivos, mande este prompt ao Claude Code:
+
+```
+Atualize o arquivo CONTEXTO_CLAUDE_CODE.md para refletir o estado atual do sistema.
+Registre a versao X.X.X no historico (secao 10) com o que foi feito.
+Atualize funcoes novas ou alteradas na secao 8 se necessario.
+Remova da secao 11 qualquer pendencia que foi resolvida nesta sessao.
+Faca push deste arquivo para o branch main.
+```
+
+### ETAPA 8 — Validar no sistema
 Acesse dashboard-certeiro.vercel.app.
 Espere 2-3 minutos após o push.
 Teste o que foi alterado.
 Se funcionou: avisa Gabriel para validar.
 Se quebrou: volta ao Claude Code e descreve o problema.
 
-### ETAPA 8 — Registrar a versão (OBRIGATORIO, NAO PULE)
+### ETAPA 9 — Registrar a versão no Google Doc (OBRIGATORIO, NAO PULE)
 Essa etapa não é opcional. Sem ela o histórico do sistema se perde.
 
-**8a. Peça o texto de versão ao Claude.ai:**
+**9a. Peça o texto de versão ao Claude.ai:**
 
-Volte ao Claude.ai (mesma sessão ou nova) e mande exatamente isso:
+Volte ao Claude.ai e mande exatamente isso:
 
 ```
 O ciclo de melhorias foi concluido e validado por Gabriel.
@@ -136,9 +150,7 @@ Melhorado:
 Nao invente — liste apenas o que foi realmente feito nesta sessao.
 ```
 
-O Claude.ai vai gerar o texto completo e formatado. Você só copia e cola.
-
-**8b. Cole no Google Doc:**
+**9b. Cole no Google Doc:**
 Abra o Google Doc de versionamento.
 Cole o texto gerado no topo da seção de versões.
 Anote no backlog qualquer item novo que surgiu durante o trabalho.
@@ -189,11 +201,14 @@ Me mostre o SQL primeiro antes de executar.
 **4. Sempre faça push ao final de cada sessão.**
 Se fechar o Claude Code sem push, tudo que foi feito se perde.
 
-**5. Sempre teste no sistema antes de falar que acabou.**
+**5. Sempre atualize o CONTEXTO_CLAUDE_CODE.md.**
+Sem atualizar, a proxima sessao comeca com informacao errada.
+
+**6. Sempre teste no sistema antes de falar que acabou.**
 Abra o dashboard-certeiro.vercel.app e confira com seus próprios olhos.
 
-**6. Sempre registre a versão no Google Doc.**
-Sem o texto gerado pelo Claude.ai colado no Doc, a versão não existe oficialmente.
+**7. Sempre registre a versão no Google Doc.**
+Sem o texto colado no Doc, a versão não existe oficialmente.
 
 ---
 
@@ -230,9 +245,9 @@ Rode isso e tente o push novamente.
 | Arquivo | Para que serve |
 |---------|---------------|
 | `CERTEIRO_ONE_CONTEXTO_ESTRATEGICO.md` | Contexto do negocio — usar no Claude.ai |
-| `CONTEXTO_CLAUDE_CODE.md` | Contexto tecnico — Claude Code le este |
+| `CONTEXTO_CLAUDE_CODE.md` | Contexto tecnico — Claude Code le este. SEMPRE atualizar. |
 | `GUIA_GABRIEL_MARKETING.md` | Este arquivo |
-| `index.html` | Dashboard principal (126KB — cuidado) |
+| `index.html` | Dashboard principal (cuidado com tamanho) |
 | `registro.html` | Registro de visitas e propostas |
 | `vendedor.html` | Relatorio publico para proprietario |
 
@@ -251,11 +266,12 @@ Rode isso e tente o push novamente.
 
 ---
 
-## RESUMO EM QUATRO LINHAS
+## RESUMO EM CINCO LINHAS
 
-1. Claude.ai planeja e gera os prompts.
-2. Claude Code executa e faz push.
-3. Você acompanha, aprova e testa.
-4. Claude.ai gera o texto de versão. Você cola no Google Doc.
+1. Claude.ai planeja, define a versao e gera os prompts.
+2. Claude Code executa e faz push dos arquivos.
+3. Claude Code atualiza o CONTEXTO_CLAUDE_CODE.md e faz push.
+4. Voce testa no sistema e avisa Gabriel.
+5. Claude.ai gera o texto de versao. Voce cola no Google Doc.
 
-Sem pular etapas. Especialmente a 4.
+Sem pular etapas. Nenhuma delas.
