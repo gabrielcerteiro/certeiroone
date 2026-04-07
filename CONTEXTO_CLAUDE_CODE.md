@@ -1,6 +1,6 @@
 # CONTEXTO COMPLETO — PLATAFORMA CERTEIRO
 > Arquivo para onboarding de nova sessão no Claude Code.
-> Atualizado em: 07/04/2026 — pós Fase 1 concluída
+> Atualizado em: 07/04/2026 — pos Fase 3 concluida
 
 ---
 
@@ -28,7 +28,7 @@
 
 | Arquivo | Descrição |
 |---------|-----------|
-| `index.html` | Dashboard interno principal — lista de exclusividades, detalhe, edição |
+| `index.html` | Dashboard interno principal — lista, detalhe, edição, nova exclusividade |
 | `registro.html` | Módulo de registro de visitas e propostas |
 | `vendedor.html` | Relatório para proprietário (link compartilhável) |
 | `docs/BRIEFING_DASHBOARD_V20.md` | Briefing de produto com specs funcionais |
@@ -45,10 +45,17 @@
 | URL | `https://vtykzralkxlbqqkleofl.supabase.co` |
 | Anon Key | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0eWt6cmFsa3hsYnFxa2xlb2ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjMyNjAsImV4cCI6MjA4OTkzOTI2MH0.rYBifw2NXqVDGrKbDWKJgrFAIdoruxxsIPc9RXibgy0` |
 
-### 4.1 Tabelas
+### 4.1 RLS Policies (já configuradas)
+Todas as tabelas abaixo têm policies para role `authenticated`:
+- `propostas` — INSERT, UPDATE
+- `visitas` — INSERT, UPDATE
+- `funil_snapshot` — ALL (SELECT, INSERT, UPDATE, DELETE)
+- `exclusividades` — ALL
+- `imoveis` — INSERT, UPDATE
+
+### 4.2 Tabelas
 
 #### `imoveis`
-Cadastro base dos imóveis.
 - `id` uuid PK
 - `nome` text
 - `proprietario` text
@@ -59,7 +66,6 @@ Cadastro base dos imóveis.
 - `created_at` timestamptz
 
 #### `exclusividades`
-Contrato de exclusividade por imóvel.
 - `id` uuid PK
 - `imovel_id` uuid FK → imoveis.id
 - `data_inicio` date
@@ -69,7 +75,7 @@ Contrato de exclusividade por imóvel.
 - `created_at`, `updated_at` timestamptz
 
 #### `funil_snapshot`
-Dados operacionais atualizados manualmente ou via n8n/Pipedrive.
+Dados operacionais. Campos originais + migracao Fase 3:
 - `id` uuid PK
 - `exclusividade_id` uuid FK → exclusividades.id
 - `imovel_nome`, `proprietario`, `preco` text
@@ -82,24 +88,37 @@ Dados operacionais atualizados manualmente ou via n8n/Pipedrive.
 - `data_midia_entregue` date
 - `prazo_interno_dias` int
 - `meta_leads`, `meta_visitas`, `meta_propostas` int
-- `meta_investimento` numeric (default 1500) — CAMPO CORRETO para meta de mídia
+- `meta_investimento` numeric (default 1500) — meta de midia (NOME CORRETO — nao usar meta_gastos_ads)
 - `meta_cpl` numeric (default 65)
-- `total_leads`, `total_visitas`, `total_propostas` int — campos manuais (legado)
+- `total_leads`, `total_visitas`, `total_propostas` int — legado/manual
 - `leads_abertos`, `leads_perdidos` int
 - `leads_meta_ads`, `leads_google_ads`, `leads_instagram_org`, `leads_youtube`, `leads_tiktok`, `leads_site_org`, `leads_indicacao`, `leads_corretor_parc`, `leads_relacionamento`, `leads_disparo_base`, `leads_oferta_ativa`, `leads_outdoor` int
 - `gastos_metaads` numeric
 - `alcance_metaads` int
 - `frequencia_metaads` numeric
-- `localizacao` text
-- `tipo_imovel` text
+- `localizacao`, `tipo_imovel` text
 - `atualizado_em` timestamptz
 - `fonte` text (default 'pipedrive_n8n')
-
-> **PENDENTE — migração futura:** adicionar colunas para disparos e checklist de acoes de venda.
-> Ver secao 13 para lista completa.
+- `disparos_base` int — ADICIONADO Fase 3
+- `impactados_base` int — ADICIONADO Fase 3
+- `visitas_base` int — ADICIONADO Fase 3
+- `propostas_base` int — ADICIONADO Fase 3
+- `disparos_parceiros` int — ADICIONADO Fase 3
+- `contatados_parceiros` int — ADICIONADO Fase 3
+- `visitas_parceiros` int — ADICIONADO Fase 3
+- `propostas_parceiros` int — ADICIONADO Fase 3
+- `data_disparo_base` date — ADICIONADO Fase 3
+- `data_disparo_parceiros` date — ADICIONADO Fase 3
+- `cad_dwv` boolean DEFAULT false — ADICIONADO Fase 3
+- `cad_site` boolean DEFAULT false — ADICIONADO Fase 3
+- `cat_gabriel` boolean DEFAULT false — ADICIONADO Fase 3
+- `cat_rafaela` boolean DEFAULT false — ADICIONADO Fase 3
+- `video_youtube` boolean DEFAULT false — ADICIONADO Fase 3
+- `post_instagram` boolean DEFAULT false — ADICIONADO Fase 3
+- `post_tiktok` boolean DEFAULT false — ADICIONADO Fase 3
+- `post_facebook` boolean DEFAULT false — ADICIONADO Fase 3
 
 #### `visitas`
-Visitas registradas por imóvel.
 - `id` uuid PK
 - `imovel_id` uuid FK → imoveis.id
 - `imovel_nome` text
@@ -111,14 +130,13 @@ Visitas registradas por imóvel.
 - `nome_interessado` text
 - `objections` text[]
 - `observacoes` text
-- `intencao` text (valores: 'Quer comprar', 'Esta pensando', 'Nao gostou', 'Quer segunda visita')
+- `intencao` text ('Quer comprar','Esta pensando','Nao gostou','Quer segunda visita')
 - `qualificado_financeiramente` boolean
 - `formas_pagamento` text[]
 - `pagto_detalhes` text
 - `created_at` timestamptz
 
 #### `propostas`
-Propostas de compra registradas.
 - `id` uuid PK
 - `imovel_id` uuid FK → imoveis.id
 - `nome_interessado` text
@@ -129,43 +147,19 @@ Propostas de compra registradas.
 - `observacao` text
 - `created_at`, `updated_at` timestamptz
 
-> **IMPORTANTE:** a tabela `propostas` NAO tem coluna `corretor`. O payload de salvarProposta()
-> em registro.html NAO deve incluir esse campo (já corrigido na Fase 1).
+> NAO tem coluna `corretor`. Payload de salvarProposta() em registro.html NAO deve incluir esse campo.
 
 #### `corretores`
-- `id` uuid PK
-- `nome` text
-- `creci` text
-- `tipo` text CHECK ('pessoa_fisica','pessoa_juridica')
-- `ativo` boolean
-- `foto_url` text
-- `created_at` timestamptz
+- Gabriel Certeiro — CRECI 22249/SC
+- Robson Souza — CRECI 36145/SC
 
-**Corretores cadastrados:**
-- Gabriel Certeiro — id: `8dcc5e44-...` — CRECI 22249/SC
-- Robson Souza — id: `0e5d9faf-...` — CRECI 36145/SC
-
-**Fotos (Storage bucket `corretores`, público):**
-- `https://vtykzralkxlbqqkleofl.supabase.co/storage/v1/object/public/corretores/Foto%20Gabriel%20Certeiro.jpeg`
-- `https://vtykzralkxlbqqkleofl.supabase.co/storage/v1/object/public/corretores/Foto%20Robson%20Souza.jpg`
-
-### 4.2 Views
+### 4.3 Views
 
 #### `dashboard_imoveis`
-View principal usada pelo `index.html`. Faz JOIN de `funil_snapshot` + `exclusividades` + `imoveis`.
-
-**Campos calculados:**
-- `dias_restantes` — dias até data_fim
-- `tl_hoje_pct` — % do contrato consumido
-- `status_repaginacao` — ('nao_se_aplica','pendente','ok','atrasado')
-- `data_meta_interna` — data_midia_entregue + prazo_interno_dias
-- `cpl_metaads` — gastos_metaads / leads_meta_ads
-- `conv_lead_visita`, `conv_visita_prop` — taxas de conversão
-- `dash_status` — ('ok','melhoria','atencao','vendida','perdida','encerrada')
-- `count_propostas` — COUNT real da tabela `propostas` WHERE imovel_id = i.id (adicionado Fase 1)
-
-> **IMPORTANTE:** `count_propostas` foi adicionado ao FINAL da lista SELECT da view
-> (limitacao do PostgreSQL: CREATE OR REPLACE VIEW so aceita novas colunas no final).
+JOIN de funil_snapshot + exclusividades + imoveis. Campos calculados:
+- `dias_restantes`, `tl_hoje_pct`, `status_repaginacao`, `data_meta_interna`
+- `cpl_metaads`, `conv_lead_visita`, `conv_visita_prop`, `dash_status`
+- `count_propostas` — COUNT real de propostas por imovel_id (adicionado Fase 1, no FINAL do SELECT)
 
 #### `dashboard_visitas_detalhe`
 View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
@@ -178,10 +172,9 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 - HTML/CSS/JS puro — zero frameworks
 - Supabase JS SDK v2 via CDN
 - Font: Nunito Sans (Google Fonts)
-- Sem build step — arquivos estáticos diretos
+- Sem build step
 
 ### Design System
-
 ```css
 :root {
   --navy: #191949;
@@ -200,74 +193,59 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 ```
 
 ### Layout
-- **Mobile** (< 900px): nav fixa na parte inferior (`bottom-nav`), conteúdo em coluna única, `max-width: 480px` centralizado
-- **Desktop** (>= 900px): sidebar lateral esquerda, conteúdo à direita em grid 2 colunas
+- **Mobile** (< 900px): bottom-nav fixa, coluna única, max-width 480px
+- **Desktop** (>= 900px): sidebar lateral esquerda, grid 2 colunas à direita
 
 ### Regras críticas de código
-1. **ZERO acentos dentro de `<script>`** — usar apenas ASCII puro no JS
+1. **ZERO acentos dentro de `<script>`** — ASCII puro no JS
 2. **Emojis como HTML entities** — ex: `&#128202;` para 📊
-3. **`create_or_update_file` individualmente** para cada arquivo (nao usar `push_files` para arquivos grandes — pode truncar)
-4. **SHA obrigatório** ao atualizar arquivo existente no GitHub
+3. **`create_or_update_file` individualmente** para arquivos grandes (nao usar push_files)
+4. **SHA obrigatório** ao atualizar arquivo existente
 
 ---
 
 ## 6. NAVEGAÇÃO
 
-### Mobile (bottom-nav — 5 botões)
-| Botão | data-tab | Ação |
-|-------|----------|------|
-| Alertas | alertas | switchTab('alertas') |
-| Exclusividades | excl | switchTab('excl') |
-| Registro | registro | window.location → registro.html |
-| Analise | analise | switchTab('analise') |
-| Mais | mais | abrirMais() → drawer |
+### Mobile (bottom-nav)
+Alertas | Exclusividades | Registro (→ registro.html) | Analise | Mais (drawer)
 
 ### Desktop (sidebar)
-- Mesma estrutura, sem o botão "Mais"
-- Item "Registro" redireciona para `registro.html`
-- Extras: Captação, Vendas, Marketing, Conteúdo (todos "Em breve")
+Mesmos itens + Captação, Vendas, Marketing, Conteúdo, Financeiro (todos "Em breve")
 
-### Bug pendente — indicador ativo mobile
-O item ativo no mobile nao tem destaque visual claro (so opacity: 1 vs 0.35).
-Opcoes para corrigir: linha navy em cima do botão (estilo iOS), ponto navy embaixo do ícone,
-ou ícone + label em navy bold. Gabriel ainda nao escolheu o estilo.
+### Bug pendente
+Indicador ativo mobile sem destaque visual claro. Estilo nao definido ainda.
 
 ---
 
 ## 7. MÓDULOS DO index.html
 
-### Views (mostradas/ocultadas com classe `on`)
-- `vAlertas` — alertas críticos e de atencao por exclusividade
-- `vList` — lista de cards de exclusividades + VGV
-- `vDetail` — detalhe completo de uma exclusividade
-- `vEdit` — formulário de edicao (atualiza `funil_snapshot`)
-- `vAnalise` — placeholder "Em construção"
+### Views
+- `vAlertas`, `vList`, `vDetail`, `vEdit`, `vAnalise`
 
-### Componentes principais
-- **VGV card (navy):** total de portfólio + barra de meta (R$100M) + 3 categorias
-- **icard:** card de exclusividade com funil de barras (Tempo/Leads/Visitas/Propostas + Ads/CPL)
-- **Detail grid:** Funil, Timeline, Acoes de Venda, Meta Ads, Conversões, Corretores, Canais, Disparos Base, Disparos Parceiros, Intencao, Objecoes, Relatório de Visitas, Propostas
-- **Edit form:** secoes Exclusividade, Linha do Tempo, Funil, Origem de Leads, Meta Ads
-
-### Funcoes relevantes
-- `saveSnapshot()` — UPDATE em `funil_snapshot`, recalcula `data_fim` de `data_inicio + prazo_contrato_dias`
-- `funilBarras()` — renderiza barras do funil. Visitas: usa `visitasMap[imovel_id]` (real). Propostas: usa `count_propostas` da view (real). Midia: usa `meta_investimento` (nome correto do campo)
-- `excluirExclusividade()` + `_doExcluirExclusividade()` — deleta funil_snapshot e exclusividades em cascata (NAO deleta imoveis)
+### Funcoes principais (pos Fase 3)
+- `loadDashboard()` — carrega view dashboard_imoveis + visitas + propostas
+- `saveSnapshot()` — UPDATE funil_snapshot, recalcula data_fim
+- `salvarNovaExcl()` — INSERT sequencial: imoveis → exclusividades → funil_snapshot
+- `funilBarras(im)` — barras do funil. Visitas: visitasMap (real). Propostas: count_propostas (real). Midia: meta_investimento
+- `excluirExclusividade()` + `_doExcluirExclusividade()` — DELETE funil_snapshot → exclusividades (NAO deleta imoveis)
+- `disparosBaseHtml(im)` + `disparosParcHtml(im)` — renderiza paineis de disparos editaveis
+- `salvarDisparosBase(exclId)` + `salvarDisparosParc(exclId)` — UPDATE funil_snapshot campos de disparo
+- `toggleAcaoVenda(exclId, key, current)` — UPDATE booleano de acao de venda, re-renderiza secao
+- `acoesVendaHtml(im)` — checkboxes editaveis para 8 acoes (cad_dwv, cad_site, cat_gabriel, cat_rafaela, video_youtube, post_instagram, post_tiktok, post_facebook)
 
 ---
 
 ## 8. MÓDULO registro.html
 
-- Registrar nova visita (form completo)
-- Registrar nova proposta — payload NAO inclui campo `corretor` (nao existe na tabela)
-- Listar visitas e propostas recentes
+- Registrar visita e proposta
+- `salvarImovelModal()` — cria imovel + exclusividade + funil_snapshot (apos Fase 3, o imóvel criado aqui aparece no dashboard)
+- Payload de proposta NAO inclui campo `corretor`
 
 ---
 
 ## 9. MÓDULO vendedor.html
 
-Relatório público para proprietário. Acesso por `?id=<exclusividade_id>&from=internal`.
-Spec completa em `SPEC_VENDEDOR.md`.
+Relatório público. Acesso por `?id=<exclusividade_id>&from=internal`.
 
 ---
 
@@ -277,112 +255,74 @@ Spec completa em `SPEC_VENDEDOR.md`.
 fator = diasPassados / diasTotal
 esperado = Math.round(meta * fator)
 ```
-
-Cores: verde se realizado >= esperado, amarelo se >= 80%, vermelho se < 80%.
-
-**Fontes de dados por barra (pós Fase 1):**
-- Leads: `total_leads` (funil_snapshot — manual, ok por enquanto)
-- Visitas: `visitasMap[imovel_id].length` (tabela `visitas` — REAL)
-- Propostas: `count_propostas` (view dashboard_imoveis — REAL via subquery)
-- Midia: `meta_investimento` (funil_snapshot — editavel pelo form)
+Verde >= esperado | Amarelo >= 80% | Vermelho < 80%
 
 ---
 
-## 11. TIMELINE OPERACIONAL (marcos)
+## 11. TIMELINE OPERACIONAL
 
-1. Assinatura do contrato
-2. Repaginacao concluída (opcional)
-3. Material pronto / Gravacao
-4. Disparo para base — campos `data_disparo_base` PENDENTES no banco
-5. Disparo para parceiros — campos `data_disparo_parceiros` PENDENTES no banco
-6. Campanha no ar
-7. Primeira visita
-8. Primeira proposta
-9. Prazo final meta (data_midia_entregue + prazo_interno_dias)
-10. Prazo final autorizacao (data_fim)
+1. Assinatura | 2. Repaginacao | 3. Material/Gravacao | 4. Disparo base
+5. Disparo parceiros | 6. Campanha no ar | 7. 1a visita | 8. 1a proposta
+9. Meta interna | 10. Prazo autorizacao
 
 ---
 
-## 12. ALERTAS
+## 12. ALERTAS (gerados dinamicamente)
 
-- Contrato vencendo em <= 30 dias → CRITICO
-- Contrato vencido → CRITICO
-- Meta interna ultrapassada → CRITICO
-- Campanha no ar sem visita → ATENCAO
-- 3+ visitas sem proposta → ATENCAO
-- 30+ dias sem gravacao após assinatura → ATENCAO
+Contrato vencendo <= 30d → CRITICO | Vencido → CRITICO | Meta interna ultrapassada → CRITICO
+Campanha sem visita → ATENCAO | 3+ visitas sem proposta → ATENCAO | 30d sem gravacao → ATENCAO
 
 ---
 
-## 13. PENDÊNCIAS ATIVAS
+## 13. HISTÓRICO DE FASES
 
-### Bugs
-- [ ] **Indicador ativo mobile** — sem destaque visual no bottom-nav
+### Fase 1 — concluída (07/04/2026)
+- P1: payload de propostas corrigido (removido campo `corretor` inexistente)
+- P9: funil de visitas usa visitasMap real (nao total_visitas manual)
+- P6: campo meta_gastos_ads corrigido para meta_investimento + campo editavel no form
+- P3: botao + funcao de exclusao de exclusividade implementados
+- P10: view dashboard_imoveis atualizada com count_propostas real
+- RLS: todas as tabelas liberadas para role authenticated
 
-### Fase 2 — CRUD operacional faltante (proxima)
-Requer migracao SQL no Supabase ANTES de implementar no front:
+### Fase 3 — concluída (07/04/2026)
+- Item 0: bug propostas nao aparecendo no painel de detalhe corrigido (chave imovel_id)
+- Item 1: modal "+ Nova exclusividade" com INSERT sequencial imoveis→exclusividades→funil_snapshot
+- Item 2: paineis de disparos base e parceiros editaveis com botao salvar
+- Item 3: checkboxes de acoes de venda com auto-save no onChange
+- Item 4: registro.html agora cria exclusividade + funil_snapshot junto com o imovel
 
-**Colunas a adicionar em `funil_snapshot`:**
-- `disparos_base` int
-- `impactados_base` int
-- `visitas_base` int
-- `propostas_base` int
-- `disparos_parceiros` int
-- `contatados_parceiros` int
-- `visitas_parceiros` int
-- `propostas_parceiros` int
-- `data_disparo_base` date
-- `data_disparo_parceiros` date
-- `cad_dwv` boolean — Acao: cadastro DWV
-- `cad_site` boolean — Acao: cadastro no site
-- `cat_gabriel` boolean — Acao: enviado para carteira Gabriel
-- `cat_rafaela` boolean — Acao: enviado para carteira Rafaela
-- `video_youtube` boolean — Acao: video publicado YouTube
-- `post_instagram` boolean — Acao: post Instagram
-- `post_tiktok` boolean — Acao: post TikTok
-- `post_facebook` boolean — Acao: post Facebook
+---
 
-**Funcionalidades de UI a implementar:**
-- [ ] Botao + modal para cadastrar nova exclusividade (cria em imoveis + exclusividades + funil_snapshot)
-- [ ] Painel de disparos base e parceiros no detalhe (edita funil_snapshot)
-- [ ] Secao de acoes de venda com checkboxes no detalhe (edita funil_snapshot)
-- [ ] Garantir que exclusividade criada no Registro apareca no dashboard
+## 14. PENDÊNCIAS ATIVAS
 
-### Fase 3 — Midia planejada vs realizada
-- [ ] Campo `midia_total_planejada` (a definir onde armazenar)
+### Proxima — Fase 4: Midia planejada vs realizada
+- [ ] Campo midia_total_planejada (verificar se ja existe ou criar nova coluna)
 - [ ] Calculo proporcional: midia_esperada = total * (dias_passados / dias_total)
-- [ ] Exibicao comparativa previsto x realizado no detalhe
+- [ ] Exibicao comparativa previsto x realizado no card de detalhe
 
-### Fase 4 — Visual e UX (apos funcionalidades)
+### Fase 5 — Visual e UX
 - [ ] Remover emojis, substituir por SVG inline
 - [ ] Melhorar densidade de informacao
-- [ ] Corrigir indicador ativo mobile
-- [ ] Border-left colorida nos cards por dash_status
+- [ ] Corrigir indicador ativo mobile (estilo a definir)
+- [ ] Border-left colorida nos icards por dash_status
 
-### Fase 5 — Cadastro de usuários (sessao separada)
-- [ ] Reescrever criacao de usuario via Edge Function com service_role
-- [ ] Hoje usa sb.auth.signUp() que troca a sessao ativa — nao funciona
-
----
-
-## 14. CONTEXTO OPERACIONAL
-
-- **Equipe:** Gabriel Certeiro (dono/corretor) + Robson Souza (corretor parceiro) + Rafaela (ops/CRM)
-- **Foco:** imóveis residenciais R$630K – R$3M+ em Itajaí/SC
-- **Stack adicional:** GHL + WhatsApp Business API + n8n + Pipedrive (CRM fonte dos dados de funil)
+### Fase 6 — Cadastro de usuários (sessao separada, complexa)
+- [ ] Reescrever via Edge Function com service_role
+- [ ] Hoje usa sb.auth.signUp() que troca sessao ativa — nao funciona
 
 ---
 
-## 15. SHA DOS ARQUIVOS (verificar antes de editar)
+## 15. CONTEXTO OPERACIONAL
 
-> SEMPRE fazer `get_file_contents` antes de editar para obter SHA atual e verificar integridade.
-> Os SHAs abaixo podem estar desatualizados — use apenas como referencia.
+- **Equipe:** Gabriel Certeiro (dono/corretor) + Robson Souza (corretor parceiro) + Rafaela (ops)
+- **Foco:** imóveis R$630K–R$3M+ em Itajaí/SC
+- **Stack:** GHL + WhatsApp API + n8n + Pipedrive + Supabase + Vercel
 
-| Arquivo | SHA referencia |
-|---------|---------------|
-| `index.html` | verificar antes de editar |
-| `registro.html` | verificar antes de editar |
-| `vendedor.html` | verificar antes de editar |
+---
 
-> **ATENCAO:** `index.html` tem 126KB. Historico de truncamento ao usar `create_or_update_file`
-> com arquivo grande. Verificar integridade (tamanho, ultima funcao) antes de qualquer edicao.
+## 16. REGRA DE EDICAO DE ARQUIVOS
+
+SEMPRE fazer `get_file_contents` antes de editar qualquer arquivo para:
+1. Obter SHA atual (obrigatorio para update)
+2. Verificar se index.html nao esta truncado (historico de problema com arquivo 126KB)
+Nunca usar SHA de memoria — sempre buscar o atual antes de editar.
