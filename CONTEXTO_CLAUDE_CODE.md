@@ -1,6 +1,6 @@
 # CONTEXTO COMPLETO — PLATAFORMA CERTEIRO
 > Arquivo para onboarding de nova sessão no Claude Code.
-> Atualizado em: 07/04/2026 — versao 1.2.0 fechada
+> Atualizado em: 07/04/2026 — versao 1.2.1
 
 ---
 
@@ -19,8 +19,6 @@
 | Repo principal | `github.com/gabrielcerteiro/dashboard-certeiro` |
 | Branch | `main` (auto-deploy via Vercel) |
 | URL produção | `https://dashboard-certeiro.vercel.app` |
-| Repo secundário (legado) | `github.com/gabrielcerteiro/visitas-gabrielcerteiro` |
-| URL secundária | `https://visitas.gabrielcerteiro.com.br` |
 
 ---
 
@@ -31,7 +29,7 @@
 | `index.html` | Dashboard principal — lista, detalhe, edição, nova exclusividade |
 | `registro.html` | Registro de visitas e propostas (SEM criacao de imovel) |
 | `vendedor.html` | Relatório para proprietário (link compartilhável) |
-| `CONTEXTO_CLAUDE_CODE.md` | Este arquivo |
+| `CONTEXTO_CLAUDE_CODE.md` | Este arquivo — atualizar ao final de cada sessao |
 
 ---
 
@@ -105,6 +103,7 @@
 - `status` text CHECK ('em_andamento','aceita','recusada','desistiu')
 - `observacao` text, `created_at`, `updated_at` timestamptz
 - NAO tem coluna `corretor`
+- Propostas tem editar e excluir no registro.html (adicionado v1.1.0)
 
 #### `corretores`
 - Gabriel Certeiro — CRECI 22249/SC
@@ -230,7 +229,10 @@ tipo_imovel salvo em funil_snapshot.
 
 ### registro.html
 - Apenas visitas e propostas
+- Visitas: cadastrar, editar, excluir (adicionado v1.1.0)
+- Propostas: cadastrar, editar, excluir (adicionado v1.1.0 / corrigido painel v1.2.1)
 - Payload de proposta NAO inclui campo `corretor`
+- Protecao contra duplo envio nos botoes de salvar
 
 ### vendedor.html
 - Relatorio publico por `?id=<exclusividade_id>&from=internal`
@@ -255,11 +257,17 @@ Pipeline, alertas, timeline, registro, relatorio vendedor, autenticacao.
 ### v1.1.0 — 07/04/2026
 RLS configurado. Propostas salvando. Funil com dados reais (visitas + propostas).
 Nova exclusividade, disparos, acoes de venda, midia planejada vs realizada.
+Editar e excluir visitas e propostas. Protecao contra duplo envio.
 
 ### v1.2.0 — 07/04/2026
 Visual estilo Pipedrive: SVG inline, border-left por status, labels uppercase,
 badges pills, formularios profissionais, indicador ativo mobile, safe area PWA iOS.
 Fluxo de criacao de imovel unificado no Dashboard (removido do Registro).
+
+### v1.2.1 — 07/04/2026
+Corrigido:
+- Painel de listagem de propostas no registro.html nao exibia os registros
+  (mesma causa do bug anterior de visitas — chave de lookup incorreta)
 
 ---
 
@@ -290,3 +298,16 @@ SEMPRE fazer `get_file_contents` antes de editar qualquer arquivo:
 1. Obter SHA atual (obrigatorio para update)
 2. Verificar integridade do index.html (historico de truncamento com arquivo grande)
 Nunca usar SHA de memoria.
+
+---
+
+## 14. REGRA DE ATUALIZACAO DESTE ARQUIVO
+
+> Este arquivo DEVE ser atualizado ao final de cada sessao de desenvolvimento.
+> Sem atualizacao, a proxima sessao comeca com contexto desatualizado.
+
+Ao final de cada sessao, o Claude Code deve:
+1. Registrar a versao entregue no historico (secao 10)
+2. Atualizar funcoes novas ou alteradas (secao 8)
+3. Remover pendencias concluidas (secao 11)
+4. Fazer push deste arquivo junto com os demais arquivos alterados
