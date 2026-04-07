@@ -194,6 +194,41 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 .toast.show{opacity:1}
 ::-webkit-scrollbar{width:0;height:0}
 .hidden{display:none!important}
+/* RECENTES */
+.recentes-section{margin-top:20px}
+.recentes-empty{font-size:12px;color:var(--muted);text-align:center;padding:12px 0}
+.rcard{background:var(--white);border-radius:var(--card-radius);padding:14px 16px;border:1px solid var(--s2);box-shadow:var(--card-shadow);margin-bottom:8px}
+.rcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.rcard-nome{font-size:14px;font-weight:700;color:var(--text)}
+.rcard-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.rcard-badge{font-size:9px;font-weight:700;padding:3px 9px;border-radius:8px;white-space:nowrap;flex-shrink:0}
+.rcard-badge.green{background:var(--green-bg);color:var(--green)}
+.rcard-badge.yellow{background:var(--yellow-bg);color:var(--yellow)}
+.rcard-badge.blue{background:var(--blue-bg);color:var(--blue)}
+.rcard-badge.red{background:var(--red-bg);color:var(--red)}
+.rcard-badge.muted{background:var(--s2);color:var(--muted)}
+/* CARD ACTIONS */
+.card-actions{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--s2)}
+.btn-edit{flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--navy);background:transparent;color:var(--navy);font-size:12px;font-weight:700;font-family:'Nunito Sans',sans-serif;cursor:pointer;transition:all .15s}
+.btn-del{flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-size:12px;font-weight:700;font-family:'Nunito Sans',sans-serif;cursor:pointer;transition:all .15s}
+.btn-edit:active{background:rgba(25,25,73,0.06)}
+.btn-del:active{background:rgba(239,68,68,0.06)}
+/* CONFIRM MODAL */
+.confirm-overlay{position:fixed;inset:0;background:rgba(25,25,73,0.5);z-index:1100;display:flex;align-items:flex-end;justify-content:center}
+.confirm-sheet{background:var(--white);border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-width:480px}
+.confirm-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:8px}
+.confirm-sub{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:20px}
+.confirm-btns{display:flex;gap:10px}
+.confirm-cancel{flex:1;padding:13px;border-radius:10px;border:1.5px solid var(--s2);background:var(--bg);color:var(--navy);font-size:13px;font-weight:700;font-family:'Nunito Sans',sans-serif;cursor:pointer}
+.confirm-exec{flex:1;padding:13px;border-radius:10px;border:none;background:var(--red);color:#fff;font-size:13px;font-weight:700;font-family:'Nunito Sans',sans-serif;cursor:pointer}
+/* EDIT MODAL */
+.edit-modal{position:fixed;inset:0;background:var(--bg);z-index:1000;overflow-y:auto;display:none}
+.edit-modal-hdr{background:var(--navy);padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10}
+.edit-modal-title{color:#fff;font-size:14px;font-weight:800;flex:1}
+.edit-modal-close{background:none;border:none;color:#fff;cursor:pointer;display:flex;align-items:center;padding:0;flex-shrink:0}
+.edit-modal-body{padding:16px;max-width:480px;margin:0 auto;padding-bottom:40px}
+.edit-save-btn{width:100%;padding:15px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;font-family:'Nunito Sans',sans-serif;cursor:pointer;margin-top:8px;transition:opacity .15s}
+.edit-save-btn:disabled{opacity:0.4;cursor:not-allowed}
 .app-wrap{display:block}
 .nav-sep{display:none}
 .nav-badge-soon{display:none}
@@ -296,6 +331,8 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 </div>
 
 
+<div class="confirm-overlay" id="confirmModal" style="display:none"></div>
+<div class="edit-modal" id="editModal"></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -308,6 +345,9 @@ function logReg(action,entityNome,detalhes){if(!_logUser)return;sb.from('activit
 var S={tipo:null,imovel:null,corretor:null,parceiro:null,nome:'',data:'',origem:'',objections:[],observacoes:'',intencao:null,qualif:null,pagto:[],pagto_detalhes:'',prop_valor:'',prop_pagto:null,prop_status:'em_andamento',prop_obs:''};
 var imoveis=[];
 var corretores=[];
+var visitasRecentes=[];
+var propostasRecentes=[];
+var _confirmCb=null;
 var passo=0;
 var PASSOS_VISITA=['tipo','imovel','corretor','interessado','feedback','resultado','pagamento','revisao'];
 var PASSOS_PROPOSTA=['tipo','imovel','corretor','proposta_form','revisao_prop'];
@@ -317,7 +357,7 @@ function passos(){return S.tipo==='proposta'?PASSOS_PROPOSTA:PASSOS_VISITA;}
 async function init(){
   initHeader();
   try{
-    await Promise.all([loadImoveis(),loadCorretores()]);
+    await Promise.all([loadImoveis(),loadCorretores(),loadRecentes()]);
     renderPasso();
   }catch(e){
     document.getElementById('mainPage').innerHTML=
@@ -345,6 +385,49 @@ async function loadCorretores(){
   var res=await sb.from('corretores').select('id,nome,creci,foto_url').eq('ativo',true).order('nome');
   if(res.error)throw res.error;
   corretores=res.data||[];
+}
+
+async function loadRecentes(){
+  var vr=await sb.from('visitas').select('*').order('created_at',{ascending:false}).limit(20);
+  visitasRecentes=vr.data||[];
+  var pr=await sb.from('propostas').select('*').order('created_at',{ascending:false}).limit(20);
+  propostasRecentes=pr.data||[];
+}
+
+function nomeImovel(imovelId){
+  for(var i=0;i<imoveis.length;i++){if(imoveis[i].id===imovelId)return imoveis[i].nome;}
+  return '';
+}
+
+function renderVisitaCard(v){
+  var intCls={'Quer comprar':'green','Esta pensando':'yellow','Quer segunda visita':'blue','Nao gostou':'red'};
+  var badge=v.intencao?'<span class="rcard-badge '+(intCls[v.intencao]||'muted')+'">'+escHtml(v.intencao)+'</span>':'';
+  return '<div class="rcard" id="rcard-v-'+v.id+'">'+
+    '<div class="rcard-top"><div>'+
+    '<div class="rcard-nome">'+escHtml(v.nome_interessado||'-')+'</div>'+
+    '<div class="rcard-sub">'+escHtml(v.imovel_nome||nomeImovel(v.imovel_id)||'-')+' &middot; '+(v.data_visita||'-')+'</div>'+
+    '</div>'+badge+'</div>'+
+    '<div class="card-actions">'+
+    '<button class="btn-edit" onclick="editarVisita(\''+v.id+'\')">Editar</button>'+
+    '<button class="btn-del" onclick="confirmarExcluir(\'visita\',\''+v.id+'\')">Excluir</button>'+
+    '</div></div>';
+}
+
+function renderPropostaCard(p){
+  var stCls={em_andamento:'yellow',aceita:'green',recusada:'red',desistiu:'muted'};
+  var stL={em_andamento:'Em andamento',aceita:'Aceita',recusada:'Recusada',desistiu:'Desistiu'};
+  var badge='<span class="rcard-badge '+(stCls[p.status]||'muted')+'">'+(stL[p.status]||escHtml(p.status||'-'))+'</span>';
+  var imNome=nomeImovel(p.imovel_id);
+  var valStr=p.valor_proposto?'R$ '+parseFloat(p.valor_proposto).toLocaleString('pt-BR'):'';
+  return '<div class="rcard" id="rcard-p-'+p.id+'">'+
+    '<div class="rcard-top"><div>'+
+    '<div class="rcard-nome">'+escHtml(p.nome_interessado||'-')+'</div>'+
+    '<div class="rcard-sub">'+(imNome?escHtml(imNome)+' &middot; ':'')+( p.data||'-')+(valStr?' &middot; '+valStr:'')+'</div>'+
+    '</div>'+badge+'</div>'+
+    '<div class="card-actions">'+
+    '<button class="btn-edit" onclick="editarProposta(\''+p.id+'\')">Editar</button>'+
+    '<button class="btn-del" onclick="confirmarExcluir(\'proposta\',\''+p.id+'\')">Excluir</button>'+
+    '</div></div>';
 }
 
 function renderStepBar(){
@@ -399,12 +482,21 @@ function atualizarBtnNext(){
 // ---- PASSOS ----
 
 function renderTipo(){
-  return '<div style="padding-top:8px">'+
+  var html='<div style="padding-top:8px">'+
   '<div class="section-title">O que voce quer registrar?</div>'+
   '<div class="tipo-wrap">'+
     '<div class="tipo-btn" style="padding:18px 8px" onclick="selTipo(\'visita\')"><div class="tipo-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 012-2h8a2 2 0 012 2v18"/><path d="M6 12H4a2 2 0 00-2 2v6a2 2 0 002 2h2"/><path d="M18 9h2a2 2 0 012 2v9a2 2 0 01-2 2h-2"/><line x1="10" y1="6" x2="10" y2="6"/><line x1="14" y1="6" x2="14" y2="6"/><line x1="10" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="14" y2="14"/></svg></div><div class="tipo-label">Visita</div><div class="tipo-sub">Registre uma visita</div></div>'+
     '<div class="tipo-btn" style="padding:18px 8px" onclick="selTipo(\'proposta\')"><div class="tipo-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/></svg></div><div class="tipo-label">Proposta</div><div class="tipo-sub">Registre uma proposta</div></div>'+
-  '</div></div>';
+  '</div>';
+  html+='<div class="recentes-section"><div class="section-title" style="margin-top:20px">Ultimas visitas</div>';
+  if(!visitasRecentes.length){html+='<div class="recentes-empty">Nenhuma visita registrada.</div>';}
+  else{var vs=visitasRecentes.slice(0,5);for(var i=0;i<vs.length;i++){html+=renderVisitaCard(vs[i]);}}
+  html+='</div>';
+  html+='<div class="recentes-section"><div class="section-title">Ultimas propostas</div>';
+  if(!propostasRecentes.length){html+='<div class="recentes-empty">Nenhuma proposta registrada.</div>';}
+  else{var ps=propostasRecentes.slice(0,5);for(var j=0;j<ps.length;j++){html+=renderPropostaCard(ps[j]);}}
+  html+='</div></div>';
+  return html;
 }
 
 function selTipo(t){
@@ -642,7 +734,7 @@ function renderRevisaoProp(){
     '<div class="rev-section"><div class="rev-lbl">Status</div><div class="rev-val">'+escHtml(sL[S.prop_status]||S.prop_status)+'</div></div>'+
     (S.prop_obs?'<div class="rev-section"><div class="rev-lbl">Observacoes</div><div class="rev-val" style="font-size:12px;font-weight:600">'+escHtml(S.prop_obs)+'</div></div>':'')+
   '</div>'+
-  '<button class="btn-next green" style="width:100%;padding:16px;font-size:15px;border-radius:12px;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px" onclick="salvarProposta()">&#10003; Salvar proposta</button>'+
+  '<button class="btn-next green" id="btnSalvarProposta" style="width:100%;padding:16px;font-size:15px;border-radius:12px;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px" onclick="salvarProposta()">&#10003; Salvar proposta</button>'+
   '<button class="btn-back" style="width:100%;padding:14px;text-align:center;border-radius:12px" onclick="voltarPasso()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg> Corrigir</button>';
 }
 
@@ -713,7 +805,7 @@ function iniciarPropostaPosVisita(){
 function finalizarSemProposta(){document.getElementById('mainPage').innerHTML=renderSucesso('Registro concluido!','Tudo salvo com sucesso.');}
 
 async function salvarProposta(){
-  var btn=document.querySelector('#mainPage .btn-next.green');
+  var btn=document.getElementById('btnSalvarProposta');
   if(btn){btn.disabled=true;btn.textContent='Salvando...';}
   try{
     var vRaw=S.prop_valor?parseFloat(S.prop_valor.replace(/\./g,'').replace(',','.'))||null:null;
@@ -750,6 +842,207 @@ function irModulo(tab){irDashboard(tab);}
 function hoje(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function escHtml(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
+
+// ---- CONFIRMAR / EXCLUIR ----
+
+function confirmarExcluir(tipo,id){
+  _confirmCb=function(){if(tipo==='visita')excluirVisita(id);else excluirProposta(id);};
+  var el=document.getElementById('confirmModal');
+  el.innerHTML='<div class="confirm-sheet"><div class="confirm-title">Confirmar exclusao</div>'+
+    '<div class="confirm-sub">Tem certeza? Esta acao nao pode ser desfeita.</div>'+
+    '<div class="confirm-btns">'+
+    '<button class="confirm-cancel" onclick="fecharConfirm()">Cancelar</button>'+
+    '<button class="confirm-exec" onclick="executarConfirm()">Excluir</button>'+
+    '</div></div>';
+  el.style.display='flex';
+}
+function fecharConfirm(){document.getElementById('confirmModal').style.display='none';_confirmCb=null;}
+function executarConfirm(){if(_confirmCb)_confirmCb();fecharConfirm();}
+
+async function excluirVisita(id){
+  var res=await sb.from('visitas').delete().eq('id',id);
+  if(res.error){showToast('Erro ao excluir: '+res.error.message);return;}
+  visitasRecentes=visitasRecentes.filter(function(v){return v.id!==id;});
+  var card=document.getElementById('rcard-v-'+id);if(card)card.remove();
+  showToast('Visita excluida.');
+}
+
+async function excluirProposta(id){
+  var res=await sb.from('propostas').delete().eq('id',id);
+  if(res.error){showToast('Erro ao excluir: '+res.error.message);return;}
+  propostasRecentes=propostasRecentes.filter(function(p){return p.id!==id;});
+  var card=document.getElementById('rcard-p-'+id);if(card)card.remove();
+  showToast('Proposta excluida.');
+}
+
+// ---- EDITAR VISITA ----
+
+var SVG_BACK='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>';
+
+function fecharEditModal(){document.getElementById('editModal').style.display='none';}
+
+function editarVisita(id){
+  var v=null;
+  for(var i=0;i<visitasRecentes.length;i++){if(visitasRecentes[i].id===id){v=visitasRecentes[i];break;}}
+  if(!v){showToast('Visita nao encontrada');return;}
+  var origens=['Meta Ads','Google Ads','Instagram Organico','Indicacao','Disparo de base','Corretor parceiro','Site / Organico','YouTube','TikTok','Relacionamento','Outro'];
+  var pts=[{v:'a_vista',l:'A vista'},{v:'financiamento',l:'Financiamento'},{v:'parcelamento_direto',l:'Parcelamento direto'},{v:'dacao_a_vista',l:'Dacao + a vista'},{v:'dacao_financiamento',l:'Dacao + financiamento'},{v:'dacao_parcelamento_direto',l:'Dacao + parcelamento'},{v:'parcelamento_direto_financiamento',l:'Parcelamento + financiamento'}];
+  var its=[{v:'Quer comprar'},{v:'Esta pensando'},{v:'Quer segunda visita'},{v:'Nao gostou'}];
+  var presets=['Preco alto','Localizacao','Tamanho','Condominio caro','Precisa reformar','Sem vaga','Sem area de lazer','Documentacao','Nao gostou do imovel','Nao qualificado financeiramente'];
+  var objArr=Array.isArray(v.objections)?v.objections:[];
+  var pagtoArr=Array.isArray(v.formas_pagamento)?v.formas_pagamento:[];
+  var html='<div class="edit-modal-hdr">'+
+    '<button class="edit-modal-close" onclick="fecharEditModal()">'+SVG_BACK+'</button>'+
+    '<div class="edit-modal-title">Editar visita</div></div>'+
+    '<div class="edit-modal-body">'+
+    '<div class="field"><div class="field-lbl">Nome do interessado</div>'+
+    '<input type="text" class="finput" id="ev_nome" value="'+escHtml(v.nome_interessado||'')+'"></div>'+
+    '<div class="field"><div class="field-lbl">Data da visita</div>'+
+    '<input type="date" class="finput" id="ev_data" value="'+(v.data_visita||'')+'"></div>'+
+    '<div class="field"><div class="field-lbl">Hora</div>'+
+    '<input type="time" class="finput" id="ev_hora" value="'+(v.hora_visita||'')+'"></div>'+
+    '<div class="field"><div class="field-lbl">Corretor</div>'+
+    '<input type="text" class="finput" id="ev_corretor" value="'+escHtml(v.corretor||'')+'" list="evCorretoresList"></div>'+
+    '<datalist id="evCorretoresList">';
+  for(var ci=0;ci<corretores.length;ci++){html+='<option value="'+escHtml(corretores[ci].nome)+'">';}
+  html+='</datalist>'+
+    '<div class="field"><div class="field-lbl">Corretor parceiro</div>'+
+    '<input type="text" class="finput" id="ev_parceiro" value="'+escHtml(v.parceiro||'')+'" placeholder="Nome do parceiro (opcional)"></div>'+
+    '<div class="field"><div class="field-lbl">Origem</div><div class="chips" id="ev_origens">';
+  for(var oi=0;oi<origens.length;oi++){var os=v.origem===origens[oi];html+='<div class="chip'+(os?' sel':'')+'" onclick="evSelOrigem(this)">'+escHtml(origens[oi])+'</div>';}
+  html+='</div></div>'+
+    '<div class="field"><div class="field-lbl">Intencao</div><div class="chips" id="ev_intencao">';
+  for(var ii=0;ii<its.length;ii++){var is2=v.intencao===its[ii].v;html+='<div class="chip'+(is2?' sel':'')+'" onclick="evSelIntencao(this)">'+escHtml(its[ii].v)+'</div>';}
+  html+='</div></div>'+
+    '<div class="field"><div class="field-lbl">Qualificado financeiramente</div>'+
+    '<div class="toggle-row">'+
+    '<div class="toggle-btn'+(v.qualificado_financeiramente===true?' sel-sim':'')+'" onclick="evSelQualif(true)">Sim</div>'+
+    '<div class="toggle-btn'+(v.qualificado_financeiramente===false?' sel-nao':'')+'" onclick="evSelQualif(false)">Nao</div>'+
+    '</div></div>'+
+    '<div class="field"><div class="field-lbl">Formas de pagamento mencionadas</div><div class="chips" id="ev_pagto">';
+  for(var pi=0;pi<pts.length;pi++){var psel=pagtoArr.indexOf(pts[pi].v)>=0;html+='<div class="chip'+(psel?' sel':'')+'" data-val="'+pts[pi].v+'" onclick="evTogglePagto(this)">'+escHtml(pts[pi].l)+'</div>';}
+  html+='</div></div>'+
+    '<div class="field"><div class="field-lbl">Objecoes</div><div class="chips" id="ev_objecoes">';
+  for(var bi=0;bi<presets.length;bi++){var bsel=objArr.indexOf(presets[bi])>=0;html+='<div class="chip'+(bsel?' sel':'')+'" onclick="evToggleObj(this)">'+escHtml(presets[bi])+'</div>';}
+  for(var bj=0;bj<objArr.length;bj++){if(presets.indexOf(objArr[bj])<0){html+='<div class="chip sel" onclick="evToggleObj(this)">'+escHtml(objArr[bj])+'</div>';}}
+  html+='</div>'+
+    '<div class="obj-add-row"><input type="text" class="obj-add-input" id="ev_objInput" placeholder="Outra objecao..."><button class="obj-add-btn" onclick="evAddObj()">+ Add</button></div></div>'+
+    '<div class="field"><div class="field-lbl">Observacoes</div>'+
+    '<textarea class="finput" id="ev_obs">'+escHtml(v.observacoes||'')+'</textarea></div>'+
+    '<button class="edit-save-btn" id="btnSalvarEditVisita" onclick="salvarEditVisita(\''+id+'\')">Salvar alteracoes</button>'+
+    '</div>';
+  var modal=document.getElementById('editModal');
+  modal.innerHTML=html;modal.style.display='block';modal.scrollTop=0;
+}
+
+function evSelOrigem(el){document.querySelectorAll('#ev_origens .chip').forEach(function(c){c.classList.remove('sel');});el.classList.add('sel');}
+function evSelIntencao(el){document.querySelectorAll('#ev_intencao .chip').forEach(function(c){c.classList.remove('sel');});el.classList.add('sel');}
+function evSelQualif(val){document.querySelectorAll('#editModal .toggle-btn').forEach(function(b,i){b.classList.remove('sel-sim','sel-nao');if(i===0&&val===true)b.classList.add('sel-sim');if(i===1&&val===false)b.classList.add('sel-nao');});}
+function evTogglePagto(el){el.classList.toggle('sel');}
+function evToggleObj(el){el.classList.toggle('sel');}
+function evAddObj(){
+  var inp=document.getElementById('ev_objInput');
+  if(!inp||!inp.value.trim())return;
+  var val=inp.value.trim();
+  var wrap=document.getElementById('ev_objecoes');
+  var chip=document.createElement('div');
+  chip.className='chip sel';chip.textContent=val;
+  chip.onclick=function(){chip.classList.toggle('sel');};
+  wrap.appendChild(chip);inp.value='';
+}
+
+async function salvarEditVisita(id){
+  var btn=document.getElementById('btnSalvarEditVisita');
+  if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+  try{
+    var nome=(document.getElementById('ev_nome').value||'').trim();
+    var data=document.getElementById('ev_data').value||null;
+    var hora=document.getElementById('ev_hora').value||null;
+    var corretor=(document.getElementById('ev_corretor').value||'').trim()||null;
+    var parceiro=(document.getElementById('ev_parceiro').value||'').trim()||null;
+    var origemEl=document.querySelector('#ev_origens .chip.sel');
+    var origem=origemEl?origemEl.textContent.trim():null;
+    var intencaoEl=document.querySelector('#ev_intencao .chip.sel');
+    var intencao=intencaoEl?intencaoEl.textContent.trim():null;
+    var qualSimEl=document.querySelector('#editModal .toggle-btn.sel-sim');
+    var qualNaoEl=document.querySelector('#editModal .toggle-btn.sel-nao');
+    var qualif=qualSimEl?true:(qualNaoEl?false:null);
+    var pagtoEls=document.querySelectorAll('#ev_pagto .chip.sel');
+    var pagto=[];pagtoEls.forEach(function(e){pagto.push(e.getAttribute('data-val'));});
+    var objEls=document.querySelectorAll('#ev_objecoes .chip.sel');
+    var objs=[];objEls.forEach(function(e){objs.push(e.textContent.trim());});
+    var obs=(document.getElementById('ev_obs').value||'').trim()||null;
+    var payload={nome_interessado:nome,data_visita:data,hora_visita:hora,corretor:corretor,parceiro:parceiro,origem:origem,intencao:intencao,qualificado_financeiramente:qualif,formas_pagamento:pagto.length?pagto:null,objections:objs.length?objs:null,observacoes:obs};
+    var res=await sb.from('visitas').update(payload).eq('id',id);
+    if(res.error)throw res.error;
+    for(var i=0;i<visitasRecentes.length;i++){if(visitasRecentes[i].id===id){Object.assign(visitasRecentes[i],payload);break;}}
+    var card=document.getElementById('rcard-v-'+id);
+    if(card){var vObj=null;for(var j=0;j<visitasRecentes.length;j++){if(visitasRecentes[j].id===id){vObj=visitasRecentes[j];break;}}if(vObj){var tmp=document.createElement('div');tmp.innerHTML=renderVisitaCard(vObj);card.replaceWith(tmp.firstChild);}}
+    fecharEditModal();showToast('Visita atualizada!');
+  }catch(e){showToast('Erro: '+e.message);if(btn){btn.disabled=false;btn.textContent='Salvar alteracoes';}}
+}
+
+// ---- EDITAR PROPOSTA ----
+
+function editarProposta(id){
+  var p=null;
+  for(var i=0;i<propostasRecentes.length;i++){if(propostasRecentes[i].id===id){p=propostasRecentes[i];break;}}
+  if(!p){showToast('Proposta nao encontrada');return;}
+  var pts=[{v:'a_vista',l:'A vista'},{v:'financiamento',l:'Financiamento'},{v:'parcelamento_direto',l:'Parcelamento direto'},{v:'dacao_a_vista',l:'Dacao + a vista'},{v:'dacao_financiamento',l:'Dacao + financiamento'},{v:'dacao_parcelamento_direto',l:'Dacao + parcelamento'},{v:'parcelamento_direto_financiamento',l:'Parcelamento + financiamento'}];
+  var sts=[{v:'em_andamento',l:'Em andamento',c:'sel-yellow'},{v:'aceita',l:'Aceita',c:'sel-green'},{v:'recusada',l:'Recusada',c:'sel-red'},{v:'desistiu',l:'Desistiu',c:'sel-muted'}];
+  var valorFmt=p.valor_proposto?parseFloat(p.valor_proposto).toLocaleString('pt-BR'):'';
+  var html='<div class="edit-modal-hdr">'+
+    '<button class="edit-modal-close" onclick="fecharEditModal()">'+SVG_BACK+'</button>'+
+    '<div class="edit-modal-title">Editar proposta</div></div>'+
+    '<div class="edit-modal-body">'+
+    '<div class="field"><div class="field-lbl">Nome do interessado</div>'+
+    '<input type="text" class="finput" id="ep_nome" value="'+escHtml(p.nome_interessado||'')+'"></div>'+
+    '<div class="field"><div class="field-lbl">Data</div>'+
+    '<input type="date" class="finput" id="ep_data" value="'+(p.data||'')+'"></div>'+
+    '<div class="field"><div class="field-lbl">Valor proposto</div>'+
+    '<div class="valor-wrap"><span class="valor-prefix">R$</span><input type="text" inputmode="numeric" class="valor-input" id="ep_valor" placeholder="0" value="'+escHtml(valorFmt)+'" oninput="mascaraValor(this)"></div></div>'+
+    '<div class="field"><div class="field-lbl">Forma de pagamento</div><div class="chips" id="ep_pagto">';
+  for(var pi=0;pi<pts.length;pi++){var psel=p.forma_pagamento===pts[pi].v;html+='<div class="chip'+(psel?' sel sel-active':'')+'" data-val="'+pts[pi].v+'" onclick="epSelPagto(this)">'+escHtml(pts[pi].l)+'</div>';}
+  html+='</div></div><div class="field"><div class="field-lbl">Status</div><div class="chips" id="ep_status">';
+  for(var si=0;si<sts.length;si++){var ssel=p.status===sts[si].v;html+='<div class="chip'+(ssel?' '+sts[si].c+' sel-active':'')+'" data-val="'+sts[si].v+'" data-cls="'+sts[si].c+'" onclick="epSelStatus(this)">'+escHtml(sts[si].l)+'</div>';}
+  html+='</div></div>'+
+    '<div class="field"><div class="field-lbl">Observacoes</div>'+
+    '<textarea class="finput" id="ep_obs">'+escHtml(p.observacao||'')+'</textarea></div>'+
+    '<button class="edit-save-btn" id="btnSalvarEditProposta" onclick="salvarEditProposta(\''+id+'\')">Salvar alteracoes</button>'+
+    '</div>';
+  var modal=document.getElementById('editModal');
+  modal.innerHTML=html;modal.style.display='block';modal.scrollTop=0;
+}
+
+function epSelPagto(el){document.querySelectorAll('#ep_pagto .chip').forEach(function(c){c.classList.remove('sel','sel-active');});el.classList.add('sel','sel-active');}
+function epSelStatus(el){
+  var allC=['sel-yellow','sel-green','sel-red','sel-muted','sel-active'];
+  document.querySelectorAll('#ep_status .chip').forEach(function(c){allC.forEach(function(cls){c.classList.remove(cls);});});
+  el.classList.add(el.getAttribute('data-cls'));el.classList.add('sel-active');
+}
+
+async function salvarEditProposta(id){
+  var btn=document.getElementById('btnSalvarEditProposta');
+  if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+  try{
+    var nome=(document.getElementById('ep_nome').value||'').trim();
+    var data=document.getElementById('ep_data').value||null;
+    var valorStr=(document.getElementById('ep_valor').value||'').trim();
+    var vRaw=valorStr?parseFloat(valorStr.replace(/\./g,'').replace(',','.'))||null:null;
+    var pagtoEl=document.querySelector('#ep_pagto .chip.sel-active');
+    var pagto=pagtoEl?pagtoEl.getAttribute('data-val'):null;
+    var statusEl=document.querySelector('#ep_status .chip.sel-active');
+    var status=statusEl?statusEl.getAttribute('data-val'):'em_andamento';
+    var obs=(document.getElementById('ep_obs').value||'').trim()||null;
+    var payload={nome_interessado:nome,data:data,valor_proposto:vRaw,forma_pagamento:pagto,status:status,observacao:obs};
+    var res=await sb.from('propostas').update(payload).eq('id',id);
+    if(res.error)throw res.error;
+    for(var i=0;i<propostasRecentes.length;i++){if(propostasRecentes[i].id===id){Object.assign(propostasRecentes[i],payload);break;}}
+    var card=document.getElementById('rcard-p-'+id);
+    if(card){var pObj=null;for(var j=0;j<propostasRecentes.length;j++){if(propostasRecentes[j].id===id){pObj=propostasRecentes[j];break;}}if(pObj){var tmp=document.createElement('div');tmp.innerHTML=renderPropostaCard(pObj);card.replaceWith(tmp.firstChild);}}
+    fecharEditModal();showToast('Proposta atualizada!');
+  }catch(e){showToast('Erro: '+e.message);if(btn){btn.disabled=false;btn.textContent='Salvar alteracoes';}}
+}
 
 // ---- GESTAO DE IMOVEIS ----
 
