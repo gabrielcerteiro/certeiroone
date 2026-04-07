@@ -1,6 +1,6 @@
 # CONTEXTO COMPLETO — PLATAFORMA CERTEIRO
 > Arquivo para onboarding de nova sessão no Claude Code.
-> Atualizado em: 07/04/2026 — pos Fase 5 visual concluida (versao 1.2.0)
+> Atualizado em: 07/04/2026 — versao 1.2.0 fechada
 
 ---
 
@@ -28,11 +28,9 @@
 
 | Arquivo | Descrição |
 |---------|-----------|
-| `index.html` | Dashboard interno principal — lista, detalhe, edição, nova exclusividade |
-| `registro.html` | Módulo de registro de visitas e propostas |
+| `index.html` | Dashboard principal — lista, detalhe, edição, nova exclusividade |
+| `registro.html` | Registro de visitas e propostas (SEM criacao de imovel) |
 | `vendedor.html` | Relatório para proprietário (link compartilhável) |
-| `docs/BRIEFING_DASHBOARD_V20.md` | Briefing de produto com specs funcionais |
-| `SPEC_VENDEDOR.md` | Especificação da página do vendedor |
 | `CONTEXTO_CLAUDE_CODE.md` | Este arquivo |
 
 ---
@@ -82,14 +80,14 @@
 - `leads_abertos`, `leads_perdidos` int
 - `leads_meta_ads`, `leads_google_ads`, `leads_instagram_org`, `leads_youtube`, `leads_tiktok`, `leads_site_org`, `leads_indicacao`, `leads_corretor_parc`, `leads_relacionamento`, `leads_disparo_base`, `leads_oferta_ativa`, `leads_outdoor` int
 - `gastos_metaads` numeric, `alcance_metaads` int, `frequencia_metaads` numeric
-- `localizacao`, `tipo_imovel` text
+- `localizacao`, `tipo_imovel` text — tipo: Mobiliado, Vazio, Repaginado
 - `atualizado_em` timestamptz, `fonte` text (default 'pipedrive_n8n')
-- `midia_total_planejada` numeric — Fase 4
-- `disparos_base`, `impactados_base`, `visitas_base`, `propostas_base` int — Fase 3
-- `disparos_parceiros`, `contatados_parceiros`, `visitas_parceiros`, `propostas_parceiros` int — Fase 3
-- `data_disparo_base`, `data_disparo_parceiros` date — Fase 3
-- `cad_dwv`, `cad_site`, `cat_gabriel`, `cat_rafaela` boolean DEFAULT false — Fase 3
-- `video_youtube`, `post_instagram`, `post_tiktok`, `post_facebook` boolean DEFAULT false — Fase 3
+- `midia_total_planejada` numeric — orcamento total do contrato
+- `disparos_base`, `impactados_base`, `visitas_base`, `propostas_base` int
+- `disparos_parceiros`, `contatados_parceiros`, `visitas_parceiros`, `propostas_parceiros` int
+- `data_disparo_base`, `data_disparo_parceiros` date
+- `cad_dwv`, `cad_site`, `cat_gabriel`, `cat_rafaela` boolean DEFAULT false
+- `video_youtube`, `post_instagram`, `post_tiktok`, `post_facebook` boolean DEFAULT false
 
 #### `visitas`
 - `id` uuid PK, `imovel_id` uuid FK → imoveis.id
@@ -137,7 +135,7 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 - Font: Nunito Sans (Google Fonts)
 - Sem build step
 
-### Design System (v1.2 — pos Fase 5)
+### Design System
 ```css
 :root {
   --navy: #191949;
@@ -155,15 +153,15 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 }
 ```
 
-### Padroes visuais (pos Fase 5)
+### Padroes visuais
 - **Icones:** SVG inline estilo Lucide (stroke, nao fill, stroke-width 1.5 ou 2). ZERO emojis.
 - **Labels de secao:** uppercase, font-size 11px, letter-spacing 1px, cor --muted
 - **Nav labels:** uppercase, font-size 11px, letter-spacing 0.5px
-- **Badges de status:** pill com background colorido suave
+- **Badges de status:**
   - ativa: bg #D1FAE5, texto #065F46
   - vendida: bg #DBEAFE, texto #1E40AF
   - perdida/encerrada: bg #F3F4F6, texto #6B7280
-- **Border-left dos icards:** 3px por dash_status
+- **Border-left icards (3px por dash_status):**
   - ok: --green | melhoria/atencao: --yellow | critico: --red | vendida/encerrada: --muted
 - **Inputs:** border 1px solid --s3, border-radius 8px, padding 10px 12px
   - Label: uppercase, 11px, --muted, letter-spacing 0.5px
@@ -171,6 +169,7 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 - **Botao primario:** background --navy, texto branco, border-radius 8px
 - **Botao destrutivo:** border 1px solid --red, texto --red, sem fundo
 - **Indicador ativo mobile:** linha --navy 2px no TOPO do botao ativo
+- **Bottom-nav PWA:** height 64px + env(safe-area-inset-bottom), icones 24px
 
 ### Layout
 - **Mobile** (< 900px): bottom-nav fixa, coluna única, max-width 480px
@@ -186,53 +185,59 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 
 ## 6. NAVEGAÇÃO
 
-### Icones SVG por item (pos Fase 5)
+### Icones SVG (Lucide)
 - Alertas: bell | Exclusividades: home | Registro: clipboard-list
 - Mais: more-horizontal | Captacao: target | Vendas: trending-up
 - Marketing: megaphone | Conteudo: film | Financeiro: bar-chart-2
 - Usuarios: user | Sair: log-out
 
-### Mobile (bottom-nav)
-Alertas | Exclusividades | Registro (→ registro.html) | Analise | Mais (drawer)
-Indicador ativo: linha --navy 2px no topo do botao ativo
+### Mobile bottom-nav
+4 botoes: Alertas | Exclusividades | Registro | Mais
+Indicador ativo: linha --navy 2px no topo
+Safe area iOS: padding-bottom env(safe-area-inset-bottom)
 
-### Desktop (sidebar)
+### Desktop sidebar
 Item ativo: background --navy, icone e label brancos
 
 ---
 
-## 7. MÓDULOS DO index.html
+## 7. FLUXO DE CRIACAO DE EXCLUSIVIDADE
 
-### Views
-- `vAlertas`, `vList`, `vDetail`, `vEdit`, `vAnalise`
+**Unico ponto de entrada: modal "+ Nova Exclusividade" no index.html**
+Campos: Nome, Proprietario, Bairro (Fazenda/Praia Brava/Ressacada/Outro),
+Tipo (Mobiliado/Vazio/Repaginado), Preco, Data de inicio,
+Prazo (120/180 dias), Tem repaginacao? (checkbox condicional)
 
-### Funcoes principais
+INSERT sequencial: imoveis → exclusividades → funil_snapshot
+tipo_imovel salvo em funil_snapshot.
+
+> registro.html NAO tem criacao de imovel — apenas visitas e propostas.
+> Fluxo de imovel foi removido do registro na v1.2.0.
+
+---
+
+## 8. MÓDULOS
+
+### index.html — funcoes principais
 - `loadDashboard()` — carrega view + visitas + propostas
-- `saveSnapshot()` — UPDATE funil_snapshot
-- `salvarNovaExcl()` — INSERT sequencial: imoveis → exclusividades → funil_snapshot
-- `funilBarras(im)` — Visitas: visitasMap (real). Propostas: count_propostas (real). Ads: midia_total_planejada ou meta_investimento
-- `excluirExclusividade()` / `_doExcluirExclusividade()` — DELETE em cascata
-- `disparosBaseHtml(im)` / `disparosParcHtml(im)` — paineis editaveis
-- `salvarDisparosBase(id)` / `salvarDisparosParc(id)` — UPDATE disparos
-- `toggleAcaoVenda(id, key, current)` — UPDATE booleano, auto-save
-- `acoesVendaHtml(im)` — 8 checkboxes de acoes de venda
+- `saveSnapshot()` — UPDATE funil_snapshot (inclui tipo_imovel, midia_total_planejada)
+- `salvarNovaExcl()` — INSERT sequencial com todos os campos do modal
+- `funilBarras(im)` — Visitas: visitasMap. Propostas: count_propostas. Ads: midia_total_planejada ou meta_investimento
+- `excluirExclusividade()` / `_doExcluirExclusividade()` — DELETE funil_snapshot → exclusividades
+- `disparosBaseHtml(im)` / `disparosParcHtml(im)` / `salvarDisparosBase()` / `salvarDisparosParc()`
+- `toggleAcaoVenda(id, key, current)` — auto-save booleano
+- `acoesVendaHtml(im)` — 8 checkboxes
+
+### registro.html
+- Apenas visitas e propostas
+- Payload de proposta NAO inclui campo `corretor`
+
+### vendedor.html
+- Relatorio publico por `?id=<exclusividade_id>&from=internal`
 
 ---
 
-## 8. MÓDULO registro.html
-
-- Registrar visita e proposta (sem campo corretor)
-- `salvarImovelModal()` — cria imovel + exclusividade + funil_snapshot em sequencia
-
----
-
-## 9. MÓDULO vendedor.html
-
-Relatório público. Acesso por `?id=<exclusividade_id>&from=internal`.
-
----
-
-## 10. FUNIL — LÓGICA DE BARRAS
+## 9. FUNIL — LÓGICA DE BARRAS
 
 ```
 fator = diasPassados / diasTotal
@@ -242,46 +247,46 @@ Verde >= esperado | Amarelo >= 80% | Vermelho < 80%
 
 ---
 
-## 11. HISTÓRICO DE VERSOES
+## 10. HISTORICO DE VERSOES
 
 ### v1.0.0 — primeiro deploy
-Pipeline, alertas, timeline, registro, relatório vendedor, autenticação.
+Pipeline, alertas, timeline, registro, relatorio vendedor, autenticacao.
 
 ### v1.1.0 — 07/04/2026
-Correções bugs críticos + funcionalidades faltantes.
-RLS, propostas, funil real, nova exclusividade, disparos, acoes de venda, midia planejada.
+RLS configurado. Propostas salvando. Funil com dados reais (visitas + propostas).
+Nova exclusividade, disparos, acoes de venda, midia planejada vs realizada.
 
 ### v1.2.0 — 07/04/2026
-Visual e UX estilo Pipedrive.
-SVG inline, border-left por status, labels uppercase, badges pills, formularios profissionais,
-indicador ativo mobile corrigido.
+Visual estilo Pipedrive: SVG inline, border-left por status, labels uppercase,
+badges pills, formularios profissionais, indicador ativo mobile, safe area PWA iOS.
+Fluxo de criacao de imovel unificado no Dashboard (removido do Registro).
 
 ---
 
-## 12. PENDÊNCIAS ATIVAS
+## 11. PENDENCIAS ATIVAS
 
-### Proxima — Fase 6: Cadastro de usuários (complexa, sessao separada)
-- [ ] Edge Function com service_role
-- [ ] Hoje sb.auth.signUp() troca sessao ativa — nao funciona
+### Alta prioridade
+- [ ] Cadastro de usuarios via Edge Function (service_role)
+      Hoje sb.auth.signUp() troca sessao ativa — nao funciona
 
 ### Backlog
-- [ ] Modulo Analise — visao consolidada de conversoes por canal
-- [ ] Modulo Vendas — tracking de VGV fechado
+- [ ] Modulo Analise — conversoes por canal
+- [ ] Modulo Vendas — tracking VGV fechado
 - [ ] Modulo Financeiro — DRE simplificado
 
 ---
 
-## 13. CONTEXTO OPERACIONAL
+## 12. CONTEXTO OPERACIONAL
 
 - **Equipe:** Gabriel Certeiro + Robson Souza + Rafaela
-- **Foco:** imóveis R$630K–R$3M+ em Itajaí/SC
+- **Foco:** imoveis R$630K–R$3M+ em Itajai/SC
 - **Stack:** GHL + WhatsApp API + n8n + Pipedrive + Supabase + Vercel
 
 ---
 
-## 14. REGRA DE EDICAO DE ARQUIVOS
+## 13. REGRA DE EDICAO DE ARQUIVOS
 
 SEMPRE fazer `get_file_contents` antes de editar qualquer arquivo:
 1. Obter SHA atual (obrigatorio para update)
-2. Verificar integridade do index.html (126KB+ — historico de truncamento)
+2. Verificar integridade do index.html (historico de truncamento com arquivo grande)
 Nunca usar SHA de memoria.
