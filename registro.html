@@ -809,7 +809,7 @@ async function salvarProposta(){
   if(btn){btn.disabled=true;btn.textContent='Salvando...';}
   try{
     var vRaw=S.prop_valor?parseFloat(S.prop_valor.replace(/\./g,'').replace(',','.'))||null:null;
-    var payload={imovel_id:S.imovel.id,nome_interessado:S.nome,data:S.data||null,valor_proposto:vRaw,forma_pagamento:S.prop_pagto||null,status:S.prop_status||'em_andamento',observacao:S.prop_obs||null};
+    var payload={imovel_id:S.imovel.id,nome_interessado:S.nome,data:S.data||null,valor_proposto:vRaw,forma_pagamento:S.prop_pagto||null,status:S.prop_status||'em_andamento',observacao:S.prop_obs||null,corretor:S.corretor?S.corretor.nome:null};
     var res=await sb.from('propostas').insert(payload);
     if(res.error)throw res.error;
     logReg('proposta_cadastrada',S.imovel.nome,{interessado:S.nome});

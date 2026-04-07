@@ -29,7 +29,6 @@ Planeja o que vai ser feito. Você usa para:
 - Montar o prompt correto para o Claude Code
 - Revisar o que foi feito antes de aprovar
 - Planejar a próxima versão
-- Gerar o texto de registro de versão para o Google Doc
 
 ---
 
@@ -39,143 +38,66 @@ Planeja o que vai ser feito. Você usa para:
 Gabriel pede uma melhoria ou correção.
 Você anota e abre o Claude.ai.
 
-### ETAPA 2 — Definir qual versão vai ser
-
-Antes de começar, defina qual número de versão vai usar:
-
-| Situação | Tipo | Exemplo |
-|----------|------|---------|
-| Correção de bug pontual | PATCH (último número) | 1.2.0 → 1.2.1 |
-| Funcionalidade nova ou melhoria significativa | MINOR (número do meio) | 1.2.1 → 1.3.0 |
-| Reformulação completa do sistema | MAJOR (primeiro número) | 1.x → 2.0 |
-
-Em dúvida, pergunte ao Claudion no Claude.ai: "Isso é um PATCH ou MINOR?"
-
-### ETAPA 3 — Iniciar sessão no Claude.ai
+### ETAPA 2 — Iniciar sessão no Claude.ai
 Cole sempre esta mensagem no início:
 
 ```
-Sou Gabriel Marketing da Gabriel Certeiro Imoveis.
+Sou Gabriel Marketing da Gabriel Certeiro Imóveis.
 Preciso executar melhorias na plataforma Certeiro One.
 Leia os arquivos CERTEIRO_ONE_CONTEXTO_ESTRATEGICO.md e CONTEXTO_CLAUDE_CODE.md
-no repositorio github.com/gabrielcerteiro/dashboard-certeiro
-para entender o estado atual antes de comecar.
-A demanda e: [descreva o que Gabriel pediu]
-Isso e um PATCH ou MINOR? Qual sera o numero da versao?
+no repositório github.com/gabrielcerteiro/dashboard-certeiro
+para entender o estado atual antes de começar.
+A demanda é: [descreva o que Gabriel pediu]
 Me ajude a montar o prompt correto para executar no Claude Code.
 ```
 
-O Claudion vai confirmar o número da versão e entregar o prompt pronto.
+O Claudion vai ler os arquivos, entender o contexto e te entregar o prompt
+pronto para usar no Claude Code.
 
-### ETAPA 4 — Executar no Claude Code
+### ETAPA 3 — Executar no Claude Code
 Abra o Claude Code em claude.ai/code.
 Inicie a sessão sempre com o Prompt 0:
 
 ```
 Antes de qualquer coisa, leia o arquivo CONTEXTO_CLAUDE_CODE.md
-na raiz do repositorio.
-Apos ler, confirme:
-1. Quais sao os 3 arquivos principais do projeto
+na raiz do repositório.
+Após ler, confirme:
+1. Quais são os 3 arquivos principais do projeto
 2. Qual view o dashboard usa como fonte principal de dados
-3. Qual e a regra critica sobre acentos dentro de script
-4. Qual e o SHA atual do index.html
-Nao faca nenhuma alteracao ainda.
+3. Qual é a regra crítica sobre acentos dentro de <script>
+4. Qual é o SHA atual do index.html
+Não faça nenhuma alteração ainda.
 ```
 
 Espere ele confirmar que leu. Só então cole o prompt da tarefa.
 
-### ETAPA 5 — Acompanhar a execução
+### ETAPA 4 — Acompanhar a execução
 Leia o que o Claude Code está fazendo.
 Se ele pedir aprovação para executar SQL no Supabase, copie o SQL,
 abra supabase.com → SQL Editor → cole → Run.
 Se aparecer "Success. No rows returned", está certo. Confirme para ele continuar.
 
-### ETAPA 6 — Fazer push dos arquivos alterados
+### ETAPA 5 — Fazer push
 Quando o Claude Code terminar, mande:
 
 ```
-Faca push de todos os arquivos alterados para o branch main no GitHub.
+Faça push de todos os arquivos alterados para o branch main no GitHub.
 Use create_or_update_file individualmente para cada arquivo.
-Nao use push_files para arquivos grandes.
-Antes de cada push, faca get_file_contents para obter o SHA atual.
+Não use push_files para arquivos grandes.
+Antes de cada push, faça get_file_contents para obter o SHA atual.
 ```
 
-### ETAPA 7 — Atualizar o CONTEXTO_CLAUDE_CODE.md (OBRIGATORIO)
-Esta etapa garante que a proxima sessao comece com o contexto correto.
-Se pular isso, o Claude Code vai trabalhar com informacao desatualizada.
-
-Apos o push dos arquivos, mande este prompt ao Claude Code:
-
-```
-Atualize o arquivo CONTEXTO_CLAUDE_CODE.md para refletir o estado atual do sistema.
-Registre a versao X.X.X no historico (secao 10) com o que foi feito.
-Atualize funcoes novas ou alteradas na secao 8 se necessario.
-Remova da secao 11 qualquer pendencia que foi resolvida nesta sessao.
-Faca push deste arquivo para o branch main.
-```
-
-### ETAPA 8 — Validar no sistema
+### ETAPA 6 — Validar no sistema
 Acesse dashboard-certeiro.vercel.app.
 Espere 2-3 minutos após o push.
 Teste o que foi alterado.
 Se funcionou: avisa Gabriel para validar.
 Se quebrou: volta ao Claude Code e descreve o problema.
 
-### ETAPA 9 — Registrar a versão no Google Doc (OBRIGATORIO, NAO PULE)
-Essa etapa não é opcional. Sem ela o histórico do sistema se perde.
-
-**9a. Peça o texto de versão ao Claude.ai:**
-
-Volte ao Claude.ai e mande exatamente isso:
-
-```
-O ciclo de melhorias foi concluido e validado por Gabriel.
-A versao e: X.X.X — DD/MM/AAAA
-
-Gere o texto completo de registro de versao para eu colar
-no Google Doc de versionamento. Use exatamente este formato:
-
-## X.X.X — DD/MM/AAAA
-Descricao curta do que essa versao representa.
-
-Corrigido:
-- [cada bug corrigido em uma linha]
-
-Adicionado:
-- [cada funcionalidade nova em uma linha]
-
-Melhorado:
-- [cada melhoria em algo que ja existia em uma linha]
-
-Nao invente — liste apenas o que foi realmente feito nesta sessao.
-```
-
-**9b. Cole no Google Doc:**
+### ETAPA 7 — Atualizar o versionamento
 Abra o Google Doc de versionamento.
-Cole o texto gerado no topo da seção de versões.
-Anote no backlog qualquer item novo que surgiu durante o trabalho.
-
----
-
-## TRABALHANDO NO REPOSITÓRIO LOCAL
-
-Se você editar arquivos diretamente no seu computador (fora do Claude Code),
-o repositório local pode estar desatualizado em relação ao que está no GitHub.
-
-**Antes de qualquer edição local, sempre rode:**
-```
-git pull origin main
-```
-
-Isso garante que você está trabalhando na versão mais recente.
-Se não fizer isso e tentar fazer push, vai dar conflito.
-
-**Fluxo correto para edição local:**
-1. `git pull origin main` — atualiza o local com o que está no GitHub
-2. Faz as edições
-3. `git add .`
-4. `git commit -m "descricao do que foi feito"`
-5. `git push origin main` — envia para o GitHub → Vercel publica automaticamente
+Registre o que foi entregue na versão atual.
+Anote qualquer item novo que surgiu durante o trabalho no backlog.
 
 ---
 
@@ -185,30 +107,28 @@ Se não fizer isso e tentar fazer push, vai dar conflito.
 Sem isso ele não tem contexto e vai fazer besteira.
 
 **2. Nunca deixe o Claude Code fazer mais de uma coisa ao mesmo tempo.**
-Um escopo por sessão. Se ele começar a expandir, mande:
+Um escopo por sessão. Se ele começar a expandir o que está fazendo,
+mande isso:
 ```
 Pare de expandir escopo.
 Execute apenas o que foi pedido.
-Nao faca melhorias paralelas.
+Não faça melhorias paralelas.
+Faça apenas a correção mínima necessária.
 ```
 
 **3. Sempre peça o SQL antes de executar no Supabase.**
+Nunca deixe o Claude Code executar SQL diretamente sem você ver primeiro.
 Se ele perguntar "posso executar?", responda:
 ```
 Me mostre o SQL primeiro antes de executar.
 ```
 
 **4. Sempre faça push ao final de cada sessão.**
-Se fechar o Claude Code sem push, tudo que foi feito se perde.
+Se você fechar o Claude Code sem fazer push, tudo que foi feito se perde.
+O push é o que salva o trabalho.
 
-**5. Sempre atualize o CONTEXTO_CLAUDE_CODE.md.**
-Sem atualizar, a proxima sessao comeca com informacao errada.
-
-**6. Sempre teste no sistema antes de falar que acabou.**
+**5. Sempre teste no sistema antes de falar que acabou.**
 Abra o dashboard-certeiro.vercel.app e confira com seus próprios olhos.
-
-**7. Sempre registre a versão no Google Doc.**
-Sem o texto colado no Doc, a versão não existe oficialmente.
 
 ---
 
@@ -216,27 +136,24 @@ Sem o texto colado no Doc, a versão não existe oficialmente.
 
 ### O sistema quebrou após um push
 Fale com o Claudion no Claude.ai descrevendo exatamente o que parou de funcionar.
+Ele vai te orientar sobre como reverter ou corrigir.
 
-### O Claude Code começou a fazer coisas não pedidas
+### O Claude Code começou a fazer coisas que não foram pedidas
+Mande o prompt de cobrança:
 ```
-Pare. Execute apenas o que foi pedido. Nao faca nada alem disso.
+Pare. Execute apenas o que foi pedido.
+Não faça nada além disso.
 ```
 
-### O Claude Code está repetindo o mesmo erro
-Abra sessão nova. Comece do Prompt 0.
+### O Claude Code está repetindo sempre o mesmo erro
+Abra sessão nova. Comece do Prompt 0. O contexto da sessão antiga pode estar contaminado.
 
 ### Não sei se devo aprovar o que o Claude Code propôs
+Copie a proposta dele, abra o Claude.ai e pergunte ao Claudion:
 ```
-O Claude Code propos isso: [cole a proposta]
+O Claude Code propôs isso: [cole a proposta]
 Faz sentido aprovar? Tem algum risco?
 ```
-Mande isso para o Claudion no Claude.ai.
-
-### Conflito ao fazer git push localmente
-```
-git pull origin main
-```
-Rode isso e tente o push novamente.
 
 ---
 
@@ -244,12 +161,13 @@ Rode isso e tente o push novamente.
 
 | Arquivo | Para que serve |
 |---------|---------------|
-| `CERTEIRO_ONE_CONTEXTO_ESTRATEGICO.md` | Contexto do negocio — usar no Claude.ai |
-| `CONTEXTO_CLAUDE_CODE.md` | Contexto tecnico — Claude Code le este. SEMPRE atualizar. |
+| `CERTEIRO_ONE_CONTEXTO_ESTRATEGICO.md` | Contexto do negócio — usar no Claude.ai |
+| `CONTEXTO_CLAUDE_CODE.md` | Contexto técnico — Claude Code lê este |
+| `CLAUDION_BRIEFING.md` | Briefing rápido de onboarding |
 | `GUIA_GABRIEL_MARKETING.md` | Este arquivo |
-| `index.html` | Dashboard principal (cuidado com tamanho) |
+| `index.html` | Dashboard principal (126KB — cuidado) |
 | `registro.html` | Registro de visitas e propostas |
-| `vendedor.html` | Relatorio publico para proprietario |
+| `vendedor.html` | Relatório público para proprietário |
 
 ---
 
@@ -257,21 +175,15 @@ Rode isso e tente o push novamente.
 
 | Item | Endereço |
 |------|----------|
-| Sistema em producao | https://dashboard-certeiro.vercel.app |
-| Repositorio GitHub | https://github.com/gabrielcerteiro/dashboard-certeiro |
-| Banco de dados | https://supabase.com — projeto vtykzralkxlbqqkleofl |
-| Claude Code | claude.ai/code |
-| Claude.ai (Claudion) | claude.ai |
+| Sistema em produção | https://dashboard-certeiro.vercel.app |
+| Repositório GitHub | https://github.com/gabrielcerteiro/dashboard-certeiro |
+| Banco de dados | https://supabase.com → projeto vtykzralkxlbqqkleofl |
+| Deploy | https://vercel.com (automático, não precisa acessar) |
 | Versionamento | Google Doc compartilhado com Gabriel |
 
 ---
 
-## RESUMO EM CINCO LINHAS
+## RESUMO EM UMA LINHA
 
-1. Claude.ai planeja, define a versao e gera os prompts.
-2. Claude Code executa e faz push dos arquivos.
-3. Claude Code atualiza o CONTEXTO_CLAUDE_CODE.md e faz push.
-4. Voce testa no sistema e avisa Gabriel.
-5. Claude.ai gera o texto de versao. Voce cola no Google Doc.
-
-Sem pular etapas. Nenhuma delas.
+**Claude.ai planeja. Claude Code executa. Você acompanha, aprova e testa.**
+Sem pular etapas.
