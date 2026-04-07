@@ -35,7 +35,8 @@
 .mais-item{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg);border-radius:12px;cursor:pointer;transition:background .15s}
 .mais-item:active{background:var(--s2)}
 .mais-item.disabled{opacity:0.4;cursor:default}
-.mais-icon{font-size:20px;flex-shrink:0}
+.mais-icon{font-size:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;width:24px;height:24px}
+.mais-icon svg{width:20px;height:20px}
 .mais-info .mais-lbl{font-size:12px;font-weight:800;color:var(--text)}
 .mais-info .mais-sub{font-size:9px;color:var(--muted);margin-top:1px}
 .mais-badge{font-size:8px;font-weight:700;padding:2px 7px;border-radius:8px;background:var(--s2);color:var(--muted);margin-top:3px;display:inline-block}
@@ -56,16 +57,17 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 .step-lbl{font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap}
 .step-lbl.active{color:var(--yellow)}.step-lbl.done{color:rgba(255,255,255,0.4)}.step-lbl.pending{color:rgba(255,255,255,0.2)}
 .step-sep{color:rgba(255,255,255,0.15);font-size:10px;flex-shrink:0}
-.page{padding:16px 16px 140px;max-width:480px;margin:0 auto}
-.page.sem-footer{padding-bottom:80px}
+.page{padding:16px 16px calc(72px + env(safe-area-inset-bottom));max-width:480px;margin:0 auto}
+.page.sem-footer{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
 .card{background:var(--white);border-radius:var(--card-radius);padding:18px;border:1px solid var(--s2);box-shadow:var(--card-shadow);margin-bottom:12px}
-.section-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.section-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
 /* TIPO */
 .tipo-wrap{display:flex;gap:12px}
 .tipo-btn{flex:1;border:2px solid var(--s2);border-radius:14px;padding:24px 12px;text-align:center;cursor:pointer;background:var(--white);transition:all .15s;font-family:'Nunito Sans',sans-serif}
 .tipo-btn:active{transform:scale(0.97)}
 .tipo-btn.sel{border-color:var(--navy);background:var(--navy)}
-.tipo-icon{font-size:32px;margin-bottom:10px}
+.tipo-icon{font-size:32px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;min-height:34px}
+.tipo-icon svg{width:32px;height:32px}
 .tipo-label{font-size:14px;font-weight:800;color:var(--text)}
 .tipo-sub{font-size:10px;color:var(--muted);margin-top:4px}
 .tipo-btn.sel .tipo-label,.tipo-btn.sel .tipo-sub{color:#fff}
@@ -115,7 +117,8 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 /* RESULTADO — botoes grandes */
 .intencao-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .intencao-btn{padding:18px 12px;border-radius:12px;border:2px solid var(--s2);background:var(--white);font-size:13px;font-weight:800;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center;transition:all .15s;line-height:1.3}
-.intencao-btn .int-icon{font-size:24px;display:block;margin-bottom:6px}
+.intencao-btn .int-icon{display:flex;align-items:center;justify-content:center;margin-bottom:6px;min-height:26px}
+.intencao-btn .int-icon svg{width:24px;height:24px}
 .intencao-btn:active{transform:scale(0.97)}
 .intencao-btn.sel-green{border-color:var(--green);background:var(--green-bg);color:var(--green)}
 .intencao-btn.sel-yellow{border-color:var(--yellow);background:var(--yellow-bg);color:var(--yellow)}
@@ -168,34 +171,17 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 .btn-next:disabled{opacity:0.4;cursor:not-allowed}
 .btn-next.green{background:var(--green)}
 /* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--s2);display:flex;justify-content:space-around;padding:6px 0 env(safe-area-inset-bottom,8px);z-index:999;box-shadow:0 -2px 8px rgba(25,25,73,0.04)}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--s2);display:flex;justify-content:space-around;padding:6px 0 env(safe-area-inset-bottom,8px);height:calc(64px + env(safe-area-inset-bottom));z-index:999;box-shadow:0 -2px 8px rgba(25,25,73,0.04)}
 .nav-btn{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 8px;cursor:pointer;transition:all .15s;min-width:44px;border-radius:8px}
-.nav-btn .nav-icon{font-size:18px;line-height:1}
-.nav-btn .nav-label{font-size:8px;font-weight:700;color:var(--muted)}
+.nav-btn .nav-icon{font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center}
+.nav-btn .nav-icon svg{width:20px;height:20px;display:block}
+.nav-btn .nav-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
 .nav-btn:not(.active) .nav-icon,.nav-btn:not(.active) .nav-label{opacity:0.3;color:var(--muted)}
-.nav-btn.active{opacity:1;background:var(--navy);border-radius:12px;padding:5px 8px}
-.nav-btn.active .nav-icon,.nav-btn.active .nav-label{color:#fff}
+.nav-btn.active{opacity:1;background:none;border-radius:0;padding:4px 8px;box-shadow:inset 0 2px 0 0 var(--navy)}
+.nav-btn.active .nav-icon,.nav-btn.active .nav-label{color:var(--navy)}
 /* IMOVEL MGMT */
-.mgmt-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.mgmt-h1{font-size:16px;font-weight:900;color:var(--navy)}
-.btn-novo-im{background:var(--navy);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:800;font-family:'Nunito Sans',sans-serif;cursor:pointer}
-.btn-voltar-mgmt{background:none;border:none;color:var(--navy);font-size:13px;font-weight:700;font-family:'Nunito Sans',sans-serif;cursor:pointer;padding:0;display:flex;align-items:center;gap:4px}
-.btn-inat-toggle{width:100%;background:none;border:1.5px solid var(--s2);border-radius:10px;padding:12px 14px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:left;display:flex;justify-content:space-between;align-items:center;margin-top:8px}
-.im-card{background:var(--white);border-radius:14px;padding:16px 18px;border:1px solid var(--s2);box-shadow:var(--card-shadow);margin-bottom:10px}
-.im-nome{font-size:14px;font-weight:800;color:var(--navy);margin-bottom:2px}
-.im-sub{font-size:11px;color:var(--muted)}
-.im-btns{display:flex;gap:8px;margin-top:12px}
-.im-edit{flex:1;background:var(--bg);border:1.5px solid var(--s2);border-radius:8px;padding:10px;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center}
-.im-desat{flex:1;background:transparent;border:1.5px solid var(--red-l);border-radius:8px;padding:10px;font-size:12px;font-weight:700;color:var(--red);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center}
-.im-del{background:transparent;border:1.5px solid var(--s2);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;flex-shrink:0;line-height:1}
+
 /* MODAL IMOVEL */
-.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;display:flex;align-items:flex-end;justify-content:center}
-.modal-ov.hidden{display:none!important}
-.modal-sh{background:var(--white);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto}
-.modal-tit{font-size:16px;font-weight:900;color:var(--navy);margin-bottom:20px}
-.modal-btns{display:flex;gap:10px;margin-top:20px}
-.modal-cancel{flex:1;background:var(--bg);border:1.5px solid var(--s2);border-radius:12px;padding:14px;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;font-family:'Nunito Sans',sans-serif}
-.modal-save{flex:1;background:var(--navy);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;color:#fff;cursor:pointer;font-family:'Nunito Sans',sans-serif}
 /* LOADING */
 .loading{text-align:center;padding:60px 20px}
 .loading-spin{width:28px;height:28px;border:3px solid var(--s2);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
@@ -224,7 +210,7 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
   .nav-btn.active .nav-icon,.nav-btn.active .nav-label{opacity:1;color:var(--text);font-weight:700}
   .nav-btn[id="nav-mais"]{display:none}
   .mais-overlay,.mais-drawer{display:none!important}
-  .nav-btn .nav-label{font-size:12px;font-weight:700;color:var(--text)}
+  .nav-btn .nav-label{font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.5px}
   .nav-btn .nav-icon{font-size:17px}
   .nav-sep{display:block;height:1px;background:var(--s2);margin:6px 8px}
   .nav-module.role-vis{display:flex;opacity:0.5}
@@ -268,19 +254,19 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 
 <div class="app-wrap">
 <nav class="bottom-nav" id="bottomNav">
-  <button class="nav-btn" id="nav-alertas" onclick="irDashboard('alertas')"><span class="nav-icon">&#9889;</span><span class="nav-label">Alertas</span></button>
-  <button class="nav-btn" id="nav-imoveis" onclick="irDashboard('excl')"><span class="nav-icon">&#127968;</span><span class="nav-label">Exclusividades</span></button>
-  <button class="nav-btn active" id="nav-registro"><span class="nav-icon">&#128203;</span><span class="nav-label">Registro</span></button>
-  <button class="nav-btn" id="nav-mais" onclick="abrirMais()"><span class="nav-icon">&#8943;</span><span class="nav-label">Mais</span></button>
+  <button class="nav-btn" id="nav-alertas" onclick="irDashboard('alertas')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span><span class="nav-label">Alertas</span></button>
+  <button class="nav-btn" id="nav-imoveis" onclick="irDashboard('excl')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></span><span class="nav-label">Exclusividades</span></button>
+  <button class="nav-btn active" id="nav-registro"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/></svg></span><span class="nav-label">Registro</span></button>
+  <button class="nav-btn" id="nav-mais" onclick="abrirMais()"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></span><span class="nav-label">Mais</span></button>
   <div class="nav-sep"></div>
-  <button class="nav-btn nav-module" id="navModCaptacao" onclick="irModulo('captacao')"><span class="nav-icon">&#127919;</span><span class="nav-label">Captacao</span></button>
-  <button class="nav-btn nav-module" id="navModVendas" onclick="irModulo('vendas')"><span class="nav-icon">&#128176;</span><span class="nav-label">Vendas</span></button>
-  <button class="nav-btn nav-module" id="navModMarketing" onclick="irModulo('marketing')"><span class="nav-icon">&#128227;</span><span class="nav-label">Marketing</span></button>
-  <button class="nav-btn nav-module" id="navModConteudo" onclick="irModulo('conteudo')"><span class="nav-icon">&#127916;</span><span class="nav-label">Conteudo</span></button>
-  <button class="nav-btn nav-module" id="navModFinanceiro" onclick="irModulo('financeiro')"><span class="nav-icon">&#128202;</span><span class="nav-label">Financeiro</span></button>
-  <button class="nav-btn nav-module" id="navModUsuarios" onclick="irDashboard('usuarios')"><span class="nav-icon">&#128100;</span><span class="nav-label">Usuarios</span></button>
+  <button class="nav-btn nav-module" id="navModCaptacao" onclick="irModulo('captacao')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span><span class="nav-label">Captacao</span></button>
+  <button class="nav-btn nav-module" id="navModVendas" onclick="irModulo('vendas')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span><span class="nav-label">Vendas</span></button>
+  <button class="nav-btn nav-module" id="navModMarketing" onclick="irModulo('marketing')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></span><span class="nav-label">Marketing</span></button>
+  <button class="nav-btn nav-module" id="navModConteudo" onclick="irModulo('conteudo')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/></svg></span><span class="nav-label">Conteudo</span></button>
+  <button class="nav-btn nav-module" id="navModFinanceiro" onclick="irModulo('financeiro')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span class="nav-label">Financeiro</span></button>
+  <button class="nav-btn nav-module" id="navModUsuarios" onclick="irDashboard('usuarios')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="nav-label">Usuarios</span></button>
   <div class="nav-sep"></div>
-  <button class="nav-btn nav-module" onclick="logoutUser()"><span class="nav-icon">&#128275;</span><span class="nav-label" id="navNomeLabel">Sair</span></button>
+  <button class="nav-btn nav-module" onclick="logoutUser()"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><span class="nav-label" id="navNomeLabel">Sair</span></button>
 </nav>
 <div class="page" id="mainPage">
   <div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando...</div></div>
@@ -288,7 +274,7 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 </div>
 
 <div class="footer-acao hidden" id="footerAcao">
-  <button class="btn-back hidden" id="btnBack" onclick="voltarPasso()">&#8592;</button>
+  <button class="btn-back hidden" id="btnBack" onclick="voltarPasso()" style="display:inline-flex;align-items:center;gap:4px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg></button>
   <button class="btn-next" id="btnNext" onclick="avancarPasso()">Continuar</button>
 </div>
 
@@ -297,36 +283,18 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
   <div class="mais-handle"></div>
   <div class="mais-title">Modulos</div>
   <div class="mais-grid">
-    <div class="mais-item active-item"><span class="mais-icon">&#128203;</span><div class="mais-info"><div class="mais-lbl">Registro</div><div class="mais-sub">Visitas e propostas</div></div></div>
-    <div class="mais-item" onclick="irDashboard('excl');fecharMais()"><span class="mais-icon">&#127968;</span><div class="mais-info"><div class="mais-lbl">Exclusividades</div><div class="mais-sub">Ver todos imoveis</div></div></div>
-    <div class="mais-item" id="maisItemCaptacao" style="display:none" onclick="irModulo('captacao')"><span class="mais-icon">&#127919;</span><div class="mais-info"><div class="mais-lbl">Captacao</div><div class="mais-sub">Pipeline de captacao</div></div></div>
-    <div class="mais-item" id="maisItemVendas" style="display:none" onclick="irModulo('vendas')"><span class="mais-icon">&#128176;</span><div class="mais-info"><div class="mais-lbl">Vendas</div><div class="mais-sub">VGV e vendas fechadas</div></div></div>
-    <div class="mais-item" id="maisItemMarketing" style="display:none" onclick="irModulo('marketing')"><span class="mais-icon">&#128227;</span><div class="mais-info"><div class="mais-lbl">Marketing</div><div class="mais-sub">Canais e investimento</div></div></div>
-    <div class="mais-item" id="maisItemConteudo" style="display:none" onclick="irModulo('conteudo')"><span class="mais-icon">&#127916;</span><div class="mais-info"><div class="mais-lbl">Conteudo</div><div class="mais-sub">Producoes e publicacoes</div></div></div>
-    <div class="mais-item" id="maisItemFinanceiro" style="display:none" onclick="irModulo('financeiro')"><span class="mais-icon">&#128202;</span><div class="mais-info"><div class="mais-lbl">Financeiro</div><div class="mais-sub">Resultado e custos</div></div></div>
-    <div class="mais-item" id="maisItemUsuarios" style="display:none" onclick="irDashboard('usuarios');fecharMais()"><span class="mais-icon">&#128100;</span><div class="mais-info"><div class="mais-lbl">Usuarios</div><div class="mais-sub">Gerenciar acessos</div></div></div>
-    <div class="mais-item" onclick="logoutUser();fecharMais()"><span class="mais-icon">&#128275;</span><div class="mais-info"><div class="mais-lbl">Sair</div><div class="mais-sub" id="maisSubNome">-</div></div></div>
+    <div class="mais-item active-item"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/></svg></span><div class="mais-info"><div class="mais-lbl">Registro</div><div class="mais-sub">Visitas e propostas</div></div></div>
+    <div class="mais-item" onclick="irDashboard('excl');fecharMais()"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></span><div class="mais-info"><div class="mais-lbl">Exclusividades</div><div class="mais-sub">Ver todos imoveis</div></div></div>
+    <div class="mais-item" id="maisItemCaptacao" style="display:none" onclick="irModulo('captacao')"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span><div class="mais-info"><div class="mais-lbl">Captacao</div><div class="mais-sub">Pipeline de captacao</div></div></div>
+    <div class="mais-item" id="maisItemVendas" style="display:none" onclick="irModulo('vendas')"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span><div class="mais-info"><div class="mais-lbl">Vendas</div><div class="mais-sub">VGV e vendas fechadas</div></div></div>
+    <div class="mais-item" id="maisItemMarketing" style="display:none" onclick="irModulo('marketing')"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></span><div class="mais-info"><div class="mais-lbl">Marketing</div><div class="mais-sub">Canais e investimento</div></div></div>
+    <div class="mais-item" id="maisItemConteudo" style="display:none" onclick="irModulo('conteudo')"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/></svg></span><div class="mais-info"><div class="mais-lbl">Conteudo</div><div class="mais-sub">Producoes e publicacoes</div></div></div>
+    <div class="mais-item" id="maisItemFinanceiro" style="display:none" onclick="irModulo('financeiro')"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><div class="mais-info"><div class="mais-lbl">Financeiro</div><div class="mais-sub">Resultado e custos</div></div></div>
+    <div class="mais-item" id="maisItemUsuarios" style="display:none" onclick="irDashboard('usuarios');fecharMais()"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><div class="mais-info"><div class="mais-lbl">Usuarios</div><div class="mais-sub">Gerenciar acessos</div></div></div>
+    <div class="mais-item" onclick="logoutUser();fecharMais()"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><div class="mais-info"><div class="mais-lbl">Sair</div><div class="mais-sub" id="maisSubNome">-</div></div></div>
   </div>
 </div>
 
-<div class="modal-ov hidden" id="modalImovel">
-  <div class="modal-sh">
-    <div class="modal-tit" id="modalImovelTit">Novo Imovel</div>
-    <div class="field"><div class="field-lbl">Nome <span class="req">*</span></div><input type="text" class="finput" id="mNome" placeholder="Ex: Cezanne 1701"></div>
-    <div class="field"><div class="field-lbl">Proprietario</div><input type="text" class="finput" id="mProp" placeholder="Nome do proprietario"></div>
-    <div class="field"><div class="field-lbl">Bairro / Localizacao</div><input type="text" class="finput" id="mBairro" placeholder="Ex: Fazenda, Praia Brava..."></div>
-    <div class="field"><div class="field-lbl">Tipo</div><div class="chips" id="mTipoWrap"><div class="chip" onclick="selMTipo(this,'Mobiliado')">Mobiliado</div><div class="chip" onclick="selMTipo(this,'Vazio')">Vazio</div><div class="chip" onclick="selMTipo(this,'Repaginado')">Repaginado</div></div></div>
-    <div class="field"><div class="field-lbl">Preco</div><input type="text" class="finput" id="mPreco" placeholder="Ex: R$ 1,2M"></div>
-    <div id="mExclFields">
-      <div class="field"><div class="field-lbl">Data de assinatura</div><input type="date" class="finput" id="mDataInicio"></div>
-      <div class="field"><div class="field-lbl">Dias de contrato</div><input type="number" class="finput" id="mDiasContrato" value="120" min="1"></div>
-    </div>
-    <div class="modal-btns">
-      <button class="modal-cancel" onclick="fecharModalImovel()">Cancelar</button>
-      <button class="modal-save" id="modalSaveBtn" onclick="salvarImovelModal()">Salvar</button>
-    </div>
-  </div>
-</div>
 
 <div class="toast" id="toast"></div>
 
@@ -434,15 +402,14 @@ function renderTipo(){
   return '<div style="padding-top:8px">'+
   '<div class="section-title">O que voce quer registrar?</div>'+
   '<div class="tipo-wrap">'+
-    '<div class="tipo-btn" style="padding:18px 8px" onclick="selTipo(\'visita\')"><div class="tipo-icon">&#127970;</div><div class="tipo-label">Visita</div><div class="tipo-sub">Registre uma visita</div></div>'+
-    '<div class="tipo-btn" style="padding:18px 8px" onclick="selTipo(\'proposta\')"><div class="tipo-icon">&#128203;</div><div class="tipo-label">Proposta</div><div class="tipo-sub">Registre uma proposta</div></div>'+
-    ((currentRole==='admin'||currentRole==='editor')?'<div class="tipo-btn" style="padding:18px 8px" onclick="selTipo(\'imovel_mgmt\')"><div class="tipo-icon">&#128193;</div><div class="tipo-label">Imoveis</div><div class="tipo-sub">Cadastrar ou editar</div></div>':'')+
+    '<div class="tipo-btn" style="padding:18px 8px" onclick="selTipo(\'visita\')"><div class="tipo-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 012-2h8a2 2 0 012 2v18"/><path d="M6 12H4a2 2 0 00-2 2v6a2 2 0 002 2h2"/><path d="M18 9h2a2 2 0 012 2v9a2 2 0 01-2 2h-2"/><line x1="10" y1="6" x2="10" y2="6"/><line x1="14" y1="6" x2="14" y2="6"/><line x1="10" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="14" y2="14"/></svg></div><div class="tipo-label">Visita</div><div class="tipo-sub">Registre uma visita</div></div>'+
+    '<div class="tipo-btn" style="padding:18px 8px" onclick="selTipo(\'proposta\')"><div class="tipo-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/></svg></div><div class="tipo-label">Proposta</div><div class="tipo-sub">Registre uma proposta</div></div>'+
   '</div></div>';
 }
 
 function selTipo(t){
   S.tipo=t;
-  if(t==='imovel_mgmt'){renderImovelMgmt();return;}
+  
   passo=1;renderPasso();
 }
 
@@ -472,7 +439,7 @@ function renderCorretor(){
       '<div class="corretor-av-fallback">'+ini+'</div>';
     html+='<div class="corretor-card'+(sel?' sel':'')+'" onclick="selCorretor(this,\''+c.id+'\',\''+escHtml(c.nome)+'\',\''+escHtml(c.creci||'')+'\')">'+
       fotoHtml+'<div class="corretor-info"><div class="corretor-nome">'+escHtml(c.nome)+'</div><div class="corretor-creci">CRECI '+escHtml(c.creci||'')+'</div></div>'+
-      '<div class="corretor-sel-icon">&#10003;</div></div>';
+      '<div class="corretor-sel-icon" style="display:flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></div></div>';
   }
   return html+'</div>';
 }
@@ -557,10 +524,10 @@ function addObjCustom(){
 
 function renderResultado(){
   var its=[
-    {v:'Quer comprar',c:'sel-green',icon:'&#9989;'},
-    {v:'Esta pensando',c:'sel-yellow',icon:'&#129300;'},
-    {v:'Quer segunda visita',c:'sel-blue',icon:'&#128198;'},
-    {v:'Nao gostou',c:'sel-red',icon:'&#10060;'}
+    {v:'Quer comprar',c:'sel-green',icon:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>'},
+    {v:'Esta pensando',c:'sel-yellow',icon:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'},
+    {v:'Quer segunda visita',c:'sel-blue',icon:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'},
+    {v:'Nao gostou',c:'sel-red',icon:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'}
   ];
   var html='<div class="section-title">Resultado da visita</div>'+
   '<div class="field"><div class="field-lbl">Intencao do interessado <span class="req">*</span></div>'+
@@ -573,8 +540,8 @@ function renderResultado(){
   html+='</div></div>'+
   '<div class="field"><div class="field-lbl">Qualificado financeiramente?</div>'+
   '<div class="toggle-row">'+
-  '<div class="toggle-btn'+(S.qualif===true?' sel-sim':'')+'" onclick="selQualif(true)">&#10003; Sim, qualificado</div>'+
-  '<div class="toggle-btn'+(S.qualif===false?' sel-nao':'')+'" onclick="selQualif(false)">&#10007; Nao qualificado</div>'+
+  '<div class="toggle-btn'+(S.qualif===true?' sel-sim':'')+'" onclick="selQualif(true)">Sim, qualificado</div>'+
+  '<div class="toggle-btn'+(S.qualif===false?' sel-nao':'')+'" onclick="selQualif(false)">Nao qualificado</div>'+
   '</div></div>';
   return html;
 }
@@ -617,7 +584,7 @@ function togglePagto(el,val){
 
 function renderRevisao(){
   var pL={a_vista:'A vista',financiamento:'Financiamento',parcelamento_direto:'Parcelamento direto',dacao_a_vista:'Dacao + a vista',dacao_financiamento:'Dacao + financiamento',dacao_parcelamento_direto:'Dacao + parcelamento',parcelamento_direto_financiamento:'Parcelamento + financiamento'};
-  var iB={'Quer comprar':'&#9989;','Esta pensando':'&#129300;','Quer segunda visita':'&#128198;','Nao gostou':'&#10060;'};
+  var iB={'Quer comprar':'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>','Esta pensando':'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>','Quer segunda visita':'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>','Nao gostou':'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'};
   return '<div class="section-title">Revisar antes de salvar</div>'+
   '<div class="card">'+
     '<div class="rev-section"><div class="rev-lbl">Imovel</div><div class="rev-val big">'+(S.imovel?escHtml(S.imovel.nome):'-')+'</div></div>'+
@@ -629,14 +596,14 @@ function renderRevisao(){
     '</div>'+
     '<div class="rev-section"><div class="rev-lbl">Resultado</div>'+
       '<div class="rev-val">'+(S.intencao?(iB[S.intencao]||'')+' '+escHtml(S.intencao):'-')+'</div>'+
-      (S.qualif!==null?'<div class="rev-val" style="font-size:11px;color:var(--muted);margin-top:2px">'+(S.qualif?'&#10003; Qualificado':'&#10007; Nao qualificado')+'</div>':'')+
+      (S.qualif!==null?'<div class="rev-val" style="font-size:11px;color:var(--muted);margin-top:2px">'+(S.qualif?'Qualificado':'Nao qualificado')+'</div>':'')+
     '</div>'+
     (S.objections.length?'<div class="rev-section"><div class="rev-lbl">Objecoes</div><div class="rev-chips">'+S.objections.map(function(o){return '<span class="rev-chip">'+escHtml(o)+'</span>';}).join('')+'</div></div>':'')+
     (S.pagto.length?'<div class="rev-section"><div class="rev-lbl">Pagamento mencionado</div><div class="rev-chips">'+S.pagto.map(function(p){return '<span class="rev-chip">'+escHtml(pL[p]||p)+'</span>';}).join('')+'</div></div>':'')+
     (S.observacoes?'<div class="rev-section"><div class="rev-lbl">Observacoes</div><div class="rev-val" style="font-size:12px;font-weight:600">'+escHtml(S.observacoes)+'</div></div>':'')+
   '</div>'+
   '<button class="btn-next green" style="width:100%;padding:16px;font-size:15px;border-radius:12px;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px" id="btnSalvarVisita" onclick="salvarVisita()">&#10003; Salvar visita</button>'+
-  '<button class="btn-back" style="width:100%;padding:14px;text-align:center;border-radius:12px" onclick="voltarPasso()">&#8592; Corrigir</button>';
+  '<button class="btn-back" style="width:100%;padding:14px;text-align:center;border-radius:12px" onclick="voltarPasso()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg> Corrigir</button>';
 }
 
 function renderPropostaForm(){
@@ -676,7 +643,7 @@ function renderRevisaoProp(){
     (S.prop_obs?'<div class="rev-section"><div class="rev-lbl">Observacoes</div><div class="rev-val" style="font-size:12px;font-weight:600">'+escHtml(S.prop_obs)+'</div></div>':'')+
   '</div>'+
   '<button class="btn-next green" style="width:100%;padding:16px;font-size:15px;border-radius:12px;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px" onclick="salvarProposta()">&#10003; Salvar proposta</button>'+
-  '<button class="btn-back" style="width:100%;padding:14px;text-align:center;border-radius:12px" onclick="voltarPasso()">&#8592; Corrigir</button>';
+  '<button class="btn-back" style="width:100%;padding:14px;text-align:center;border-radius:12px" onclick="voltarPasso()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg> Corrigir</button>';
 }
 
 // ---- NAVEGACAO ----
@@ -730,7 +697,7 @@ function mostrarSucessoVisita(){
   var page=document.getElementById('mainPage');
   if(S.intencao==='Quer comprar'){
     page.innerHTML='<div class="success-wrap"><div class="success-icon">&#10003;</div><div class="success-title">Visita registrada!</div><div class="success-sub">Visita de '+escHtml(S.nome)+' em '+escHtml(S.imovel.nome)+' salva com sucesso.</div></div>'+
-    '<div class="proposta-pos"><div class="proposta-pos-title">&#128172; Essa visita gerou uma proposta?</div><div class="proposta-pos-sub">Interessado demonstrou intencao de compra. Registrar proposta agora?</div>'+
+    '<div class="proposta-pos"><div class="proposta-pos-title"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> Essa visita gerou uma proposta?</div><div class="proposta-pos-sub">Interessado demonstrou intencao de compra. Registrar proposta agora?</div>'+
     '<div class="proposta-pos-btns"><button class="pp-btn pp-sim" onclick="iniciarPropostaPosVisita()">Sim, registrar</button><button class="pp-btn pp-nao" onclick="finalizarSemProposta()">Nao, encerrar</button></div></div>';
   }else{page.innerHTML=renderSucesso('Visita registrada!','Visita de '+escHtml(S.nome)+' em '+escHtml(S.imovel.nome)+' salva.');}
 }
@@ -750,7 +717,7 @@ async function salvarProposta(){
   if(btn){btn.disabled=true;btn.textContent='Salvando...';}
   try{
     var vRaw=S.prop_valor?parseFloat(S.prop_valor.replace(/\./g,'').replace(',','.'))||null:null;
-    var payload={imovel_id:S.imovel.id,nome_interessado:S.nome,data:S.data||null,valor_proposto:vRaw,forma_pagamento:S.prop_pagto||null,status:S.prop_status||'em_andamento',observacao:S.prop_obs||null,corretor:S.corretor?S.corretor.nome:null};
+    var payload={imovel_id:S.imovel.id,nome_interessado:S.nome,data:S.data||null,valor_proposto:vRaw,forma_pagamento:S.prop_pagto||null,status:S.prop_status||'em_andamento',observacao:S.prop_obs||null};
     var res=await sb.from('propostas').insert(payload);
     if(res.error)throw res.error;
     logReg('proposta_cadastrada',S.imovel.nome,{interessado:S.nome});
@@ -763,7 +730,7 @@ async function salvarProposta(){
 function renderSucesso(titulo,sub){
   return '<div class="success-wrap"><div class="success-icon">&#10003;</div><div class="success-title">'+escHtml(titulo)+'</div><div class="success-sub">'+escHtml(sub)+'</div>'+
   '<button class="novo-btn" onclick="resetar()">&#43; Novo registro</button> &nbsp; '+
-  '<button class="novo-btn" style="background:var(--bg);color:var(--navy);border:1.5px solid var(--s2)" onclick="irDashboard(\'excl\')">&#127968; Imoveis</button></div>';
+  '<button class="novo-btn" style="background:var(--bg);color:var(--navy);border:1.5px solid var(--s2)" onclick="irDashboard(\'excl\')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg> Imoveis</button></div>';
 }
 
 function resetar(){
@@ -786,146 +753,16 @@ function showToast(msg){var t=document.getElementById('toast');t.textContent=msg
 
 // ---- GESTAO DE IMOVEIS ----
 
-var imoveisAll=[];
-var editingImovelId=null;
-var mTipoSel='';
 
-function voltarMgmt(){passo=0;renderPasso();}
-function toggleInativos(btn){var list=document.getElementById('inat-list');var arrow=btn.querySelector('span:last-child');if(list.style.display==='none'){list.style.display='block';arrow.textContent='\u2039';}else{list.style.display='none';arrow.textContent='\u203a';}}
 
-async function renderImovelMgmt(){
-  document.getElementById('stepBarWrap').classList.add('hidden');
-  document.getElementById('footerAcao').classList.add('hidden');
-  var page=document.getElementById('mainPage');
-  page.classList.remove('sem-footer');
-  page.innerHTML='<div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando...</div></div>';
-  try{
-    var res=await sb.from('imoveis').select('*').order('nome');
-    if(res.error)throw res.error;
-    imoveisAll=res.data||[];
-    var ativos=imoveisAll.filter(function(im){return im.ativo!==false;});
-    var inat=imoveisAll.filter(function(im){return im.ativo===false;});
-    var html='<div class="mgmt-hdr"><button class="btn-voltar-mgmt" onclick="voltarMgmt()">&#8592; Voltar</button><button class="btn-novo-im" onclick="abrirModalNovo()">+ Novo Imovel</button></div>';
-    if(!ativos.length)html+='<div style="text-align:center;padding:30px 0;color:var(--muted);font-size:13px">Nenhum imovel ativo.</div>';
-    ativos.forEach(function(im){html+=renderImCard(im,false);});
-    if(inat.length){
-      html+='<button class="btn-inat-toggle" onclick="toggleInativos(this)"><span>Inativos ('+inat.length+')</span><span>&#8250;</span></button>';
-      html+='<div id="inat-list" style="display:none">';
-      inat.forEach(function(im){html+=renderImCard(im,true);});
-      html+='</div>';
-    }
-    page.innerHTML=html;
-  }catch(e){page.innerHTML='<div style="color:var(--red);padding:20px;font-size:13px">Erro: '+escHtml(e.message)+'</div>';}
-}
 
-function renderImCard(im,inativo){
-  var sub=[im.proprietario,im.bairro,im.preco].filter(Boolean).join(' \u00b7 ');
-  return '<div class="im-card">'+
-    (inativo?'<div style="font-size:9px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">Inativo</div>':'')+
-    '<div class="im-nome">'+escHtml(im.nome)+'</div>'+
-    (sub?'<div class="im-sub">'+escHtml(sub)+'</div>':'')+
-    '<div class="im-btns">'+
-      '<button class="im-edit" onclick="abrirModalEditar(\''+im.id+'\')">&#9998; Editar</button>'+
-      (inativo?
-        '<button class="im-edit" onclick="reativarImovel(\''+im.id+'\')">&#10003; Reativar</button>':
-        '<button class="im-desat" onclick="desativarImovel(\''+im.id+'\')">Desativar</button>'
-      )+
-      '<button class="im-del" onclick="excluirImovel(\''+im.id+'\',\''+escHtml(im.nome)+'\')" title="Excluir">&#128465;</button>'+
-    '</div></div>';
-}
 
-function abrirModalNovo(){
-  editingImovelId=null;mTipoSel='';
-  document.getElementById('modalImovelTit').textContent='Novo Imovel';
-  document.getElementById('mNome').value='';
-  document.getElementById('mProp').value='';
-  document.getElementById('mBairro').value='';
-  document.getElementById('mPreco').value='';
-  document.getElementById('mDataInicio').value=hoje();
-  document.getElementById('mDiasContrato').value='120';
-  document.getElementById('mExclFields').style.display='';
-  document.querySelectorAll('#mTipoWrap .chip').forEach(function(c){c.classList.remove('sel');});
-  document.getElementById('modalSaveBtn').textContent='Criar exclusividade';
-  document.getElementById('modalImovel').classList.remove('hidden');
-}
 
-function abrirModalEditar(id){
-  var im=imoveisAll.find(function(x){return x.id===id;});
-  if(!im)return;
-  editingImovelId=id;mTipoSel=im.status||'';
-  document.getElementById('modalImovelTit').textContent='Editar Imovel';
-  document.getElementById('mNome').value=im.nome||'';
-  document.getElementById('mProp').value=im.proprietario||'';
-  document.getElementById('mBairro').value=im.bairro||'';
-  document.getElementById('mPreco').value=im.preco||'';
-  document.getElementById('mExclFields').style.display='none';
-  document.querySelectorAll('#mTipoWrap .chip').forEach(function(c){c.classList.toggle('sel',c.textContent===im.status);});
-  document.getElementById('modalSaveBtn').textContent='Salvar';
-  document.getElementById('modalImovel').classList.remove('hidden');
-}
 
-function fecharModalImovel(){document.getElementById('modalImovel').classList.add('hidden');}
 
-function selMTipo(el,val){mTipoSel=val;document.querySelectorAll('#mTipoWrap .chip').forEach(function(c){c.classList.remove('sel');});el.classList.add('sel');}
 
-async function salvarImovelModal(){
-  var btn=document.getElementById('modalSaveBtn');
-  var originalTxt=btn.textContent;
-  btn.disabled=true;btn.textContent='Salvando...';
-  var nome=document.getElementById('mNome').value.trim();
-  if(!nome){showToast('Informe o nome');btn.disabled=false;btn.textContent=originalTxt;return;}
-  try{
-    if(editingImovelId){
-      var res=await sb.from('imoveis').update({nome:nome,proprietario:document.getElementById('mProp').value.trim()||null,bairro:document.getElementById('mBairro').value.trim()||null,status:mTipoSel||null,preco:document.getElementById('mPreco').value.trim()||null}).eq('id',editingImovelId);
-      if(res.error)throw res.error;
-      showToast('Imovel atualizado!');
-    }else{
-      var ri=await sb.from('imoveis').insert({nome:nome,proprietario:document.getElementById('mProp').value.trim()||null,bairro:document.getElementById('mBairro').value.trim()||null,status:mTipoSel||null,preco:document.getElementById('mPreco').value.trim()||null,ativo:true}).select('id').single();
-      if(ri.error)throw ri.error;
-      var imovelId=ri.data.id;
-      var dataInicio=document.getElementById('mDataInicio').value||null;
-      var diasContrato=parseInt(document.getElementById('mDiasContrato').value)||120;
-      var re=await sb.from('exclusividades').insert({imovel_id:imovelId,data_inicio:dataInicio,dias_contrato:diasContrato,status:'ativa'}).select('id').single();
-      if(re.error)throw re.error;
-      var rf=await sb.from('funil_snapshot').insert({exclusividade_id:re.data.id,imovel_nome:nome,fonte:'manual'});
-      if(rf.error)throw rf.error;
-      showToast('Exclusividade criada!');
-    }
-    fecharModalImovel();
-    await renderImovelMgmt();
-  }catch(e){showToast('Erro: '+e.message);}
-  finally{btn.disabled=false;btn.textContent=originalTxt;}
-}
 
-async function desativarImovel(id){
-  if(!confirm('Desativar este imovel?'))return;
-  var res=await sb.from('imoveis').update({ativo:false}).eq('id',id);
-  if(res.error){showToast('Erro: '+res.error.message);return;}
-  showToast('Imovel desativado.');
-  renderImovelMgmt();
-}
 
-async function reativarImovel(id){
-  var res=await sb.from('imoveis').update({ativo:true}).eq('id',id);
-  if(res.error){showToast('Erro: '+res.error.message);return;}
-  showToast('Imovel reativado.');
-  renderImovelMgmt();
-}
-
-async function excluirImovel(id,nome){
-  if(!confirm('Excluir "'+nome+'" permanentemente? Esta acao nao pode ser desfeita.'))return;
-  // Get exclusividade IDs for this imovel first
-  var exclRes=await sb.from('exclusividades').select('id').eq('imovel_id',id);
-  if(exclRes.data&&exclRes.data.length){
-    var exclIds=exclRes.data.map(function(e){return e.id;});
-    await sb.from('funil_snapshot').delete().in('exclusividade_id',exclIds);
-    await sb.from('exclusividades').delete().eq('imovel_id',id);
-  }
-  var res=await sb.from('imoveis').delete().eq('id',id);
-  if(res.error){showToast('Erro: '+res.error.message);return;}
-  showToast('Imovel excluido.');
-  renderImovelMgmt();
-}
 
 // AUTH
 var currentRole='padrao';var currentNome='';
