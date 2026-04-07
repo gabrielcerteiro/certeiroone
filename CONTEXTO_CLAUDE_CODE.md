@@ -1,6 +1,6 @@
 # CONTEXTO COMPLETO — PLATAFORMA CERTEIRO
 > Arquivo para onboarding de nova sessão no Claude Code.
-> Atualizado em: 07/04/2026 — pos Fase 4 concluida
+> Atualizado em: 07/04/2026 — pos Fase 5 visual concluida (versao 1.2.0)
 
 ---
 
@@ -46,10 +46,9 @@
 | Anon Key | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0eWt6cmFsa3hsYnFxa2xlb2ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjMyNjAsImV4cCI6MjA4OTkzOTI2MH0.rYBifw2NXqVDGrKbDWKJgrFAIdoruxxsIPc9RXibgy0` |
 
 ### 4.1 RLS Policies (ja configuradas)
-Todas as tabelas abaixo têm policies para role `authenticated`:
 - `propostas` — INSERT, UPDATE
 - `visitas` — INSERT, UPDATE
-- `funil_snapshot` — ALL (SELECT, INSERT, UPDATE, DELETE)
+- `funil_snapshot` — ALL
 - `exclusividades` — ALL
 - `imoveis` — INSERT, UPDATE
 
@@ -62,18 +61,13 @@ Todas as tabelas abaixo têm policies para role `authenticated`:
 - `created_at` timestamptz
 
 #### `exclusividades`
-- `id` uuid PK
-- `imovel_id` uuid FK → imoveis.id
-- `data_inicio` date
-- `dias_contrato` int (default 120)
+- `id` uuid PK, `imovel_id` uuid FK → imoveis.id
+- `data_inicio` date, `dias_contrato` int (default 120)
 - `status` text CHECK ('ativa','encerrada','renovada')
-- `observacoes` text
-- `created_at`, `updated_at` timestamptz
+- `observacoes` text, `created_at`, `updated_at` timestamptz
 
 #### `funil_snapshot`
-Todos os campos operacionais. Colunas adicionadas nas fases:
-- `id` uuid PK
-- `exclusividade_id` uuid FK → exclusividades.id
+- `id` uuid PK, `exclusividade_id` uuid FK → exclusividades.id
 - `imovel_nome`, `proprietario`, `preco` text
 - `status_exclusividade` text CHECK ('ativa','vendida','perdida','encerrada')
 - `data_inicio`, `data_fim` date
@@ -82,18 +76,15 @@ Todos os campos operacionais. Colunas adicionadas nas fases:
 - `data_repaginacao_concluida`, `data_gravacao_conteudo`, `data_midia_entregue` date
 - `prazo_interno_dias` int
 - `meta_leads`, `meta_visitas`, `meta_propostas` int
-- `meta_investimento` numeric (default 1500) — meta de midia (NOME CORRETO)
+- `meta_investimento` numeric (default 1500) — NOME CORRETO (nao usar meta_gastos_ads)
 - `meta_cpl` numeric (default 65)
 - `total_leads`, `total_visitas`, `total_propostas` int — legado/manual
 - `leads_abertos`, `leads_perdidos` int
 - `leads_meta_ads`, `leads_google_ads`, `leads_instagram_org`, `leads_youtube`, `leads_tiktok`, `leads_site_org`, `leads_indicacao`, `leads_corretor_parc`, `leads_relacionamento`, `leads_disparo_base`, `leads_oferta_ativa`, `leads_outdoor` int
-- `gastos_metaads` numeric
-- `alcance_metaads` int
-- `frequencia_metaads` numeric
+- `gastos_metaads` numeric, `alcance_metaads` int, `frequencia_metaads` numeric
 - `localizacao`, `tipo_imovel` text
-- `atualizado_em` timestamptz
-- `fonte` text (default 'pipedrive_n8n')
-- `midia_total_planejada` numeric — ADICIONADO Fase 4 (orcamento total do contrato)
+- `atualizado_em` timestamptz, `fonte` text (default 'pipedrive_n8n')
+- `midia_total_planejada` numeric — Fase 4
 - `disparos_base`, `impactados_base`, `visitas_base`, `propostas_base` int — Fase 3
 - `disparos_parceiros`, `contatados_parceiros`, `visitas_parceiros`, `propostas_parceiros` int — Fase 3
 - `data_disparo_base`, `data_disparo_parceiros` date — Fase 3
@@ -107,8 +98,7 @@ Todos os campos operacionais. Colunas adicionadas nas fases:
 - `objections` text[], `observacoes` text
 - `intencao` text ('Quer comprar','Esta pensando','Nao gostou','Quer segunda visita')
 - `qualificado_financeiramente` boolean
-- `formas_pagamento` text[], `pagto_detalhes` text
-- `created_at` timestamptz
+- `formas_pagamento` text[], `pagto_detalhes` text, `created_at` timestamptz
 
 #### `propostas`
 - `id` uuid PK, `imovel_id` uuid FK → imoveis.id
@@ -125,15 +115,14 @@ Todos os campos operacionais. Colunas adicionadas nas fases:
 ### 4.3 Views
 
 #### `dashboard_imoveis`
-JOIN de funil_snapshot + exclusividades + imoveis. Campos calculados:
+JOIN funil_snapshot + exclusividades + imoveis. Campos calculados:
 - `dias_restantes`, `tl_hoje_pct`, `status_repaginacao`, `data_meta_interna`
 - `cpl_metaads`, `conv_lead_visita`, `conv_visita_prop`, `dash_status`
-- Todos os campos de funil_snapshot incluindo os novos de Fase 3 e Fase 4
-- `count_propostas` — COUNT real da tabela propostas (no FINAL do SELECT)
+- Todos os campos de funil_snapshot
+- `count_propostas` — COUNT real da tabela propostas (SEMPRE no FINAL do SELECT)
 
-> ATENCAO: ao fazer CREATE OR REPLACE VIEW, novos campos devem ser adicionados
-> DEPOIS de count_propostas (que ja estava no final). PostgreSQL nao permite
-> inserir colunas no meio de uma view existente via CREATE OR REPLACE.
+> CRITICO: ao fazer CREATE OR REPLACE VIEW, novos campos devem vir DEPOIS de
+> count_propostas. PostgreSQL nao permite inserir colunas no meio.
 
 #### `dashboard_visitas_detalhe`
 View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
@@ -148,7 +137,7 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 - Font: Nunito Sans (Google Fonts)
 - Sem build step
 
-### Design System atual
+### Design System (v1.2 — pos Fase 5)
 ```css
 :root {
   --navy: #191949;
@@ -166,13 +155,30 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 }
 ```
 
+### Padroes visuais (pos Fase 5)
+- **Icones:** SVG inline estilo Lucide (stroke, nao fill, stroke-width 1.5 ou 2). ZERO emojis.
+- **Labels de secao:** uppercase, font-size 11px, letter-spacing 1px, cor --muted
+- **Nav labels:** uppercase, font-size 11px, letter-spacing 0.5px
+- **Badges de status:** pill com background colorido suave
+  - ativa: bg #D1FAE5, texto #065F46
+  - vendida: bg #DBEAFE, texto #1E40AF
+  - perdida/encerrada: bg #F3F4F6, texto #6B7280
+- **Border-left dos icards:** 3px por dash_status
+  - ok: --green | melhoria/atencao: --yellow | critico: --red | vendida/encerrada: --muted
+- **Inputs:** border 1px solid --s3, border-radius 8px, padding 10px 12px
+  - Label: uppercase, 11px, --muted, letter-spacing 0.5px
+  - Focus: border-color --navy, outline none
+- **Botao primario:** background --navy, texto branco, border-radius 8px
+- **Botao destrutivo:** border 1px solid --red, texto --red, sem fundo
+- **Indicador ativo mobile:** linha --navy 2px no TOPO do botao ativo
+
 ### Layout
 - **Mobile** (< 900px): bottom-nav fixa, coluna única, max-width 480px
 - **Desktop** (>= 900px): sidebar lateral esquerda, grid 2 colunas à direita
 
 ### Regras críticas de código
 1. **ZERO acentos dentro de `<script>`** — ASCII puro no JS
-2. **SVG inline para icones** — NAO usar emojis (Fase 5 vai remover todos)
+2. **ZERO emojis** — usar SVG inline estilo Lucide
 3. **`create_or_update_file` individualmente** para arquivos grandes
 4. **SHA obrigatório** ao atualizar arquivo existente
 
@@ -180,14 +186,18 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 
 ## 6. NAVEGAÇÃO
 
+### Icones SVG por item (pos Fase 5)
+- Alertas: bell | Exclusividades: home | Registro: clipboard-list
+- Mais: more-horizontal | Captacao: target | Vendas: trending-up
+- Marketing: megaphone | Conteudo: film | Financeiro: bar-chart-2
+- Usuarios: user | Sair: log-out
+
 ### Mobile (bottom-nav)
 Alertas | Exclusividades | Registro (→ registro.html) | Analise | Mais (drawer)
+Indicador ativo: linha --navy 2px no topo do botao ativo
 
 ### Desktop (sidebar)
-Mesmos itens + Captação, Vendas, Marketing, Conteúdo, Financeiro (todos "Em breve")
-
-### Bug pendente — indicador ativo mobile
-Linha --navy de 2px no TOPO do botão ativo (estilo definido, ainda nao implementado)
+Item ativo: background --navy, icone e label brancos
 
 ---
 
@@ -198,28 +208,20 @@ Linha --navy de 2px no TOPO do botão ativo (estilo definido, ainda nao implemen
 
 ### Funcoes principais
 - `loadDashboard()` — carrega view + visitas + propostas
-- `saveSnapshot()` — UPDATE funil_snapshot, inclui midia_total_planejada
+- `saveSnapshot()` — UPDATE funil_snapshot
 - `salvarNovaExcl()` — INSERT sequencial: imoveis → exclusividades → funil_snapshot
-- `funilBarras(im)` — barras do funil. Visitas: visitasMap (real). Propostas: count_propostas (real).
-  Ads: usa midia_total_planejada se preenchido, senao meta_investimento
+- `funilBarras(im)` — Visitas: visitasMap (real). Propostas: count_propostas (real). Ads: midia_total_planejada ou meta_investimento
 - `excluirExclusividade()` / `_doExcluirExclusividade()` — DELETE em cascata
-- `disparosBaseHtml(im)` / `disparosParcHtml(im)` — paineis editaveis de disparos
-- `salvarDisparosBase(id)` / `salvarDisparosParc(id)` — UPDATE campos de disparo
+- `disparosBaseHtml(im)` / `disparosParcHtml(im)` — paineis editaveis
+- `salvarDisparosBase(id)` / `salvarDisparosParc(id)` — UPDATE disparos
 - `toggleAcaoVenda(id, key, current)` — UPDATE booleano, auto-save
 - `acoesVendaHtml(im)` — 8 checkboxes de acoes de venda
-
-### Lógica de mídia (Fase 4)
-- Campo `midia_total_planejada` disponivel no form de edicao (secao Meta Ads)
-- Bloco comparativo no detalhe:
-  midia_esperada = midia_total_planejada * (dias_passados / prazo_contrato_dias)
-  Exibe: Previsto ate hoje / Realizado (gastos_metaads) / Diferenca (verde ou vermelho)
-  So exibe se midia_total_planejada > 0
 
 ---
 
 ## 8. MÓDULO registro.html
 
-- Registrar visita (form completo) e proposta (sem campo corretor)
+- Registrar visita e proposta (sem campo corretor)
 - `salvarImovelModal()` — cria imovel + exclusividade + funil_snapshot em sequencia
 
 ---
@@ -240,56 +242,36 @@ Verde >= esperado | Amarelo >= 80% | Vermelho < 80%
 
 ---
 
-## 11. ALERTAS
+## 11. HISTÓRICO DE VERSOES
 
-Contrato vencendo <= 30d → CRITICO | Vencido → CRITICO | Meta interna ultrapassada → CRITICO
-Campanha sem visita → ATENCAO | 3+ visitas sem proposta → ATENCAO | 30d sem gravacao → ATENCAO
+### v1.0.0 — primeiro deploy
+Pipeline, alertas, timeline, registro, relatório vendedor, autenticação.
 
----
+### v1.1.0 — 07/04/2026
+Correções bugs críticos + funcionalidades faltantes.
+RLS, propostas, funil real, nova exclusividade, disparos, acoes de venda, midia planejada.
 
-## 12. HISTÓRICO DE FASES
-
-### Fase 1 — concluída (07/04/2026)
-- Propostas salvando (payload corrigido)
-- Funil visitas/propostas usando dados reais das tabelas
-- Campo meta_investimento corrigido e editavel
-- Botao de exclusao implementado
-- View com count_propostas real
-- RLS configurado em todas as tabelas
-
-### Fase 3 — concluída (07/04/2026)
-- Modal nova exclusividade (INSERT sequencial 3 tabelas)
-- Paineis de disparos base e parceiros editaveis
-- Checkboxes de acoes de venda com auto-save
-- registro.html cria exclusividade + funil_snapshot automaticamente
-- Bug propostas no painel de detalhe corrigido
-
-### Fase 4 — concluída (07/04/2026)
-- Campo midia_total_planejada adicionado ao banco e ao form de edicao
-- Bloco comparativo previsto x realizado no detalhe
-- Barra de Ads no icard usa midia_total_planejada como base quando preenchido
+### v1.2.0 — 07/04/2026
+Visual e UX estilo Pipedrive.
+SVG inline, border-left por status, labels uppercase, badges pills, formularios profissionais,
+indicador ativo mobile corrigido.
 
 ---
 
-## 13. PENDÊNCIAS ATIVAS
+## 12. PENDÊNCIAS ATIVAS
 
-### Proxima — Fase 5: Visual e UX estilo Pipedrive
-- [ ] Remover todos os emojis, substituir por SVG inline
-- [ ] Sidebar: icones SVG por item de menu
-- [ ] Corrigir indicador ativo mobile (linha navy 2px no topo)
-- [ ] Labels de secao: uppercase, letter-spacing, font-size 11px
-- [ ] icards: border-left 3px por dash_status (verde/amarelo/vermelho/cinza)
-- [ ] Badges de status como pills coloridos
-- [ ] Inputs com border sutil, label uppercase, focus state navy
-- [ ] Botoes: primary navy, destrutivo border vermelho
-
-### Fase 6 — Cadastro de usuários (complexa, sessao separada)
+### Proxima — Fase 6: Cadastro de usuários (complexa, sessao separada)
 - [ ] Edge Function com service_role
 - [ ] Hoje sb.auth.signUp() troca sessao ativa — nao funciona
 
+### Backlog
+- [ ] Modulo Analise — visao consolidada de conversoes por canal
+- [ ] Modulo Vendas — tracking de VGV fechado
+- [ ] Modulo Financeiro — DRE simplificado
+
 ---
 
-## 14. CONTEXTO OPERACIONAL
+## 13. CONTEXTO OPERACIONAL
 
 - **Equipe:** Gabriel Certeiro + Robson Souza + Rafaela
 - **Foco:** imóveis R$630K–R$3M+ em Itajaí/SC
@@ -297,9 +279,9 @@ Campanha sem visita → ATENCAO | 3+ visitas sem proposta → ATENCAO | 30d sem 
 
 ---
 
-## 15. REGRA DE EDICAO DE ARQUIVOS
+## 14. REGRA DE EDICAO DE ARQUIVOS
 
 SEMPRE fazer `get_file_contents` antes de editar qualquer arquivo:
 1. Obter SHA atual (obrigatorio para update)
-2. Verificar integridade do index.html (126KB — historico de truncamento)
+2. Verificar integridade do index.html (126KB+ — historico de truncamento)
 Nunca usar SHA de memoria.
