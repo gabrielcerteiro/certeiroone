@@ -1,6 +1,6 @@
 # CONTEXTO COMPLETO — PLATAFORMA CERTEIRO
 > Arquivo para onboarding de nova sessão no Claude Code.
-> Atualizado em: 08/04/2026 — v1.3.0 fechada, v1.3.1 backlog definido
+> Atualizado em: 08/04/2026 — v1.3.0 fechada, repo renomeado para certeiroone
 
 ---
 
@@ -16,11 +16,9 @@
 
 | Item | Valor |
 |------|-------|
-| Repo principal | `github.com/gabrielcerteiro/dashboard-certeiro` |
+| Repo principal | `github.com/gabrielcerteiro/certeiroone` |
 | Branch | `main` (auto-deploy via Vercel) |
 | URL produção | `https://certeiroone.vercel.app` |
-
-> ATENCAO: URL antiga `dashboard-certeiro.vercel.app` foi DESATIVADA em 08/04/2026.
 
 ---
 
@@ -209,11 +207,8 @@ INSERT sequencial: imoveis → exclusividades → funil_snapshot
 
 ## 8. DASHBOARD — GRUPOS (v1.3.0)
 
-A vList exibe exclusividades em 4 grupos por status_exclusividade:
-
 ### GRUPO 1 — EM CAMPANHA (status = 'ativa')
-Cards completos com funil de barras, leads, visitas, propostas, ads.
-Grid 3 colunas no desktop, de fora a fora.
+Cards completos. Grid 3 colunas no desktop, de fora a fora.
 
 ### GRUPO 2 — EM REPAGINACAO (status = 'repaginacao')
 Card simplificado: nome, proprietario, preco, barra de progresso, Ver detalhe.
@@ -222,11 +217,10 @@ Card simplificado: nome, proprietario, preco, barra de progresso, Ver detalhe.
 Card minimalista: nome, proprietario, tag aguardando, Ver detalhe.
 
 ### GRUPO 4 — VENDIDAS (status = 'vendida')
-Oculto por padrao, expande ao clicar.
-NAO conta no VGV do pipeline.
+Oculto por padrao, expande ao clicar. NAO conta no VGV.
 Base historica para indicadores futuros.
 
-Cada grupo tem titulo uppercase com contagem. Grupo vazio nao exibe titulo.
+Grupo vazio nao exibe titulo.
 
 ---
 
@@ -276,9 +270,9 @@ Visual estilo Pipedrive. Fluxo de criacao unificado no Dashboard.
 Corrigido: painel de propostas no Registro nao exibia registros.
 
 ### v1.3.0 — 08/04/2026
-Dashboard em 4 grupos (Em Campanha / Em Repaginacao / Aguardando / Vendidas).
-Grid 3 colunas para grupo Em Campanha. Barra de topo simplificada.
-Novos status: repaginacao e aguardando. URL renomeada certeiroone.vercel.app.
+Dashboard em 4 grupos. Grid 3 colunas. Barra de topo simplificada.
+Novos status: repaginacao e aguardando.
+URL: certeiroone.vercel.app. Repo: github.com/gabrielcerteiro/certeiroone.
 Banco: criados Laguna 1202, Reserva Perequê 2101, Smart Sao Joao 506.
 Banco: deletados Lago di Garda 1301 e registros de teste.
 
@@ -297,8 +291,7 @@ Banco: deletados Lago di Garda 1301 e registros de teste.
 ### Media prioridade
 - [ ] Repositorio privado no GitHub
 - [ ] Branches para desenvolvimento
-- [ ] Logs de auditoria
-- [ ] Backup automatizado documentado
+- [ ] Logs de auditoria + Backup automatizado documentado
 
 ### Backlog futuro
 - [ ] Modulo Analise completo, Modulo Vendas, Modulo Financeiro
