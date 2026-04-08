@@ -1,6 +1,6 @@
 # CONTEXTO COMPLETO — PLATAFORMA CERTEIRO
 > Arquivo para onboarding de nova sessão no Claude Code.
-> Atualizado em: 07/04/2026 — versao 1.2.0 fechada
+> Atualizado em: 08/04/2026 — v1.2.1 concluida, v1.3.0 em andamento
 
 ---
 
@@ -8,7 +8,8 @@
 
 **Nome:** Plataforma Certeiro
 **Dono:** Gabriel Certeiro — Gabriel Certeiro Imóveis, Itajaí/SC
-**Conceito:** ERP operacional de exclusividades imobiliárias. Dashboard interno de controle de captações, funil de vendas, visitas, propostas e linha do tempo operacional.
+**Conceito:** ERP operacional de exclusividades imobiliárias. Dashboard interno de controle
+de captações, funil de vendas, visitas, propostas e linha do tempo operacional.
 
 ---
 
@@ -19,8 +20,6 @@
 | Repo principal | `github.com/gabrielcerteiro/dashboard-certeiro` |
 | Branch | `main` (auto-deploy via Vercel) |
 | URL produção | `https://dashboard-certeiro.vercel.app` |
-| Repo secundário (legado) | `github.com/gabrielcerteiro/visitas-gabrielcerteiro` |
-| URL secundária | `https://visitas.gabrielcerteiro.com.br` |
 
 ---
 
@@ -28,10 +27,10 @@
 
 | Arquivo | Descrição |
 |---------|-----------|
-| `index.html` | Dashboard principal — lista, detalhe, edição, nova exclusividade |
+| `index.html` | Dashboard principal — lista em grupos, detalhe, edição, nova exclusividade |
 | `registro.html` | Registro de visitas e propostas (SEM criacao de imovel) |
 | `vendedor.html` | Relatório para proprietário (link compartilhável) |
-| `CONTEXTO_CLAUDE_CODE.md` | Este arquivo |
+| `CONTEXTO_CLAUDE_CODE.md` | Este arquivo — SEMPRE atualizar ao final de cada sessao |
 
 ---
 
@@ -58,6 +57,14 @@
 - `ativo` boolean (default true)
 - `created_at` timestamptz
 
+**Imoveis ativos no sistema (pos limpeza v1.3.0):**
+- Cezanne 1701, Soho 1102, Casa Ressacada n81, Marechiaro 402
+- Felicita 802, Felicita 505 (dois apartamentos diferentes)
+- Laguna 1202 (criado v1.3.0 — encerrada, preencher dados)
+- Reserva Perequê 2101 (criado v1.3.0 — ativa)
+- Smart Sao Joao 506 (criado v1.3.0 — ativa)
+- Lago di Garda 1301 e "teste" foram DELETADOS
+
 #### `exclusividades`
 - `id` uuid PK, `imovel_id` uuid FK → imoveis.id
 - `data_inicio` date, `dias_contrato` int (default 120)
@@ -67,7 +74,10 @@
 #### `funil_snapshot`
 - `id` uuid PK, `exclusividade_id` uuid FK → exclusividades.id
 - `imovel_nome`, `proprietario`, `preco` text
-- `status_exclusividade` text CHECK ('ativa','vendida','perdida','encerrada')
+- `status_exclusividade` text
+  CHECK ('ativa','vendida','perdida','encerrada','repaginacao','aguardando')
+  > ATENCAO: 'repaginacao' e 'aguardando' foram adicionados na v1.3.0
+  > Se a constraint ainda nao foi alterada, rodar o SQL de migracao primeiro
 - `data_inicio`, `data_fim` date
 - `prazo_contrato_dias` int (default 120)
 - `prazo_repaginacao_dias` int
@@ -78,7 +88,9 @@
 - `meta_cpl` numeric (default 65)
 - `total_leads`, `total_visitas`, `total_propostas` int — legado/manual
 - `leads_abertos`, `leads_perdidos` int
-- `leads_meta_ads`, `leads_google_ads`, `leads_instagram_org`, `leads_youtube`, `leads_tiktok`, `leads_site_org`, `leads_indicacao`, `leads_corretor_parc`, `leads_relacionamento`, `leads_disparo_base`, `leads_oferta_ativa`, `leads_outdoor` int
+- `leads_meta_ads`, `leads_google_ads`, `leads_instagram_org`, `leads_youtube`,
+  `leads_tiktok`, `leads_site_org`, `leads_indicacao`, `leads_corretor_parc`,
+  `leads_relacionamento`, `leads_disparo_base`, `leads_oferta_ativa`, `leads_outdoor` int
 - `gastos_metaads` numeric, `alcance_metaads` int, `frequencia_metaads` numeric
 - `localizacao`, `tipo_imovel` text — tipo: Mobiliado, Vazio, Repaginado
 - `atualizado_em` timestamptz, `fonte` text (default 'pipedrive_n8n')
@@ -101,7 +113,9 @@
 #### `propostas`
 - `id` uuid PK, `imovel_id` uuid FK → imoveis.id
 - `nome_interessado` text, `data` date, `valor_proposto` numeric
-- `forma_pagamento` text CHECK ('a_vista','financiamento','parcelamento_direto','dacao_a_vista','dacao_financiamento','dacao_parcelamento_direto','parcelamento_direto_financiamento')
+- `forma_pagamento` text CHECK ('a_vista','financiamento','parcelamento_direto',
+  'dacao_a_vista','dacao_financiamento','dacao_parcelamento_direto',
+  'parcelamento_direto_financiamento')
 - `status` text CHECK ('em_andamento','aceita','recusada','desistiu')
 - `observacao` text, `created_at`, `updated_at` timestamptz
 - NAO tem coluna `corretor`
@@ -116,7 +130,7 @@
 JOIN funil_snapshot + exclusividades + imoveis. Campos calculados:
 - `dias_restantes`, `tl_hoje_pct`, `status_repaginacao`, `data_meta_interna`
 - `cpl_metaads`, `conv_lead_visita`, `conv_visita_prop`, `dash_status`
-- Todos os campos de funil_snapshot
+- Todos os campos de funil_snapshot incluindo os novos de v1.3.0
 - `count_propostas` — COUNT real da tabela propostas (SEMPRE no FINAL do SELECT)
 
 > CRITICO: ao fazer CREATE OR REPLACE VIEW, novos campos devem vir DEPOIS de
@@ -154,18 +168,21 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 ```
 
 ### Padroes visuais
-- **Icones:** SVG inline estilo Lucide (stroke, nao fill, stroke-width 1.5 ou 2). ZERO emojis.
+- **Icones:** SVG inline estilo Lucide (stroke, nao fill, stroke-width 1.5). ZERO emojis.
 - **Labels de secao:** uppercase, font-size 11px, letter-spacing 1px, cor --muted
 - **Nav labels:** uppercase, font-size 11px, letter-spacing 0.5px
 - **Badges de status:**
   - ativa: bg #D1FAE5, texto #065F46
   - vendida: bg #DBEAFE, texto #1E40AF
+  - repaginacao: bg #FEF3C7, texto #92400E
+  - aguardando: bg #F3F4F6, texto #6B7280
   - perdida/encerrada: bg #F3F4F6, texto #6B7280
-- **Border-left icards (3px por dash_status):**
-  - ok: --green | melhoria/atencao: --yellow | critico: --red | vendida/encerrada: --muted
+- **Border-left icards por grupo (v1.3.0):**
+  - EM CAMPANHA (ativa): --green ou por dash_status
+  - EM REPAGINACAO: --yellow
+  - AGUARDANDO: --muted
+  - VENDIDAS: --green (historico)
 - **Inputs:** border 1px solid --s3, border-radius 8px, padding 10px 12px
-  - Label: uppercase, 11px, --muted, letter-spacing 0.5px
-  - Focus: border-color --navy, outline none
 - **Botao primario:** background --navy, texto branco, border-radius 8px
 - **Botao destrutivo:** border 1px solid --red, texto --red, sem fundo
 - **Indicador ativo mobile:** linha --navy 2px no TOPO do botao ativo
@@ -173,13 +190,7 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 
 ### Layout
 - **Mobile** (< 900px): bottom-nav fixa, coluna única, max-width 480px
-- **Desktop** (>= 900px): sidebar lateral esquerda, grid 2 colunas à direita
-
-### Regras críticas de código
-1. **ZERO acentos dentro de `<script>`** — ASCII puro no JS
-2. **ZERO emojis** — usar SVG inline estilo Lucide
-3. **`create_or_update_file` individualmente** para arquivos grandes
-4. **SHA obrigatório** ao atualizar arquivo existente
+- **Desktop** (>= 900px): sidebar esquerda + grid de cards
 
 ---
 
@@ -193,7 +204,6 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 
 ### Mobile bottom-nav
 4 botoes: Alertas | Exclusividades | Registro | Mais
-Indicador ativo: linha --navy 2px no topo
 Safe area iOS: padding-bottom env(safe-area-inset-bottom)
 
 ### Desktop sidebar
@@ -206,38 +216,64 @@ Item ativo: background --navy, icone e label brancos
 **Unico ponto de entrada: modal "+ Nova Exclusividade" no index.html**
 Campos: Nome, Proprietario, Bairro (Fazenda/Praia Brava/Ressacada/Outro),
 Tipo (Mobiliado/Vazio/Repaginado), Preco, Data de inicio,
-Prazo (120/180 dias), Tem repaginacao? (checkbox condicional)
+Prazo (120/180 dias), Tem repaginacao?, Status inicial (ativa/repaginacao/aguardando)
 
 INSERT sequencial: imoveis → exclusividades → funil_snapshot
-tipo_imovel salvo em funil_snapshot.
 
-> registro.html NAO tem criacao de imovel — apenas visitas e propostas.
-> Fluxo de imovel foi removido do registro na v1.2.0.
+> registro.html NAO tem criacao de imovel.
 
 ---
 
-## 8. MÓDULOS
+## 8. DASHBOARD — GRUPOS DE EXCLUSIVIDADES (v1.3.0)
+
+A vList exibe exclusividades em 4 grupos por status_exclusividade:
+
+### GRUPO 1 — EM CAMPANHA (status = 'ativa')
+Cards completos com funil de barras, leads, visitas, propostas, ads.
+Layout 3 colunas no desktop.
+
+### GRUPO 2 — EM REPAGINACAO (status = 'repaginacao')
+Card simplificado: nome, proprietario, preco, barra de progresso do prazo, Ver detalhe.
+Sem funil de barras.
+
+### GRUPO 3 — AGUARDANDO (status = 'aguardando')
+Card minimalista: nome, proprietario, tag "Aguardando desocupacao", Ver detalhe.
+
+### GRUPO 4 — VENDIDAS (status = 'vendida')
+Oculto por padrao. Botao "Ver X exclusividades vendidas" expande o grupo.
+Card: nome, preco, datas, tempo total, visitas, propostas, tag Vendida.
+NAO contabilizado no VGV do pipeline — apenas grupos 1, 2 e 3.
+Base de dados historica para indicadores futuros.
+
+Cada grupo tem titulo uppercase com contagem. Grupo vazio nao exibe titulo.
+
+---
+
+## 9. MÓDULOS
 
 ### index.html — funcoes principais
 - `loadDashboard()` — carrega view + visitas + propostas
-- `saveSnapshot()` — UPDATE funil_snapshot (inclui tipo_imovel, midia_total_planejada)
-- `salvarNovaExcl()` — INSERT sequencial com todos os campos do modal
-- `funilBarras(im)` — Visitas: visitasMap. Propostas: count_propostas. Ads: midia_total_planejada ou meta_investimento
-- `excluirExclusividade()` / `_doExcluirExclusividade()` — DELETE funil_snapshot → exclusividades
-- `disparosBaseHtml(im)` / `disparosParcHtml(im)` / `salvarDisparosBase()` / `salvarDisparosParc()`
+- `saveSnapshot()` — UPDATE funil_snapshot
+- `salvarNovaExcl()` — INSERT sequencial (inclui status inicial)
+- `funilBarras(im)` — barras do funil. Ads: midia_total_planejada ou meta_investimento
+- `excluirExclusividade()` / `_doExcluirExclusividade()` — DELETE em cascata
+  disponivel em vDetail E vEdit
+- `disparosBaseHtml(im)` / `disparosParcHtml(im)` — paineis editaveis
 - `toggleAcaoVenda(id, key, current)` — auto-save booleano
 - `acoesVendaHtml(im)` — 8 checkboxes
 
 ### registro.html
-- Apenas visitas e propostas
+- Visitas: cadastrar, editar, excluir
+- Propostas: cadastrar, editar, excluir
 - Payload de proposta NAO inclui campo `corretor`
+- Protecao contra duplo envio nos botoes de salvar
 
 ### vendedor.html
 - Relatorio publico por `?id=<exclusividade_id>&from=internal`
 
 ---
 
-## 9. FUNIL — LÓGICA DE BARRAS
+## 10. FUNIL — LÓGICA DE BARRAS
 
 ```
 fator = diasPassados / diasTotal
@@ -247,36 +283,63 @@ Verde >= esperado | Amarelo >= 80% | Vermelho < 80%
 
 ---
 
-## 10. HISTORICO DE VERSOES
+## 11. HISTORICO DE VERSOES
 
-### v1.0.0 — primeiro deploy
+### v1.0.0 — 06/04/2026
 Pipeline, alertas, timeline, registro, relatorio vendedor, autenticacao.
 
 ### v1.1.0 — 07/04/2026
-RLS configurado. Propostas salvando. Funil com dados reais (visitas + propostas).
+RLS configurado. Propostas salvando. Funil com dados reais.
 Nova exclusividade, disparos, acoes de venda, midia planejada vs realizada.
+Editar e excluir visitas e propostas. Protecao contra duplo envio.
 
 ### v1.2.0 — 07/04/2026
 Visual estilo Pipedrive: SVG inline, border-left por status, labels uppercase,
 badges pills, formularios profissionais, indicador ativo mobile, safe area PWA iOS.
-Fluxo de criacao de imovel unificado no Dashboard (removido do Registro).
+Fluxo de criacao unificado no Dashboard.
+
+### v1.2.1 — 07/04/2026
+Corrigido: painel de listagem de propostas no Registro nao exibia registros
+(chave de lookup incorreta — mesma causa do bug anterior de visitas).
+
+### v1.3.0 — em andamento (08/04/2026)
+Migracao de banco executada:
+- Novos imoveis: Laguna 1202 (encerrada), Reserva Perequê 2101 (ativa), Smart Sao Joao 506 (ativa)
+- Deletados: Lago di Garda 1301, teste (duplicatas)
+- Novo constraint em funil_snapshot: adicionados status 'repaginacao' e 'aguardando'
+
+Pendente de implementacao no frontend:
+- Dashboard em 4 grupos (Em Campanha / Em Repaginacao / Aguardando / Vendidas)
+- Botao excluir no vEdit
+- Campo status inicial no modal de nova exclusividade
+- Aba Analise com dashboard de disparos para a Rafaela
 
 ---
 
-## 11. PENDENCIAS ATIVAS
+## 12. PENDENCIAS ATIVAS
 
-### Alta prioridade
+### v1.3.0 — implementar no frontend
+- [ ] Dashboard em 4 grupos por status_exclusividade
+- [ ] Layout 3 colunas para grupo EM CAMPANHA no desktop
+- [ ] Botao excluir no vEdit (reutilizar excluirExclusividade())
+- [ ] Campo status inicial no modal nova exclusividade
+- [ ] Aba Analise: tabela de disparos consolidados para a Rafaela
+
+### Alta prioridade (proximas versoes)
 - [ ] Cadastro de usuarios via Edge Function (service_role)
-      Hoje sb.auth.signUp() troca sessao ativa — nao funciona
+- [ ] Anon Key exposta no repositorio — mover para variavel de ambiente
+- [ ] Controle de acesso por role no frontend
 
 ### Backlog
-- [ ] Modulo Analise — conversoes por canal
+- [ ] Modulo Analise completo — conversoes por canal
 - [ ] Modulo Vendas — tracking VGV fechado
 - [ ] Modulo Financeiro — DRE simplificado
+- [ ] Repositorio privado no GitHub
+- [ ] Branches para desenvolvimento
 
 ---
 
-## 12. CONTEXTO OPERACIONAL
+## 13. CONTEXTO OPERACIONAL
 
 - **Equipe:** Gabriel Certeiro + Robson Souza + Rafaela
 - **Foco:** imoveis R$630K–R$3M+ em Itajai/SC
@@ -284,9 +347,22 @@ Fluxo de criacao de imovel unificado no Dashboard (removido do Registro).
 
 ---
 
-## 13. REGRA DE EDICAO DE ARQUIVOS
+## 14. REGRA DE EDICAO DE ARQUIVOS
 
 SEMPRE fazer `get_file_contents` antes de editar qualquer arquivo:
 1. Obter SHA atual (obrigatorio para update)
 2. Verificar integridade do index.html (historico de truncamento com arquivo grande)
 Nunca usar SHA de memoria.
+
+---
+
+## 15. REGRA DE ATUALIZACAO DESTE ARQUIVO
+
+Este arquivo DEVE ser atualizado ao final de cada sessao de desenvolvimento.
+Sem atualizacao, a proxima sessao comeca com contexto desatualizado.
+
+Ao final de cada sessao:
+1. Registrar a versao entregue no historico (secao 11)
+2. Atualizar funcoes novas ou alteradas (secao 9)
+3. Remover pendencias concluidas (secao 12)
+4. Fazer push deste arquivo junto com os demais arquivos alterados
