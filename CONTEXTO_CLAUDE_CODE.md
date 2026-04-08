@@ -1,15 +1,14 @@
 # CONTEXTO COMPLETO — PLATAFORMA CERTEIRO
 > Arquivo para onboarding de nova sessão no Claude Code.
-> Atualizado em: 08/04/2026 — v1.2.1 concluida, v1.3.0 em andamento
+> Atualizado em: 08/04/2026 — URL renomeada para certeiroone.vercel.app
 
 ---
 
 ## 1. VISÃO GERAL DO PROJETO
 
-**Nome:** Plataforma Certeiro
+**Nome:** Plataforma Certeiro (Certeiro One)
 **Dono:** Gabriel Certeiro — Gabriel Certeiro Imóveis, Itajaí/SC
-**Conceito:** ERP operacional de exclusividades imobiliárias. Dashboard interno de controle
-de captações, funil de vendas, visitas, propostas e linha do tempo operacional.
+**Conceito:** ERP operacional de exclusividades imobiliárias.
 
 ---
 
@@ -19,7 +18,10 @@ de captações, funil de vendas, visitas, propostas e linha do tempo operacional
 |------|-------|
 | Repo principal | `github.com/gabrielcerteiro/dashboard-certeiro` |
 | Branch | `main` (auto-deploy via Vercel) |
-| URL produção | `https://dashboard-certeiro.vercel.app` |
+| URL produção | `https://certeiroone.vercel.app` |
+
+> ATENCAO: URL antiga `dashboard-certeiro.vercel.app` foi DESATIVADA em 08/04/2026.
+> Usar sempre `certeiroone.vercel.app`.
 
 ---
 
@@ -57,13 +59,13 @@ de captações, funil de vendas, visitas, propostas e linha do tempo operacional
 - `ativo` boolean (default true)
 - `created_at` timestamptz
 
-**Imoveis ativos no sistema (pos limpeza v1.3.0):**
+**Imoveis no sistema (pos limpeza v1.3.0):**
 - Cezanne 1701, Soho 1102, Casa Ressacada n81, Marechiaro 402
 - Felicita 802, Felicita 505 (dois apartamentos diferentes)
 - Laguna 1202 (criado v1.3.0 — encerrada, preencher dados)
 - Reserva Perequê 2101 (criado v1.3.0 — ativa)
 - Smart Sao Joao 506 (criado v1.3.0 — ativa)
-- Lago di Garda 1301 e "teste" foram DELETADOS
+- Deletados: Lago di Garda 1301 e "teste"
 
 #### `exclusividades`
 - `id` uuid PK, `imovel_id` uuid FK → imoveis.id
@@ -76,8 +78,6 @@ de captações, funil de vendas, visitas, propostas e linha do tempo operacional
 - `imovel_nome`, `proprietario`, `preco` text
 - `status_exclusividade` text
   CHECK ('ativa','vendida','perdida','encerrada','repaginacao','aguardando')
-  > ATENCAO: 'repaginacao' e 'aguardando' foram adicionados na v1.3.0
-  > Se a constraint ainda nao foi alterada, rodar o SQL de migracao primeiro
 - `data_inicio`, `data_fim` date
 - `prazo_contrato_dias` int (default 120)
 - `prazo_repaginacao_dias` int
@@ -130,11 +130,10 @@ de captações, funil de vendas, visitas, propostas e linha do tempo operacional
 JOIN funil_snapshot + exclusividades + imoveis. Campos calculados:
 - `dias_restantes`, `tl_hoje_pct`, `status_repaginacao`, `data_meta_interna`
 - `cpl_metaads`, `conv_lead_visita`, `conv_visita_prop`, `dash_status`
-- Todos os campos de funil_snapshot incluindo os novos de v1.3.0
-- `count_propostas` — COUNT real da tabela propostas (SEMPRE no FINAL do SELECT)
+- Todos os campos de funil_snapshot
+- `count_propostas` — COUNT real (SEMPRE no FINAL do SELECT)
 
-> CRITICO: ao fazer CREATE OR REPLACE VIEW, novos campos devem vir DEPOIS de
-> count_propostas. PostgreSQL nao permite inserir colunas no meio.
+> CRITICO: novos campos na view devem vir DEPOIS de count_propostas.
 
 #### `dashboard_visitas_detalhe`
 View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
@@ -168,29 +167,22 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 ```
 
 ### Padroes visuais
-- **Icones:** SVG inline estilo Lucide (stroke, nao fill, stroke-width 1.5). ZERO emojis.
+- **Icones:** SVG inline estilo Lucide. ZERO emojis.
 - **Labels de secao:** uppercase, font-size 11px, letter-spacing 1px, cor --muted
-- **Nav labels:** uppercase, font-size 11px, letter-spacing 0.5px
 - **Badges de status:**
   - ativa: bg #D1FAE5, texto #065F46
   - vendida: bg #DBEAFE, texto #1E40AF
   - repaginacao: bg #FEF3C7, texto #92400E
-  - aguardando: bg #F3F4F6, texto #6B7280
-  - perdida/encerrada: bg #F3F4F6, texto #6B7280
-- **Border-left icards por grupo (v1.3.0):**
-  - EM CAMPANHA (ativa): --green ou por dash_status
-  - EM REPAGINACAO: --yellow
-  - AGUARDANDO: --muted
-  - VENDIDAS: --green (historico)
+  - aguardando/encerrada: bg #F3F4F6, texto #6B7280
+- **Border-left icards:** ativa --green, repaginacao --yellow, aguardando --muted, vendida --green
 - **Inputs:** border 1px solid --s3, border-radius 8px, padding 10px 12px
-- **Botao primario:** background --navy, texto branco, border-radius 8px
+- **Botao primario:** background --navy, texto branco
 - **Botao destrutivo:** border 1px solid --red, texto --red, sem fundo
-- **Indicador ativo mobile:** linha --navy 2px no TOPO do botao ativo
 - **Bottom-nav PWA:** height 64px + env(safe-area-inset-bottom), icones 24px
 
 ### Layout
 - **Mobile** (< 900px): bottom-nav fixa, coluna única, max-width 480px
-- **Desktop** (>= 900px): sidebar esquerda + grid de cards
+- **Desktop** (>= 900px): sidebar esquerda + grid 3 colunas para cards EM CAMPANHA
 
 ---
 
@@ -202,71 +194,49 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 - Marketing: megaphone | Conteudo: film | Financeiro: bar-chart-2
 - Usuarios: user | Sair: log-out
 
-### Mobile bottom-nav
-4 botoes: Alertas | Exclusividades | Registro | Mais
-Safe area iOS: padding-bottom env(safe-area-inset-bottom)
-
-### Desktop sidebar
-Item ativo: background --navy, icone e label brancos
-
 ---
 
 ## 7. FLUXO DE CRIACAO DE EXCLUSIVIDADE
 
-**Unico ponto de entrada: modal "+ Nova Exclusividade" no index.html**
-Campos: Nome, Proprietario, Bairro (Fazenda/Praia Brava/Ressacada/Outro),
-Tipo (Mobiliado/Vazio/Repaginado), Preco, Data de inicio,
-Prazo (120/180 dias), Tem repaginacao?, Status inicial (ativa/repaginacao/aguardando)
-
+Modal "+ Nova Exclusividade" no index.html.
+Campos: Nome, Proprietario, Bairro, Tipo, Preco, Data inicio,
+Prazo, Tem repaginacao?, Status inicial (ativa/repaginacao/aguardando)
 INSERT sequencial: imoveis → exclusividades → funil_snapshot
-
-> registro.html NAO tem criacao de imovel.
 
 ---
 
-## 8. DASHBOARD — GRUPOS DE EXCLUSIVIDADES (v1.3.0)
-
-A vList exibe exclusividades em 4 grupos por status_exclusividade:
+## 8. DASHBOARD — GRUPOS (v1.3.0)
 
 ### GRUPO 1 — EM CAMPANHA (status = 'ativa')
-Cards completos com funil de barras, leads, visitas, propostas, ads.
-Layout 3 colunas no desktop.
+Cards completos. Grid 3 colunas no desktop.
 
 ### GRUPO 2 — EM REPAGINACAO (status = 'repaginacao')
-Card simplificado: nome, proprietario, preco, barra de progresso do prazo, Ver detalhe.
-Sem funil de barras.
+Card simplificado: nome, proprietario, preco, barra de progresso, Ver detalhe.
 
 ### GRUPO 3 — AGUARDANDO (status = 'aguardando')
-Card minimalista: nome, proprietario, tag "Aguardando desocupacao", Ver detalhe.
+Card minimalista: nome, proprietario, tag aguardando, Ver detalhe.
 
 ### GRUPO 4 — VENDIDAS (status = 'vendida')
-Oculto por padrao. Botao "Ver X exclusividades vendidas" expande o grupo.
-Card: nome, preco, datas, tempo total, visitas, propostas, tag Vendida.
-NAO contabilizado no VGV do pipeline — apenas grupos 1, 2 e 3.
-Base de dados historica para indicadores futuros.
+Oculto por padrao, expande ao clicar.
+NAO conta no VGV do pipeline.
+Base historica para indicadores futuros.
 
-Cada grupo tem titulo uppercase com contagem. Grupo vazio nao exibe titulo.
+Grupo vazio nao exibe titulo.
 
 ---
 
 ## 9. MÓDULOS
 
 ### index.html — funcoes principais
-- `loadDashboard()` — carrega view + visitas + propostas
-- `saveSnapshot()` — UPDATE funil_snapshot
-- `salvarNovaExcl()` — INSERT sequencial (inclui status inicial)
-- `funilBarras(im)` — barras do funil. Ads: midia_total_planejada ou meta_investimento
-- `excluirExclusividade()` / `_doExcluirExclusividade()` — DELETE em cascata
-  disponivel em vDetail E vEdit
-- `disparosBaseHtml(im)` / `disparosParcHtml(im)` — paineis editaveis
-- `toggleAcaoVenda(id, key, current)` — auto-save booleano
-- `acoesVendaHtml(im)` — 8 checkboxes
+- `loadDashboard()`, `saveSnapshot()`, `salvarNovaExcl()`
+- `funilBarras(im)`, `excluirExclusividade()`, `_doExcluirExclusividade()`
+- `disparosBaseHtml(im)`, `disparosParcHtml(im)`
+- `salvarDisparosBase(id)`, `salvarDisparosParc(id)`
+- `toggleAcaoVenda(id, key, current)`, `acoesVendaHtml(im)`
 
 ### registro.html
-- Visitas: cadastrar, editar, excluir
-- Propostas: cadastrar, editar, excluir
-- Payload de proposta NAO inclui campo `corretor`
-- Protecao contra duplo envio nos botoes de salvar
+- Visitas e propostas: cadastrar, editar, excluir
+- Payload de proposta NAO inclui `corretor`
 
 ### vendedor.html
 - Relatorio publico por `?id=<exclusividade_id>&from=internal`
@@ -294,48 +264,37 @@ Nova exclusividade, disparos, acoes de venda, midia planejada vs realizada.
 Editar e excluir visitas e propostas. Protecao contra duplo envio.
 
 ### v1.2.0 — 07/04/2026
-Visual estilo Pipedrive: SVG inline, border-left por status, labels uppercase,
-badges pills, formularios profissionais, indicador ativo mobile, safe area PWA iOS.
-Fluxo de criacao unificado no Dashboard.
+Visual estilo Pipedrive. Fluxo de criacao unificado no Dashboard.
 
 ### v1.2.1 — 07/04/2026
-Corrigido: painel de listagem de propostas no Registro nao exibia registros
-(chave de lookup incorreta — mesma causa do bug anterior de visitas).
+Corrigido: painel de propostas no Registro nao exibia registros.
 
 ### v1.3.0 — em andamento (08/04/2026)
-Migracao de banco executada:
-- Novos imoveis: Laguna 1202 (encerrada), Reserva Perequê 2101 (ativa), Smart Sao Joao 506 (ativa)
-- Deletados: Lago di Garda 1301, teste (duplicatas)
-- Novo constraint em funil_snapshot: adicionados status 'repaginacao' e 'aguardando'
-
-Pendente de implementacao no frontend:
-- Dashboard em 4 grupos (Em Campanha / Em Repaginacao / Aguardando / Vendidas)
-- Botao excluir no vEdit
-- Campo status inicial no modal de nova exclusividade
-- Aba Analise com dashboard de disparos para a Rafaela
+- URL renomeada para certeiroone.vercel.app
+- Banco: novos imoveis criados, duplicatas deletadas
+- Banco: constraint funil_snapshot atualizada (repaginacao, aguardando)
+- Frontend: dashboard em 4 grupos em implementacao
 
 ---
 
 ## 12. PENDENCIAS ATIVAS
 
-### v1.3.0 — implementar no frontend
-- [ ] Dashboard em 4 grupos por status_exclusividade
-- [ ] Layout 3 colunas para grupo EM CAMPANHA no desktop
-- [ ] Botao excluir no vEdit (reutilizar excluirExclusividade())
+### v1.3.0 — frontend em andamento
+- [ ] Barra de topo simplificada (largura total, sem calculos)
+- [ ] Grid 3 colunas de fora a fora para grupo EM CAMPANHA
+- [ ] Grupos EM REPAGINACAO, AGUARDANDO e VENDIDAS
+- [ ] Botao excluir no vEdit
 - [ ] Campo status inicial no modal nova exclusividade
-- [ ] Aba Analise: tabela de disparos consolidados para a Rafaela
+- [ ] Aba Analise: tabela de disparos para a Rafaela
 
-### Alta prioridade (proximas versoes)
+### Alta prioridade
 - [ ] Cadastro de usuarios via Edge Function (service_role)
 - [ ] Anon Key exposta no repositorio — mover para variavel de ambiente
 - [ ] Controle de acesso por role no frontend
 
 ### Backlog
-- [ ] Modulo Analise completo — conversoes por canal
-- [ ] Modulo Vendas — tracking VGV fechado
-- [ ] Modulo Financeiro — DRE simplificado
-- [ ] Repositorio privado no GitHub
-- [ ] Branches para desenvolvimento
+- [ ] Modulo Analise, Vendas, Financeiro
+- [ ] Repositorio privado, Branches para dev
 
 ---
 
@@ -347,22 +306,17 @@ Pendente de implementacao no frontend:
 
 ---
 
-## 14. REGRA DE EDICAO DE ARQUIVOS
+## 14. REGRAS DE EDICAO
 
-SEMPRE fazer `get_file_contents` antes de editar qualquer arquivo:
-1. Obter SHA atual (obrigatorio para update)
-2. Verificar integridade do index.html (historico de truncamento com arquivo grande)
+SEMPRE fazer `get_file_contents` antes de editar — obter SHA atual.
+Verificar integridade do index.html antes de editar (historico de truncamento).
 Nunca usar SHA de memoria.
 
 ---
 
-## 15. REGRA DE ATUALIZACAO DESTE ARQUIVO
+## 15. ATUALIZAR ESTE ARQUIVO AO FINAL DE CADA SESSAO
 
-Este arquivo DEVE ser atualizado ao final de cada sessao de desenvolvimento.
-Sem atualizacao, a proxima sessao comeca com contexto desatualizado.
-
-Ao final de cada sessao:
-1. Registrar a versao entregue no historico (secao 11)
-2. Atualizar funcoes novas ou alteradas (secao 9)
+1. Registrar versao no historico (secao 11)
+2. Atualizar funcoes alteradas (secao 9)
 3. Remover pendencias concluidas (secao 12)
-4. Fazer push deste arquivo junto com os demais arquivos alterados
+4. Fazer push junto com os demais arquivos
