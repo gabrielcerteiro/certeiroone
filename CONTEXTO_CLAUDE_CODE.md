@@ -289,6 +289,29 @@ Banco: deletados Lago di Garda 1301 e registros de teste.
 - [ ] Controle de acesso por role no frontend
 
 ### Media prioridade
+- [ ] Roteamento por hash (URL unica por secao)
+      CONTEXTO: hoje todas as secoes do index.html (Alertas, Exclusividades,
+      Captacao, Vendas etc.) ficam na mesma URL certeiroone.vercel.app sem
+      distinguir qual secao esta aberta. O registro.html fica em URL separada.
+      SOLUCAO: implementar roteamento por hash no index.html usando
+      window.location.hash e o evento hashchange.
+      URLs resultantes:
+        certeiroone.vercel.app/#/alertas
+        certeiroone.vercel.app/#/exclusividades
+        certeiroone.vercel.app/#/registro
+        certeiroone.vercel.app/#/captacao
+        certeiroone.vercel.app/#/vendas
+        certeiroone.vercel.app/#/marketing
+        certeiroone.vercel.app/#/financeiro
+        certeiroone.vercel.app/#/usuarios
+      IMPLEMENTACAO: ao clicar em item do menu, atualizar window.location.hash
+      em vez de chamar showView() diretamente. A funcao showView() passa a ser
+      chamada pelo listener de hashchange. Ao carregar a pagina, ler o hash
+      atual e exibir a view correspondente (ou default para exclusividades).
+      O registro.html pode ser mantido separado ou migrado para
+      certeiroone.vercel.app/#/registro — a decidir.
+      BENEFICIO: links diretos funcionam, historico do browser funciona,
+      comportamento identico ao Pipedrive e outros SaaS.
 - [ ] Repositorio privado no GitHub
 - [ ] Branches para desenvolvimento
 - [ ] Logs de auditoria + Backup automatizado documentado
