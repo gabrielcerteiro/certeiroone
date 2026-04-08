@@ -1,6 +1,6 @@
 # CONTEXTO COMPLETO — PLATAFORMA CERTEIRO
 > Arquivo para onboarding de nova sessão no Claude Code.
-> Atualizado em: 08/04/2026 — URL renomeada para certeiroone.vercel.app
+> Atualizado em: 08/04/2026 — v1.3.0 fechada, v1.3.1 backlog definido
 
 ---
 
@@ -21,7 +21,6 @@
 | URL produção | `https://certeiroone.vercel.app` |
 
 > ATENCAO: URL antiga `dashboard-certeiro.vercel.app` foi DESATIVADA em 08/04/2026.
-> Usar sempre `certeiroone.vercel.app`.
 
 ---
 
@@ -62,9 +61,9 @@
 **Imoveis no sistema (pos limpeza v1.3.0):**
 - Cezanne 1701, Soho 1102, Casa Ressacada n81, Marechiaro 402
 - Felicita 802, Felicita 505 (dois apartamentos diferentes)
-- Laguna 1202 (criado v1.3.0 — encerrada, preencher dados)
-- Reserva Perequê 2101 (criado v1.3.0 — ativa)
-- Smart Sao Joao 506 (criado v1.3.0 — ativa)
+- Laguna 1202 (encerrada — preencher dados historicos)
+- Reserva Perequê 2101 (ativa)
+- Smart Sao Joao 506 (ativa)
 - Deletados: Lago di Garda 1301 e "teste"
 
 #### `exclusividades`
@@ -174,7 +173,7 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
   - vendida: bg #DBEAFE, texto #1E40AF
   - repaginacao: bg #FEF3C7, texto #92400E
   - aguardando/encerrada: bg #F3F4F6, texto #6B7280
-- **Border-left icards:** ativa --green, repaginacao --yellow, aguardando --muted, vendida --green
+- **Border-left icards:** ativa dash_status, repaginacao --yellow, aguardando --muted, vendida --green
 - **Inputs:** border 1px solid --s3, border-radius 8px, padding 10px 12px
 - **Botao primario:** background --navy, texto branco
 - **Botao destrutivo:** border 1px solid --red, texto --red, sem fundo
@@ -199,16 +198,22 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 ## 7. FLUXO DE CRIACAO DE EXCLUSIVIDADE
 
 Modal "+ Nova Exclusividade" no index.html.
-Campos: Nome, Proprietario, Bairro, Tipo, Preco, Data inicio,
-Prazo, Tem repaginacao?, Status inicial (ativa/repaginacao/aguardando)
+Campos: Nome, Proprietario, Bairro (Fazenda/Praia Brava/Ressacada/Outro),
+Tipo (Mobiliado/Vazio/Repaginado), Preco, Data inicio,
+Prazo (120/180 dias), Tem repaginacao?, Status inicial (ativa/repaginacao/aguardando)
 INSERT sequencial: imoveis → exclusividades → funil_snapshot
+
+> registro.html NAO tem criacao de imovel.
 
 ---
 
 ## 8. DASHBOARD — GRUPOS (v1.3.0)
 
+A vList exibe exclusividades em 4 grupos por status_exclusividade:
+
 ### GRUPO 1 — EM CAMPANHA (status = 'ativa')
-Cards completos. Grid 3 colunas no desktop.
+Cards completos com funil de barras, leads, visitas, propostas, ads.
+Grid 3 colunas no desktop, de fora a fora.
 
 ### GRUPO 2 — EM REPAGINACAO (status = 'repaginacao')
 Card simplificado: nome, proprietario, preco, barra de progresso, Ver detalhe.
@@ -221,7 +226,7 @@ Oculto por padrao, expande ao clicar.
 NAO conta no VGV do pipeline.
 Base historica para indicadores futuros.
 
-Grupo vazio nao exibe titulo.
+Cada grupo tem titulo uppercase com contagem. Grupo vazio nao exibe titulo.
 
 ---
 
@@ -237,6 +242,7 @@ Grupo vazio nao exibe titulo.
 ### registro.html
 - Visitas e propostas: cadastrar, editar, excluir
 - Payload de proposta NAO inclui `corretor`
+- Protecao contra duplo envio
 
 ### vendedor.html
 - Relatorio publico por `?id=<exclusividade_id>&from=internal`
@@ -269,32 +275,35 @@ Visual estilo Pipedrive. Fluxo de criacao unificado no Dashboard.
 ### v1.2.1 — 07/04/2026
 Corrigido: painel de propostas no Registro nao exibia registros.
 
-### v1.3.0 — em andamento (08/04/2026)
-- URL renomeada para certeiroone.vercel.app
-- Banco: novos imoveis criados, duplicatas deletadas
-- Banco: constraint funil_snapshot atualizada (repaginacao, aguardando)
-- Frontend: dashboard em 4 grupos em implementacao
+### v1.3.0 — 08/04/2026
+Dashboard em 4 grupos (Em Campanha / Em Repaginacao / Aguardando / Vendidas).
+Grid 3 colunas para grupo Em Campanha. Barra de topo simplificada.
+Novos status: repaginacao e aguardando. URL renomeada certeiroone.vercel.app.
+Banco: criados Laguna 1202, Reserva Perequê 2101, Smart Sao Joao 506.
+Banco: deletados Lago di Garda 1301 e registros de teste.
 
 ---
 
-## 12. PENDENCIAS ATIVAS
-
-### v1.3.0 — frontend em andamento
-- [ ] Barra de topo simplificada (largura total, sem calculos)
-- [ ] Grid 3 colunas de fora a fora para grupo EM CAMPANHA
-- [ ] Grupos EM REPAGINACAO, AGUARDANDO e VENDIDAS
-- [ ] Botao excluir no vEdit
-- [ ] Campo status inicial no modal nova exclusividade
-- [ ] Aba Analise: tabela de disparos para a Rafaela
+## 12. PENDENCIAS ATIVAS — v1.3.1
 
 ### Alta prioridade
+- [ ] Botao excluir no formulario de edicao (vEdit)
+- [ ] Campo status inicial no modal de nova exclusividade
+- [ ] Aba Analise: tabela de disparos consolidados para a Rafaela
 - [ ] Cadastro de usuarios via Edge Function (service_role)
 - [ ] Anon Key exposta no repositorio — mover para variavel de ambiente
 - [ ] Controle de acesso por role no frontend
 
-### Backlog
-- [ ] Modulo Analise, Vendas, Financeiro
-- [ ] Repositorio privado, Branches para dev
+### Media prioridade
+- [ ] Repositorio privado no GitHub
+- [ ] Branches para desenvolvimento
+- [ ] Logs de auditoria
+- [ ] Backup automatizado documentado
+
+### Backlog futuro
+- [ ] Modulo Analise completo, Modulo Vendas, Modulo Financeiro
+- [ ] Migrar index.html para modulos separados
+- [ ] Testes automatizados antes do deploy
 
 ---
 
@@ -316,7 +325,7 @@ Nunca usar SHA de memoria.
 
 ## 15. ATUALIZAR ESTE ARQUIVO AO FINAL DE CADA SESSAO
 
-1. Registrar versao no historico (secao 11)
+1. Registrar versao entregue no historico (secao 11)
 2. Atualizar funcoes alteradas (secao 9)
-3. Remover pendencias concluidas (secao 12)
-4. Fazer push junto com os demais arquivos
+3. Remover pendencias concluidas da secao 12
+4. Fazer push junto com os demais arquivos alterados
