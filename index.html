@@ -581,8 +581,71 @@ function renderLogLista(){var filtrado=logFiltroAtivo==='todos'?logDados:logDado
 
 function abrirNovoUsuario(){document.getElementById('novoUsuarioPanel').style.display='block';document.getElementById('nuNome').focus();}
 async function criarUsuario(){var nome=document.getElementById('nuNome').value.trim();var email=document.getElementById('nuEmail').value.trim();var role=document.getElementById('nuRole').value;var senha=document.getElementById('nuSenha').value;var err=document.getElementById('nuErr');err.textContent='';if(!nome||!email||!senha){err.textContent='Preencha todos os campos.';return;}try{var sess=(await sb.auth.getSession()).data.session;if(!sess)throw new Error('Sessao expirada.');var res=await fetch(SUPA_URL+'/functions/v1/criar-usuario',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+sess.access_token},body:JSON.stringify({nome:nome,email:email,role:role,senha:senha})});var json=await res.json();if(!res.ok)throw new Error(json.error||'Erro ao criar usuario.');document.getElementById('novoUsuarioPanel').style.display='none';document.getElementById('nuNome').value='';document.getElementById('nuEmail').value='';document.getElementById('nuSenha').value='';logActivity('usuario_criado','usuario',nome,{email:email,role:role});showToast('Usuario criado! Oriente o usuario a fazer login.');renderUsuarios();}catch(e){err.textContent=e.message||'Erro ao criar usuario.';}}
-async function renderUsuarios(){var el=document.getElementById('listaUsuarios');if(!el)return;el.innerHTML='<div class="loading"><div class="loading-spin"></div></div>';var r=await sb.from('usuarios').select('*').order('nome');if(r.error){el.innerHTML='<div style="color:var(--red);font-size:12px">Erro: '+r.error.message+'</div>';return;}var perfis=r.data||[];var roleLabel={master:'Master',operacional:'Operacional',padrao:'Padrao'};var roleColor={master:'var(--red)',operacional:'var(--blue)',padrao:'var(--green)'};var html=perfis.map(function(p){var isMe=currentUsuarioId&&p.id===currentUsuarioId;return '<div class="card" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:12px"><div style="flex:1;cursor:pointer" onclick="abrirLogUsuario(\''+p.id+'\',\''+p.nome.replace(/'/g,'\\\'')+'\')" ><div style="font-size:13px;font-weight:800;color:var(--navy)">'+p.nome+(isMe?' <span style="font-size:10px;color:var(--muted)">(voce)</span>':'')+'</div><div style="font-size:11px;color:var(--muted);margin-top:1px">'+(p.email||'sem email')+' <span style="color:var(--blue)">&#8250; ver historico</span></div></div><select onchange="salvarRole(\''+p.id+'\',this.value)" style="border:1.5px solid var(--s2);border-radius:8px;padding:5px 8px;font-size:11px;font-weight:700;font-family:\'Nunito Sans\',sans-serif;color:'+roleColor[p.role||'padrao']+';background:#fff;outline:none"'+(isMe?' disabled':'')+'><option value="padrao"'+(p.role==='padrao'?' selected':'')+'>Padrao</option><option value="operacional"'+(p.role==='operacional'?' selected':'')+'>Operacional</option><option value="master"'+(p.role==='master'?' selected':'')+'>Master</option></select></div>';}).join('');el.innerHTML=html||'<div style="color:var(--muted);font-size:13px">Nenhum usuario cadastrado.</div>';}
-async function salvarRole(uid,role){var r=await sb.from('usuarios').update({role:role}).eq('id',uid);if(r.error){showToast('Erro: '+r.error.message);}else{logActivity('permissao_alterada','usuario',uid,{novo_role:role});showToast('Permissao atualizada!');renderUsuarios();}}
+async function renderUsuarios(){
+  var el=document.getElementById('listaUsuarios');
+  if(!el)return;
+  el.innerHTML='<div class="loading"><div class="loading-spin"></div></div>';
+  var r=await sb.from('usuarios').select('*').order('nome');
+  if(r.error){el.innerHTML='<div style="color:var(--red);font-size:12px">Erro: '+r.error.message+'</div>';return;}
+  var lista=r.data||[];
+  var isMaster=currentRole==='master';
+  var roleLabel={master:'Master',operacional:'Operacional',padrao:'Padrao'};
+  var roleColor={master:'var(--red)',operacional:'var(--blue)',padrao:'var(--green)'};
+  if(!lista.length){el.innerHTML='<div style="color:var(--muted);font-size:13px">Nenhum usuario cadastrado.</div>';return;}
+  var html=lista.map(function(p){
+    var isMe=currentUsuarioId&&p.id===currentUsuarioId;
+    var ativo=p.ativo!==false;
+    var authId=p.auth_id||'';
+    var sn=p.nome.replace(/'/g,"\\'");
+    var se=(p.email||'').replace(/'/g,"\\'");
+    var rLabel=roleLabel[p.role||'padrao']||'Padrao';
+    var rColor=roleColor[p.role||'padrao']||'var(--green)';
+    var badgeAtivo=ativo
+      ?'<span onclick="toggleAtivo(\''+p.id+'\',true)" style="cursor:pointer;font-size:10px;font-weight:700;padding:3px 8px;border-radius:12px;background:#D1FAE5;color:#065F46">Ativo</span>'
+      :'<span onclick="toggleAtivo(\''+p.id+'\',false)" style="cursor:pointer;font-size:10px;font-weight:700;padding:3px 8px;border-radius:12px;background:#FEE2E2;color:#991B1B">Inativo</span>';
+    var badgeRole='<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;border:1.5px solid '+rColor+';color:'+rColor+'">'+rLabel+'</span>';
+    var btnEditar='<button onclick="abrirEditUsuario(\''+p.id+'\')" style="border:1.5px solid var(--s2);background:var(--white);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;font-family:\'Nunito Sans\',sans-serif;color:var(--navy);cursor:pointer">Editar</button>';
+    var btnSenha=p.email?'<button onclick="enviarLinkSenha(\''+se+'\')" style="border:1.5px solid var(--s2);background:var(--white);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;font-family:\'Nunito Sans\',sans-serif;color:var(--muted);cursor:pointer">Enviar senha</button>':'';
+    var btnExcluir=(!isMe&&isMaster)?'<button onclick="excluirUsuario(\''+p.id+'\',\''+sn+'\',\''+authId+'\')" style="border:1px solid var(--red);background:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;font-family:\'Nunito Sans\',sans-serif;color:var(--red);cursor:pointer">Excluir</button>':'';
+    var disableRole=isMe?'disabled':'';
+    var editPanel=''
+      +'<div id="editPanel_'+p.id+'" style="display:none;border-top:1px solid var(--s2);padding-top:12px;margin-top:10px">'
+      +'<div style="display:flex;flex-direction:column;gap:8px">'
+      +'<input id="eu_nome_'+p.id+'" type="text" value="'+p.nome.replace(/"/g,'&quot;')+'" placeholder="Nome completo" style="border:1.5px solid var(--s2);border-radius:8px;padding:8px 10px;font-size:13px;font-family:\'Nunito Sans\',sans-serif;color:var(--navy);outline:none">'
+      +'<input id="eu_email_'+p.id+'" type="email" value="'+(p.email||'')+'" placeholder="email@exemplo.com" style="border:1.5px solid var(--s2);border-radius:8px;padding:8px 10px;font-size:13px;font-family:\'Nunito Sans\',sans-serif;color:var(--navy);outline:none">'
+      +'<select id="eu_role_'+p.id+'" '+disableRole+' style="border:1.5px solid var(--s2);border-radius:8px;padding:8px 10px;font-size:13px;font-family:\'Nunito Sans\',sans-serif;color:var(--navy);background:#fff;outline:none">'
+      +'<option value="padrao"'+(p.role==='padrao'?' selected':'')+'>Padrao</option>'
+      +'<option value="operacional"'+(p.role==='operacional'?' selected':'')+'>Operacional</option>'
+      +'<option value="master"'+(p.role==='master'?' selected':'')+'>Master</option>'
+      +'</select>'
+      +'<label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer"><input type="checkbox" id="eu_corretor_'+p.id+'" '+(p.is_corretor?'checked':'')+'>Corretor (aparece no select de visitas)</label>'
+      +'<label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer"><input type="checkbox" id="eu_ativo_'+p.id+'" '+(ativo?'checked':'')+'>Ativo</label>'
+      +'</div>'
+      +'<div style="display:flex;gap:8px;margin-top:10px">'
+      +'<button onclick="salvarEdicaoUsuario(\''+p.id+'\')" style="flex:1;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px;font-size:12px;font-weight:800;font-family:\'Nunito Sans\',sans-serif;cursor:pointer">Salvar</button>'
+      +'<button onclick="fecharEditUsuario(\''+p.id+'\')" style="background:none;border:1.5px solid var(--s2);border-radius:8px;padding:9px 14px;font-size:12px;font-weight:700;font-family:\'Nunito Sans\',sans-serif;color:var(--muted);cursor:pointer">Cancelar</button>'
+      +'</div>'
+      +'</div>';
+    return ''
+      +'<div class="card" style="margin-bottom:8px;opacity:'+(ativo?'1':'0.55')+'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'
+      +'<div style="flex:1;min-width:0;cursor:pointer" onclick="abrirLogUsuario(\''+p.id+'\',\''+sn+'\')">'
+      +'<div style="font-size:13px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:6px;flex-wrap:wrap">'+p.nome+(isMe?' <span style="font-size:10px;color:var(--muted)">(voce)</span>':'')+' '+badgeAtivo+'</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">'+(p.email||'sem email')+' '+badgeRole+'</div>'
+      +'</div>'
+      +'</div>'
+      +'<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">'+btnEditar+btnSenha+btnExcluir+'</div>'
+      +editPanel
+      +'</div>';
+  }).join('');
+  el.innerHTML=html;
+}
+function abrirEditUsuario(uid){var p=document.getElementById('editPanel_'+uid);if(p)p.style.display=p.style.display==='none'?'block':'none';}
+function fecharEditUsuario(uid){var p=document.getElementById('editPanel_'+uid);if(p)p.style.display='none';}
+async function salvarEdicaoUsuario(uid){var nome=document.getElementById('eu_nome_'+uid).value.trim();var email=document.getElementById('eu_email_'+uid).value.trim();var role=document.getElementById('eu_role_'+uid).value;var isCorretor=document.getElementById('eu_corretor_'+uid).checked;var ativo=document.getElementById('eu_ativo_'+uid).checked;if(!nome){showToast('Nome obrigatorio.');return;}var r=await sb.from('usuarios').update({nome:nome,email:email||null,role:role,is_corretor:isCorretor,ativo:ativo}).eq('id',uid);if(r.error){showToast('Erro: '+r.error.message);}else{logActivity('usuario_editado','usuario',nome,{role:role,ativo:ativo});showToast('Usuario atualizado!');renderUsuarios();}}
+async function excluirUsuario(uid,nome,authId){if(!confirm('Excluir o usuario "'+nome+'"? Esta acao nao pode ser desfeita.'))return;try{if(authId){var sess=(await sb.auth.getSession()).data.session;if(sess){var res=await fetch(SUPA_URL+'/functions/v1/excluir-usuario',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+sess.access_token},body:JSON.stringify({auth_id:authId})});var json=await res.json();if(!res.ok)console.warn('Auth delete falhou:',json.error);}}var rd=await sb.from('usuarios').delete().eq('id',uid);if(rd.error)throw rd.error;logActivity('usuario_excluido','usuario',nome,null);showToast('Usuario excluido.');renderUsuarios();}catch(e){showToast('Erro: '+e.message);}}
+async function toggleAtivo(uid,current){var novoVal=!current;var r=await sb.from('usuarios').update({ativo:novoVal}).eq('id',uid);if(r.error){showToast('Erro: '+r.error.message);}else{showToast(novoVal?'Usuario ativado.':'Usuario desativado.');renderUsuarios();}}
+async function enviarLinkSenha(email){var r=await sb.auth.resetPasswordForEmail(email);if(r.error){showToast('Erro: '+r.error.message);}else{showToast('Link de senha enviado para '+email+'.');}}
 function abrirNovaExcl(){document.getElementById('modalNovaExcl').classList.remove('hidden');}
 function fecharNovaExcl(){document.getElementById('modalNovaExcl').classList.add('hidden');['nxNome','nxProp','nxPreco','nxDataInicio'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});var s=document.getElementById('nxBairro');if(s)s.value='';var d=document.getElementById('nxDias');if(d)d.value='120';var c=document.getElementById('nxRepag');if(c)c.checked=false;var st=document.getElementById('nxStatus');if(st)st.value='ativa';toggleRepagNovaExcl();}
 function toggleRepagNovaExcl(){var cb=document.getElementById('nxRepag');var d=document.getElementById('nxRepagDiv');if(d)d.style.display=cb&&cb.checked?'block':'none';}
