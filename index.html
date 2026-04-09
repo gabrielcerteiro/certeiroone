@@ -1,1 +1,32 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Certeiro One</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#191949">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.auth-overlay{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px}
+.auth-box{background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:360px}
+.auth-logo{font-size:13px;font-weight:900;letter-spacing:2.2px;text-transform:uppercase;color:var(--navy);margin-bottom:20px;text-align:center}
+.auth-title{font-size:20px;font-weight:900;color:var(--navy);margin-bottom:6px;text-align:center}
+.auth-sub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:24px}
+.auth-input{width:100%;border:1.5px solid #ECECF1;border-radius:12px;padding:14px 16px;font-size:14px;font-family:'Nunito Sans',sans-serif;color:var(--navy);outline:none;margin-bottom:10px}
+.auth-input:focus{border-color:var(--navy)}
+.auth-btn{width:100%;background:var(--navy);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;margin-top:4px}
+.auth-err{font-size:12px;font-weight:700;margin-top:8px;min-height:16px;text-align:center;color:#EF4444}
+.auth-link{font-size:12px;color:var(--muted);text-align:center;margin-top:14px;cursor:pointer;text-decoration:underline}
+.auth-link:hover{color:var(--navy)}
+.auth-lbl{font-size:11px;font-weight:700;color:var(--navy);text-align:left;margin-bottom:4px;display:block}
+</style>
+</head>
+</html>
