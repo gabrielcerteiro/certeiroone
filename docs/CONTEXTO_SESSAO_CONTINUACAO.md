@@ -1,4 +1,4 @@
-# Sessao: TMM correto + novos status de exclusividade
+# Sessao: Ajustes UX no vendas.html + TMM + Status
 
 **Data:** 12/04/2026
 **Gerado por:** Claudion
@@ -15,162 +15,153 @@
 
 ## CONTEXTO: O QUE JA FOI FEITO NO BANCO (nao repetir)
 
-O Claudion ja executou as migrations diretamente no Supabase:
-
-- Constraint `funil_snapshot.status_exclusividade` atualizada para:
+- Constraint `funil_snapshot.status_exclusividade` atualizada:
   'ativa', 'vendida', 'repaginando', 'aguardando', 'perdida', 'gestao', 'encerrada'
-- Dados existentes: 'repaginacao' renomeado para 'repaginando' em todos os registros
-- Constraint `exclusividades.status` atualizada para:
-  'ativa', 'encerrada', 'renovada', 'gestao'
-
-NAO rodar nenhum SQL de alteracao de constraint ou UPDATE de status -- ja foi feito.
+- Dados 'repaginacao' ja renomeados para 'repaginando'
+- Constraint `exclusividades.status` inclui 'gestao'
+- NAO rodar nenhum SQL de constraint ou UPDATE de status
 
 ---
 
-## LOGICA DE NEGOCIO: STATUS DE EXCLUSIVIDADE
+## TAREFA 1 — AJUSTES UX NO FORMULARIO vendas.html
 
-| Status      | Computa TMM? | Observacao                                      |
-|-------------|-------------|--------------------------------------------------|
-| ativa       | Sim, 100%   | Exclusividade ativa normal                       |
-| gestao      | Sim, 20%    | Gabriel retém 1%, repassa resto — divide TMM / 5 |
-| repaginando | Nao         | Imovel em repaginacao                            |
-| aguardando  | Nao         | Cliente ainda nao desocupou                      |
-| vendida     | Nao         | Ja vendida                                       |
-| perdida     | Nao         | Nao conseguimos vender                           |
-| encerrada   | Nao         | Legado                                           |
+### 1a. Mascara de dinheiro nos campos de valor
+
+Aplicar mascara de formatacao em tempo real nos campos:
+- `valor_contrato`
+- `valor_honorarios`
+
+Comportamento esperado:
+- Usuario digita: `3000000`
+- Campo exibe: `R$ 3.000.000`
+- Valor salvo no banco: `3000000` (numerico puro, sem formatacao)
+
+Implementacao sugerida:
+```javascript
+function aplicarMascaraDinheiro(input) {
+  input.addEventListener('input', function() {
+    let valor = this.value.replace(/\D/g, '');
+    if (!valor) { this.value = ''; return; }
+    valor = parseInt(valor, 10);
+    this.value = valor.toLocaleString('pt-BR', {
+      style: 'currency', currency: 'BRL',
+      minimumFractionDigits: 0, maximumFractionDigits: 0
+    });
+  });
+}
+// Aplicar nos dois campos ao carregar a pagina
+```
+
+Ao salvar no Supabase, extrair apenas os digitos antes de fazer o INSERT/UPDATE:
+```javascript
+const valorContrato = parseInt(campoValorContrato.value.replace(/\D/g, ''), 10) || null;
+```
+
+### 1b. Percentual de comissao calculado automaticamente
+
+O campo `percentual_comissao` deve ser readonly e calculado automaticamente:
+- Formula: `(valor_honorarios / valor_contrato) * 100`
+- Recalcular sempre que `valor_honorarios` ou `valor_contrato` mudar
+- Exibir com 1 casa decimal: ex. "6,7%"
+- Se qualquer dos dois for zero/vazio, exibir "--"
+
+### 1c. Substituir campos de tipo participacao por "Tipo da Venda"
+
+Remover do formulario os campos:
+- `is_parceria` (checkbox ou select Sim/Nao)
+- `tipo_participacao` (select Corretor/Gestao)
+
+Substituir por UM unico select chamado "Tipo da Venda" com as opcoes:
+
+| Opcao visivel     | is_parceria | tipo_participacao | percentual_comissao |
+|-------------------|-------------|-------------------|---------------------|
+| Venda Direta      | false       | corretor          | 6                   |
+| Venda com Parceria| true        | corretor          | 6                   |
+| Venda Gestao      | false       | gestao            | 1                   |
+
+Ao selecionar, preencher automaticamente os tres campos no backend.
+O campo `nome_parceiro` so aparece quando "Venda com Parceria" for selecionado.
+
+### 1d. Campo competencia — ocultar do formulario
+
+O campo `competencia` e tecnicamente util para DRE futuro, mas nao faz sentido
+para preenchimento manual agora.
+
+- Remover o campo `competencia` do formulario visivel
+- Ao salvar, preencher automaticamente: `competencia = data_venda`
+- O campo continua existindo no banco, apenas nao e exibido
 
 ---
 
-## LOGICA DE NEGOCIO: CALCULO DO TMM
+## TAREFA 2 — BARRA SUPERIOR DO exclusividades.html
 
-TMM = VGV / (dias_tipo / 30)
+A barra de resumo no topo deve exibir TMM calculado corretamente:
 
-Dias por tipologia do imovel (campo `tipo_imovel` no funil_snapshot):
-- Repaginado: 40 dias
-- Mobiliado:  80 dias
-- Vazio:     120 dias
-
-Exemplo: apto vazio com preco R$ 2.200.000
-  VGV = preco * 0.05 = R$ 110.000
-  TMM = 110.000 / (120 / 30) = 110.000 / 4 = R$ 27.500/mes
-
-Para status 'gestao': TMM_gestao = TMM_calculado / 5
-
-Exibir TMM sempre formatado como dinheiro: R$ 27.500/mes
-
----
-
-## TAREFA 1 — BARRA SUPERIOR DO exclusividades.html
-
-A barra de resumo no topo da pagina de exclusividades deve exibir:
-
-- Total de exclusividades ativas (status 'ativa' + 'gestao')
-- VGV total (soma dos precos das exclusividades ativas e gestao)
-- **TMM total** = soma dos TMMs individuais de cada exclusividade ativa/gestao
-
-### Como calcular o TMM de cada exclusividade:
+### Logica de calculo
 
 ```javascript
 function calcularTMM(imovel) {
   const preco = parseFloat(imovel.preco) || 0;
   const vgv = preco * 0.05;
-  
-  const diasPorTipo = {
-    'Repaginado': 40,
-    'Mobiliado': 80,
-    'Vazio': 120
-  };
-  
+  const diasPorTipo = { 'Repaginado': 40, 'Mobiliado': 80, 'Vazio': 120 };
   const dias = diasPorTipo[imovel.tipo_imovel] || 120;
   const tmm = vgv / (dias / 30);
-  
-  // Gestao: divide por 5 (Gabriel retém apenas 20%)
-  if (imovel.status_exclusividade === 'gestao') {
-    return tmm / 5;
-  }
-  
-  return tmm;
+  return imovel.status_exclusividade === 'gestao' ? tmm / 5 : tmm;
 }
 
-// TMM total da barra
-const tmmTotal = imoveisAtivos
+const tmmTotal = imoveis
   .filter(im => ['ativa', 'gestao'].includes(im.status_exclusividade))
   .reduce((sum, im) => sum + calcularTMM(im), 0);
 ```
 
-### Formatacao do TMM
-```javascript
-function formatarDinheiro(valor) {
-  return valor.toLocaleString('pt-BR', { 
-    style: 'currency', 
-    currency: 'BRL',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  });
-}
-// Exibir como: R$ 27.500/mes
+Exibir como: `R$ 27.500/mes`
+
+---
+
+## TAREFA 3 — STATUS EM TODOS OS ARQUIVOS
+
+Atualizar todos os arquivos para usar os novos status:
+
+- 'repaginacao' → 'repaginando' (filtros, badges, selects, JS)
+- Adicionar 'gestao' e 'perdida' como opcoes em todos os selects e filtros
+
+### Badges novos
+- gestao: bg #EDE9FE, texto #5B21B6, label "Gestao"
+- perdida: bg #FEE2E2, texto #991B1B, label "Perdida"
+
+Arquivos a verificar: exclusividades.html, index.html, registro.html
+
+---
+
+## TAREFA 4 — GRUPO GESTAO NO DASHBOARD (index.html)
+
+Adicionar grupo para exclusividades com status 'gestao':
+- Card igual ao grupo 'ativa'
+- Badge roxo "Gestao"
+- TMM exibido com "(20%)" ao lado
+
+---
+
+## ORDEM DE EXECUCAO
+
+1. Tarefa 1 (vendas.html) — mostrar diff, aguardar aprovacao
+2. Tarefas 2, 3, 4 (exclusividades + status + dashboard) — apos aprovacao da Tarefa 1
+
+---
+
+## VALIDACAO OBRIGATORIA APOS CADA ARQUIVO
+
+```bash
+grep -n "[\x80-\xFF]" ARQUIVO.html | head -20   # zero resultados esperado
+tail -3 ARQUIVO.html                              # </html> nas ultimas 3 linhas
 ```
 
----
-
-## TAREFA 2 — ATUALIZAR STATUS EM TODOS OS ARQUIVOS
-
-Os status de exclusividade mudaram. Atualizar em todos os arquivos HTML/JS:
-
-### Mapeamento de mudancas
-- 'repaginacao' → 'repaginando' (em todos os filtros, badges, selects, logica JS)
-- Adicionar 'gestao' como novo status valido em todos os selects e filtros
-- Adicionar 'perdida' se ainda nao existir como opcao visivel
-
-### Arquivos a verificar
-- `exclusividades.html` — filtros, badges, modal de nova exclusividade, modal de edicao
-- `index.html` — grupos do dashboard, modal de nova exclusividade
-- `nav.js` — se tiver logica de status
-- `registro.html` — se tiver filtro por status
-
-### Badge visual para 'gestao'
-Adicionar badge com estilo proprio para o novo status 'gestao':
-- Background: #EDE9FE (roxo claro)
-- Texto: #5B21B6 (roxo escuro)
-- Label: "Gestao"
-
-### Badge visual para 'perdida'
-- Background: #FEE2E2 (vermelho claro)
-- Texto: #991B1B (vermelho escuro)
-- Label: "Perdida"
-
----
-
-## TAREFA 3 — DASHBOARD: GRUPO GESTAO
-
-No index.html, adicionar um novo grupo para exclusividades com status 'gestao':
-
-### GRUPO GESTAO (status = 'gestao')
-- Card igual ao grupo "ativa" mas com indicador visual de gestao
-- Badge roxo "Gestao" no card
-- TMM exibido com nota "(20%)" ao lado para indicar que é parcial
-
----
-
-## VALIDACAO APOS CADA TAREFA
-
-1. Verificar acentos em JS: `grep -n "[\x80-\xFF]" ARQUIVO.html | head -20`
-   Esperado: nenhuma linha.
-
-2. Verificar fechamento: `tail -3 ARQUIVO.html`
-   Esperado: `</html>` nas ultimas 3 linhas.
-
-3. Testar no browser: abrir exclusividades.html e confirmar que
-   - TMM aparece na barra superior formatado como R$ X.XXX/mes
-   - Status 'gestao' aparece como opcao nos selects
-   - Badge roxo aparece para imoveis em gestao
-
-Commits por tarefa:
+Commits:
+- `fix: mascara dinheiro, comissao auto, tipo da venda em vendas.html`
 - `feat: TMM correto na barra de exclusividades`
-- `fix: status repaginando + badge gestao e perdida em todos os arquivos`
+- `fix: status repaginando + badges gestao e perdida`
 - `feat: grupo gestao no dashboard`
 
 ---
 
 *Gerado por Claudion em 12/04/2026*
-*SQL de migration ja executado diretamente no Supabase — nao repetir*
