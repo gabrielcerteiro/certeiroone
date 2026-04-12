@@ -1,0 +1,95 @@
+Codigo,Imovel,Tipo,Exclusividade,Construtora,Parceria,Status
+V0249,Pienza 101,Vazio,Nao,Nao,Nao,negocio_concluido
+V0250,Velazquez 1301,Vazio,Nao,Sim,Nao,negocio_concluido
+V0251,Casa Parque Atalaia,Mobiliado,Nao,Nao,Nao,negocio_concluido
+V0252,Terreno Aririba BC,Terreno,Nao,Nao,Nao,negocio_concluido
+V0253,Soul Brava 502,Na planta,Nao,Sim,Nao,negocio_concluido
+V0259,Pantai Brava 2102,Na planta,Nao,Sim,Nao,negocio_concluido
+V0261,Casa Dom Bosco 85,Mobiliado,Sim,Nao,Nao,negocio_concluido
+V0262,Marettimo 802,Mobiliado,Sim,Nao,Nao,negocio_concluido
+V0263,Sao Vicente 601F,Na planta,Nao,Nao,Nao,negocio_concluido
+V0264,Casa Ressacada (2023),Mobiliado,Sim,Nao,Sim,negocio_concluido
+V0265,Alfredo Volpi,Na planta,Nao,Nao,Nao,negocio_concluido
+V0266,Marine Vision 802,Repaginado,Sim,Nao,Nao,negocio_concluido
+V0267,Cezanne 1001,Vazio,Nao,Sim,Nao,negocio_concluido
+V0268,Skyline 1102,Na planta,Nao,Nao,Nao,negocio_concluido
+V0269,Marine Vision 1101,Repaginado,Sim,Nao,Nao,negocio_concluido
+V0270,Porto Atlantico 1801,Mobiliado,Sim,Nao,Nao,negocio_concluido
+V0271,Marine Vision 901,,,,,cancelado
+V0272,Sobrado Ressacada,Repaginado,Sim,Nao,Nao,negocio_concluido
+V0273,Maggiore 1101,Vazio,Sim,Nao,Nao,negocio_concluido
+V0274,Cezzane 501,Mobiliado,Nao,Nao,Nao,negocio_concluido
+V0275,Marine Vision 1302,Repaginado,Sim,Nao,Nao,negocio_concluido
+V0276,Melbourne Palace 701,Vazio,Nao,Nao,Nao,negocio_concluido
+V0277,Smart Heitor Liberado,Mobiliado,Nao,Sim,Nao,negocio_concluido
+V0278,Brava Noah,Na planta,Nao,Sim,Nao,negocio_concluido
+V0279,Exclusive 3502,Vazio,Sim,Nao,Sim,negocio_concluido
+V0280,Cobertura Lotisa HC 2701B,,,,,sem_comissao
+V0281,Velasquez 1401,Vazio,Nao,Nao,Nao,negocio_concluido
+V0282,Cobertura C Tower,Mobiliado,Sim,Nao,Nao,negocio_concluido
+V0283,November 1601,Mobiliado,Nao,Nao,Sim,negocio_concluido
+V0284,Marine 2301,Mobiliado,Nao,Nao,Sim,negocio_concluido
+V0285,Vivacita 2201,Na planta,Nao,Nao,Nao,negocio_concluido
+V0286,Garden 406,Vazio,Sim,Nao,Nao,negocio_concluido
+V0287,Vivendas do Valle 202B,,,,,sem_comissao
+V0288,Areia Branca 202,Repaginado,Sim,Nao,Nao,negocio_concluido
+V0289,Casa Costa Verde,Mobiliado,Nao,Nao,Nao,negocio_concluido
+V0290,Valencia 1102,Repaginado,Sim,Nao,Nao,negocio_concluido
+V0291,Belvedere 702,Mobiliado,Sim,Nao,Nao,negocio_concluido
+V0292,Valencia 801,Mobiliado,Sim,Nao,Nao,negocio_concluido
+V0293,Alessandria 404,Mobiliado,Sim,Nao,Sim,negocio_concluido
+V0294,Terreno Bombinhas,,,,,cancelado
+V0295,Classic 1101,Vazio,Sim,Nao,Nao,negocio_concluido
+V0296,Marechiaro 102,Mobiliado,Sim,Nao,Nao,negocio_concluido
+V0297,Torre de Vedras 901,Repaginado,Sim,Nao,Nao,negocio_concluido
+V0298,Classic 1901 (LPC),,,,,cancelado
+V0299,Valencia 1302,Mobiliado,Nao,Nao,Sim,negocio_concluido
+V0300,Felice Due 301,Mobiliado,Sim,Nao,Nao,negocio_concluido
+V0301,Permuta Amores,Permuta,Nao,Nao,Nao,negocio_concluido
+V0302,Marechiaro 401,Vazio,Nao,Nao,Sim,negocio_concluido
+V0303,Privilege 203,Mobiliado,Sim,Nao,Nao,negocio_concluido
+V0304,Vaga 53 Valencia,Vazio,Nao,Nao,Nao,negocio_concluido
+V0305,Terreno Caledonia,Terreno,Sim,Nao,Nao,negocio_concluido
+V0306,SVHC 702,Vazio,Sim,Nao,Sim,negocio_concluido
+V0307,Marechiaro 1302,Vazio,Nao,Nao,Sim,negocio_concluido
+V0308,Casa Fazenda,Mobiliado,Sim,Nao,Nao,negocio_concluido
+V0309,Marine Vision 1001,Repaginado,Sim,Nao,Nao,negocio_concluido
+V0310,Terreno Ressacada,Terreno,Nao,Nao,Sim,negocio_concluido
+V0311,Lago Moraine 1304,Vazio,Nao,Nao,Nao,negocio_concluido
+V0312,Nantai 204,,,,,cancelado
+V0313,Terreno Fiore Milano,Terreno,Nao,Sim,Nao,negocio_concluido
+V0314,Marechiaro 1101,Vazio,Nao,Nao,Sim,negocio_concluido
+V0315,Porto Atlantico TN,Repaginado,Sim,Nao,Nao,negocio_concluido
+V0316,Serenity 2102,Mobiliado,Nao,Nao,Nao,negocio_concluido
+V0317,Lotisa HC 2601,Mobiliado,Sim,Nao,Nao,negocio_concluido
+V0318,Exclusive 2201,Vazio,Sim,Nao,Nao,negocio_concluido
+V0319,Soho 1201,Vazio,Nao,Nao,Nao,negocio_concluido
+V0320,Soho 402,Vazio,Sim,Nao,Nao,negocio_concluido
+V0321,Terreno Colinas,,,,,cancelado
+V0322,Soho 701,Vazio,Sim,Nao,Sim,negocio_concluido
+V0323,Grand Soleil 1112,Mobiliado,Nao,Nao,Sim,negocio_concluido
+V0324,Marine Vision 501,Repaginado,Sim,Nao,Sim,negocio_concluido
+V0325,Porto Januaria,Mobiliado,Sim,Nao,Nao,negocio_concluido
+V0326,Classic 1901,Vazio,Nao,Nao,Sim,negocio_concluido
+V0327,Valencia 1102,Repaginado,Sim,Nao,Nao,negocio_concluido
+V0328,Vivacita 1001,Vazio,Nao,Nao,Nao,negocio_concluido
+V0329,Casa Cabecudas,Mobiliado,Nao,Nao,Nao,negocio_concluido
+V0330,Smart 903,Mobiliado,Sim,Nao,Nao,negocio_concluido
+V0331,SVHC 803F,Mobiliado,Sim,Nao,Sim,negocio_concluido
+V0332,Lotisa HC 202B,Mobiliado,Nao,Nao,Nao,negocio_concluido
+V0333,Casa Ressacada,Mobiliado,Nao,Nao,Sim,negocio_concluido
+V0334,Casa Cordeiros 704,,,,,sem_comissao
+V0335,Classic 2202,Vazio,Nao,Nao,Sim,negocio_concluido
+V0336,Essenza 1505,Mobiliado,Sim,Nao,Sim,negocio_concluido
+V0337,Volpi 2602,Vazio,Sim,Nao,Sim,negocio_concluido
+V0338,Volpi 102,Vazio,Nao,Nao,Nao,negocio_concluido
+V0339,Atmos Beach 905B,Repaginado,Sim,Nao,Nao,negocio_concluido
+V0340,Parque Europeu,Mobiliado,Nao,Nao,Nao,negocio_concluido
+V0341,November 1302,Mobiliado,Nao,Nao,Nao,negocio_concluido
+V0342,Solares Brava 801,Repaginado,Sim,Sim,Sim,negocio_concluido
+V0343,Terreno Fiore Di Milano (Lucas),,,,,cancelado
+V0344,Cezanne 1701,,,,,cancelado
+V0345,Serenity 801,Vazio,Sim,Nao,Nao,negocio_concluido
+V0346,Montpellier 1601,Mobiliado,Nao,Nao,Sim,negocio_concluido
+V0347,Beira Rio 804,Mobiliado,Sim,Nao,Nao,negocio_concluido
+V0348,Sun Coast 1601,Mobiliado,Sim,Nao,Nao,negocio_concluido
