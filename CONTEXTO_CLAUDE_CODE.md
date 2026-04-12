@@ -1,6 +1,6 @@
 # CONTEXTO COMPLETO — PLATAFORMA CERTEIRO
-> Arquivo para onboarding de nova sessão no Claude Code.
-> Atualizado em: 12/04/2026 — skill frontend-design adicionado
+> Arquivo para onboarding de nova sessao no Claude Code.
+> Atualizado em: 12/04/2026 — v1.4.0 em andamento
 
 ---
 
@@ -20,33 +20,47 @@ Isso se aplica a TODA sessao que tocar em visual — sem excecao.
 O skill define tokens de design, padroes de componentes e regras de layout
 que devem sobrepor qualquer convencao generica.
 
+### Padrao de layout obrigatorio para formularios
+- Formularios em paginas inteiras: `max-width: 800px; margin: 0 auto;`
+- Modais: `max-width: 720px; margin: 0 auto;`
+- Campos curtos (data, numero, status, %): grid 3 ou 4 colunas
+- Campos medios (nome, valor R$): grid 2 colunas
+- Campos longos (observacao, textarea): 1 coluna dentro do container
+- Gap: 12px horizontal, 14px vertical
+- Campo de data nunca excede ~220px de largura visual
+- Agrupar campos por secao com label uppercase acima
+
 ---
 
-## 1. VISÃO GERAL DO PROJETO
+## 1. VISAO GERAL DO PROJETO
 
 **Nome:** Plataforma Certeiro (Certeiro One)
-**Dono:** Gabriel Certeiro — Gabriel Certeiro Imóveis, Itajaí/SC
-**Conceito:** ERP operacional de exclusividades imobiliárias.
+**Dono:** Gabriel Certeiro — Gabriel Certeiro Imoveis, Itajai/SC
+**Conceito:** ERP operacional de exclusividades imobiliarias.
 
 ---
 
-## 2. REPOSITÓRIO E DEPLOY
+## 2. REPOSITORIO E DEPLOY
 
 | Item | Valor |
 |------|-------|
 | Repo principal | `github.com/gabrielcerteiro/certeiroone` |
 | Branch | `main` (auto-deploy via Vercel) |
-| URL produção | `https://certeiroone.vercel.app` |
+| URL producao | `https://certeiroone.vercel.app` |
 
 ---
 
 ## 3. ARQUIVOS DO PROJETO
 
-| Arquivo | Descrição |
+| Arquivo | Descricao |
 |---------|-----------|
-| `index.html` | Dashboard principal — lista em grupos, detalhe, edição, nova exclusividade |
+| `index.html` | Dashboard — overview cards e alertas |
+| `exclusividades.html` | Modulo de exclusividades (pipeline, detalhe, edicao) |
+| `vendas.html` | Modulo de vendas (listagem, registro, edicao) |
 | `registro.html` | Registro de visitas e propostas (SEM criacao de imovel) |
-| `vendedor.html` | Relatório para proprietário (link compartilhável) |
+| `usuarios.html` | Gestao de usuarios |
+| `vendedor.html` | Relatorio publico para proprietario (link compartilhavel) |
+| `nav.js` | Navegacao compartilhada (sidebar) — importado por todas as paginas |
 | `CONTEXTO_CLAUDE_CODE.md` | Este arquivo — SEMPRE atualizar ao final de cada sessao |
 
 ---
@@ -65,6 +79,8 @@ que devem sobrepor qualquer convencao generica.
 - `funil_snapshot` — ALL
 - `exclusividades` — ALL
 - `imoveis` — INSERT, UPDATE
+- `vendas` — ALL
+- `parcelas_comissao` — ALL
 
 ### 4.2 Tabelas
 
@@ -73,14 +89,6 @@ que devem sobrepor qualquer convencao generica.
 - `nome`, `proprietario`, `bairro`, `status`, `preco` text
 - `ativo` boolean (default true)
 - `created_at` timestamptz
-
-**Imoveis no sistema (pos limpeza v1.3.0):**
-- Cezanne 1701, Soho 1102, Casa Ressacada n81, Marechiaro 402
-- Felicita 802, Felicita 505 (dois apartamentos diferentes)
-- Laguna 1202 (encerrada — preencher dados historicos)
-- Reserva Perequê 2101 (ativa)
-- Smart Sao Joao 506 (ativa)
-- Deletados: Lago di Garda 1301 e "teste"
 
 #### `exclusividades`
 - `id` uuid PK, `imovel_id` uuid FK → imoveis.id
@@ -109,12 +117,45 @@ que devem sobrepor qualquer convencao generica.
 - `gastos_metaads` numeric, `alcance_metaads` int, `frequencia_metaads` numeric
 - `localizacao`, `tipo_imovel` text — tipo: Mobiliado, Vazio, Repaginado
 - `atualizado_em` timestamptz, `fonte` text (default 'pipedrive_n8n')
-- `midia_total_planejada` numeric — orcamento total do contrato
+- `midia_total_planejada` numeric
 - `disparos_base`, `impactados_base`, `visitas_base`, `propostas_base` int
 - `disparos_parceiros`, `contatados_parceiros`, `visitas_parceiros`, `propostas_parceiros` int
 - `data_disparo_base`, `data_disparo_parceiros` date
 - `cad_dwv`, `cad_site`, `cat_gabriel`, `cat_rafaela` boolean DEFAULT false
 - `video_youtube`, `post_instagram`, `post_tiktok`, `post_facebook` boolean DEFAULT false
+
+#### `vendas` (criada em 12/04/2026 — 94 registros historicos inseridos)
+- `id` uuid PK
+- `numero_controle` text UNIQUE NOT NULL
+- `exclusividade_id` uuid FK → exclusividades.id (nullable)
+- `data_venda` date, `competencia` date
+- `status_venda` text CHECK ('contrato_assinado','negocio_concluido','cancelado','sem_comissao')
+- `comprador_nome`, `comprador_cpf_cnpj`, `comprador_telefone`, `comprador_email` text
+- `vendedor_nome`, `vendedor_cpf_cnpj`, `construtora` text
+- `imovel_nome`, `imovel_regiao`, `imovel_tipologia` text
+- `imovel_metragem` numeric
+- `valor_contrato`, `valor_honorarios` numeric
+- `vgv` numeric GENERATED ALWAYS AS (valor_honorarios / 0.05) — READONLY, nunca incluir em INSERT/UPDATE
+- `percentual_comissao` numeric default 6
+- `is_parceria` boolean, `parceiro_nome` text
+- `is_construtora` boolean, `tipo_participacao` text
+- `categoria` int CHECK (1,2,3,4)
+- `forma_pagamento` text, `banco_financiamento` text
+- `envolve_permuta` boolean, `descricao_permuta` text
+- `entrega_chaves_data` date
+- `presente_entregue`, `review_google_comprador`, `review_google_vendedor` boolean
+- `depoimento_comprador`, `depoimento_vendedor`, `depoimento_parceiro` boolean
+- `link_contrato`, `link_pipedrive`, `link_pasta_drive`, `observacoes` text
+- `created_at`, `updated_at` timestamptz
+
+#### `parcelas_comissao`
+- `id` uuid PK, `venda_id` uuid FK → vendas.id ON DELETE CASCADE
+- `numero_parcela` int, `valor` numeric
+- `data_prevista` date, `data_recebimento` date
+- `status` text CHECK ('pendente','recebida','atrasada','cancelada')
+- `condicao_evento` text
+- `correcao_tipo` text, `correcao_percentual` numeric
+- `created_at` timestamptz
 
 #### `visitas`
 - `id` uuid PK, `imovel_id` uuid FK → imoveis.id
@@ -135,23 +176,15 @@ que devem sobrepor qualquer convencao generica.
 - `observacao` text, `created_at`, `updated_at` timestamptz
 - NAO tem coluna `corretor`
 
-#### `corretores`
-- Gabriel Certeiro — CRECI 22249/SC
-- Robson Souza — CRECI 36145/SC
-
 ### 4.3 Views
 
 #### `dashboard_imoveis`
 JOIN funil_snapshot + exclusividades + imoveis. Campos calculados:
 - `dias_restantes`, `tl_hoje_pct`, `status_repaginacao`, `data_meta_interna`
 - `cpl_metaads`, `conv_lead_visita`, `conv_visita_prop`, `dash_status`
-- Todos os campos de funil_snapshot
 - `count_propostas` — COUNT real (SEMPRE no FINAL do SELECT)
 
 > CRITICO: novos campos na view devem vir DEPOIS de count_propostas.
-
-#### `dashboard_visitas_detalhe`
-View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 
 ---
 
@@ -182,175 +215,109 @@ View de visitas com JOIN em exclusividades para retornar `exclusividade_id`.
 ```
 
 ### Padroes visuais
-- **Icones:** SVG inline estilo Lucide. ZERO emojis.
-- **Labels de secao:** uppercase, font-size 11px, letter-spacing 1px, cor --muted
-- **Badges de status:**
-  - ativa: bg #D1FAE5, texto #065F46
-  - vendida: bg #DBEAFE, texto #1E40AF
-  - repaginacao: bg #FEF3C7, texto #92400E
-  - aguardando/encerrada: bg #F3F4F6, texto #6B7280
-- **Border-left icards:** ativa dash_status, repaginacao --yellow, aguardando --muted, vendida --green
-- **Inputs:** border 1px solid --s3, border-radius 8px, padding 10px 12px
-- **Botao primario:** background --navy, texto branco
-- **Botao destrutivo:** border 1px solid --red, texto --red, sem fundo
-- **Bottom-nav PWA:** height 64px + env(safe-area-inset-bottom), icones 24px
+- Icones: SVG inline estilo Lucide. ZERO emojis.
+- Labels de secao: uppercase, font-size 11px, letter-spacing 1px, cor --muted
+- Badges: ativa #D1FAE5/#065F46 | vendida #DBEAFE/#1E40AF | repaginacao #FEF3C7/#92400E
+- Inputs: border 1px solid --s3, border-radius 8px, padding 10px 12px
+- Botao primario: background --navy, texto branco
+- Botao destrutivo: border 1px solid --red, texto --red, sem fundo
 
 ### Layout
-- **Mobile** (< 900px): bottom-nav fixa, coluna única, max-width 480px
-- **Desktop** (>= 900px): sidebar esquerda + grid 3 colunas para cards EM CAMPANHA
+- Mobile (< 900px): sidebar colapsavel, coluna unica
+- Desktop (>= 900px): sidebar fixa esquerda + conteudo
 
 ---
 
-## 6. NAVEGAÇÃO
+## 6. NAVEGACAO
 
-### Icones SVG (Lucide)
-- Alertas: bell | Exclusividades: home | Registro: clipboard-list
-- Mais: more-horizontal | Captacao: target | Vendas: trending-up
-- Marketing: megaphone | Conteudo: film | Financeiro: bar-chart-2
-- Usuarios: user | Sair: log-out
+- Sidebar compartilhada via `nav.js` — importado por todas as paginas
+- Hash routing interno em cada pagina:
+  - `exclusividades.html#lista` — listagem
+  - `exclusividades.html#detalhe/UUID` — detalhe
+  - `exclusividades.html#editar/UUID` — edicao
+  - `exclusividades.html#alertas` — alertas de prazo
+  - `exclusividades.html#analise` — analise
 
 ---
 
 ## 7. FLUXO DE CRIACAO DE EXCLUSIVIDADE
 
 Modal "+ Nova Exclusividade" no index.html.
-Campos: Nome, Proprietario, Bairro (Fazenda/Praia Brava/Ressacada/Outro),
-Tipo (Mobiliado/Vazio/Repaginado), Preco, Data inicio,
-Prazo (120/180 dias), Tem repaginacao?, Status inicial (ativa/repaginacao/aguardando)
 INSERT sequencial: imoveis → exclusividades → funil_snapshot
-
-> registro.html NAO tem criacao de imovel.
+registro.html NAO tem criacao de imovel.
 
 ---
 
-## 8. DASHBOARD — GRUPOS (v1.3.0)
+## 8. DASHBOARD — GRUPOS
 
 ### GRUPO 1 — EM CAMPANHA (status = 'ativa')
-Cards completos. Grid 3 colunas no desktop, de fora a fora.
+Cards completos. Grid 3 colunas no desktop.
 
 ### GRUPO 2 — EM REPAGINACAO (status = 'repaginacao')
-Card simplificado: nome, proprietario, preco, barra de progresso, Ver detalhe.
+Card simplificado: nome, proprietario, preco, barra de progresso.
 
 ### GRUPO 3 — AGUARDANDO (status = 'aguardando')
-Card minimalista: nome, proprietario, tag aguardando, Ver detalhe.
+Card minimalista: nome, proprietario, tag aguardando.
 
 ### GRUPO 4 — VENDIDAS (status = 'vendida')
 Oculto por padrao, expande ao clicar. NAO conta no VGV.
-Base historica para indicadores futuros.
-
-Grupo vazio nao exibe titulo.
 
 ---
 
-## 9. MÓDULOS
-
-### index.html — funcoes principais
-- `loadDashboard()`, `saveSnapshot()`, `salvarNovaExcl()`
-- `funilBarras(im)`, `excluirExclusividade()`, `_doExcluirExclusividade()`
-- `disparosBaseHtml(im)`, `disparosParcHtml(im)`
-- `salvarDisparosBase(id)`, `salvarDisparosParc(id)`
-- `toggleAcaoVenda(id, key, current)`, `acoesVendaHtml(im)`
-
-### registro.html
-- Visitas e propostas: cadastrar, editar, excluir
-- Payload de proposta NAO inclui `corretor`
-- Protecao contra duplo envio
-
-### vendedor.html
-- Relatorio publico por `?id=<exclusividade_id>&from=internal`
-
----
-
-## 10. FUNIL — LÓGICA DE BARRAS
-
-```
-fator = diasPassados / diasTotal
-esperado = Math.round(meta * fator)
-```
-Verde >= esperado | Amarelo >= 80% | Vermelho < 80%
-
----
-
-## 11. HISTORICO DE VERSOES
-
-### v1.0.0 — 06/04/2026
-Pipeline, alertas, timeline, registro, relatorio vendedor, autenticacao.
-
-### v1.1.0 — 07/04/2026
-RLS configurado. Propostas salvando. Funil com dados reais.
-Nova exclusividade, disparos, acoes de venda, midia planejada vs realizada.
-Editar e excluir visitas e propostas. Protecao contra duplo envio.
-
-### v1.2.0 — 07/04/2026
-Visual estilo Pipedrive. Fluxo de criacao unificado no Dashboard.
-
-### v1.2.1 — 07/04/2026
-Corrigido: painel de propostas no Registro nao exibia registros.
+## 9. HISTORICO DE VERSOES
 
 ### v1.3.0 — 08/04/2026
-Dashboard em 4 grupos. Grid 3 colunas. Barra de topo simplificada.
-Novos status: repaginacao e aguardando.
-URL: certeiroone.vercel.app. Repo: github.com/gabrielcerteiro/certeiroone.
-Banco: criados Laguna 1202, Reserva Perequê 2101, Smart Sao Joao 506.
-Banco: deletados Lago di Garda 1301 e registros de teste.
+Dashboard em 4 grupos. Grid 3 colunas. Visual estilo Pipedrive.
 
 ### v1.3.1 — 12/04/2026
-Reestruturacao de navegacao: sidebar lateral, modulos em HTMLs separados.
-Tabelas vendas e parcelas_comissao criadas no Supabase.
+Sidebar lateral, modulos em HTMLs separados (exclusividades, vendas, usuarios).
+Hash routing em exclusividades.html.
+Nav duplicada e header superior removidos.
+"Plataforma Operacional" removido da sidebar.
+Tabelas vendas e parcelas_comissao criadas.
 Bug leads_abertos corrigido no banco.
-Skill frontend-design instalado em ~/.claude/skills/frontend-design/.
+94 registros historicos inseridos na tabela vendas.
+Skill frontend-design instalado.
 
 ---
 
-## 12. PENDENCIAS ATIVAS — v1.3.1
+## 10. PENDENCIAS ATIVAS — v1.4.0
 
 ### Alta prioridade
-- [ ] Hash routing no exclusividades.html (URLs compartilhaveis, botao voltar)
-- [ ] Nav duplicada no registro.html — verificar se ja foi corrigida
-- [ ] Ajustes visuais: remover "PLATAFORMA OPERACIONAL" da sidebar
-- [ ] Seed dos 91 registros historicos na tabela vendas
 - [ ] Layout de formularios: max-width + grid por tipo de campo
-      (prompt completo em docs/CONTEXTO_SESSAO_CONTINUACAO.md)
+      (registro.html primeiro, depois modais do index.html)
+- [ ] Testar vendas.html com os 94 registros historicos
 - [ ] Botao excluir no formulario de edicao (vEdit)
 - [ ] Campo status inicial no modal de nova exclusividade
 - [ ] Cadastro de usuarios via Edge Function (service_role)
-- [ ] Anon Key exposta no repositorio — mover para variavel de ambiente
-- [ ] Controle de acesso por role no frontend
+- [ ] Anon Key — mover para variavel de ambiente no Vercel
 
 ### Media prioridade
-- [ ] Testar vendas.html com dados reais apos seed
 - [ ] Webhook Pipedrive -> n8n -> Supabase (Passo 4)
 - [ ] Conta Azul — Victoria criar categorias v4 (Passo 5)
+- [ ] Controle de acesso por role no frontend
 - [ ] Repositorio privado no GitHub
-- [ ] Branches para desenvolvimento
-- [ ] Logs de auditoria + Backup automatizado documentado
 
 ### Backlog futuro
-- [ ] Aba Analise: tabela de disparos consolidados para a Rafaela
-- [ ] Modulo Analise completo, Modulo Vendas, Modulo Financeiro
-- [ ] Testes automatizados antes do deploy
+- [ ] URLs limpas (/exclusividades/26) via vercel.json rewrites + slug no banco
+- [ ] Aba Analise para Rafaela
+- [ ] Modulo Financeiro
 
 ---
 
-## 13. CONTEXTO OPERACIONAL
+## 11. REGRAS DE EDICAO
 
-- **Equipe:** Gabriel Certeiro + Robson Souza + Rafaela
-- **Foco:** imoveis R$630K–R$3M+ em Itajai/SC
-- **Stack:** GHL + WhatsApp API + n8n + Pipedrive + Supabase + Vercel
-
----
-
-## 14. REGRAS DE EDICAO
-
-SEMPRE fazer `get_file_contents` antes de editar — obter SHA atual.
-Verificar integridade do index.html antes de editar (historico de truncamento).
-Nunca usar SHA de memoria.
+- SEMPRE fazer `get_file_contents` antes de editar — obter SHA atual
+- Nunca usar SHA de memoria
+- Nunca usar GitHub MCP para arquivos HTML/JS grandes (> 50KB) — usar Claude Code
+- Zero acentos dentro de blocos `<script>` — GitHub API corrompe
+- `vgv` e GENERATED ALWAYS — nunca incluir em INSERT ou UPDATE
+- Roles: master / operacional / padrao (NAO admin/editor)
 
 ---
 
-## 15. ATUALIZAR ESTE ARQUIVO AO FINAL DE CADA SESSAO
+## 12. ATUALIZAR ESTE ARQUIVO AO FINAL DE CADA SESSAO
 
-1. Registrar versao entregue no historico (secao 11)
-2. Atualizar funcoes alteradas (secao 9)
-3. Remover pendencias concluidas da secao 12
-4. Fazer push junto com os demais arquivos alterados
+1. Registrar versao entregue no historico (secao 9)
+2. Remover pendencias concluidas da secao 10
+3. Fazer push junto com os demais arquivos alterados
