@@ -203,10 +203,6 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
   </div>
 </div>
 
-<div class="hdr">
-  <div class="hdr-logo"><div class="brand">Certeiro One</div><div class="sub"></div></div>
-  <div class="hdr-date"><div class="d1" id="hdrData">-</div><div class="d2" id="hdrDia">-</div></div>
-</div>
 
 <div class="app-wrap">
   <div class="page">
@@ -262,7 +258,7 @@ function switchView(id){
   window.scrollTo({top:0});
 }
 
-function initHeader(){var d=new Date();document.getElementById('hdrData').textContent=hoje();document.getElementById('hdrDia').textContent='Dia '+diaDoAno(d)+' / '+diasNoAno();}
+function initHeader(){}
 function showToast(msg){var t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.className='save-toast';document.body.appendChild(t);}t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
 function fmtD(s){if(!s)return'-';var d=new Date(s+'T00:00:00');return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
 function avatarCor(n){var c=['#10B981','#3B82F6','#8B5CF6','#F59E0B','#191949','#06B6D4'],h=0;for(var i=0;i<(n||'?').length;i++)h=(n||'?').charCodeAt(i)+((h<<5)-h);return c[Math.abs(h)%c.length];}

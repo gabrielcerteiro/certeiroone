@@ -83,7 +83,10 @@ function navCSS(){
     'transition:left .25s ease;box-shadow:4px 0 24px rgba(0,0,0,0.3)}',
     '.cn-sidebar.open{left:0}',
     '.cn-page{padding:14px 16px 80px}',
-    '}'
+    '}',
+    '.cn-topbar{display:flex;align-items:center;gap:8px;background:var(--cn-bg);padding:12px 16px;position:sticky;top:0;z-index:200}',
+    '.cn-topbar-brand{color:#fff;font-size:13px;font-weight:900;letter-spacing:2px;text-transform:uppercase;font-family:"Nunito Sans",sans-serif}',
+    '@media(min-width:900px){.cn-topbar{display:none!important}}'
   ].join('');
 }
 
@@ -100,7 +103,7 @@ function buildHTML(){
   return '<nav class="cn-sidebar" id="cn-sidebar">'
     +'<div class="cn-brand">'
     +'<div class="cn-brand-name">Certeiro One</div>'
-    +'<div class="cn-brand-sub">Plataforma operacional</div>'
+    +''
     +'</div>'
     +'<div class="cn-items">'+items+'</div>'
     +'<div class="cn-sep"></div>'
@@ -122,16 +125,24 @@ function injectStyles(){
 }
 
 function addHamburger(){
-  if(document.getElementById('cn-hamburger'))return;
-  var hdr=document.querySelector('.hdr');
-  if(!hdr)return;
+  if(document.getElementById('cn-topbar'))return;
+  var bar=document.createElement('div');
+  bar.id='cn-topbar';
+  bar.className='cn-topbar';
   var btn=document.createElement('button');
   btn.id='cn-hamburger';
   btn.className='cn-hamburger';
   btn.setAttribute('aria-label','Menu');
   btn.innerHTML=IC.menu;
   btn.onclick=toggleNav;
-  hdr.insertBefore(btn,hdr.firstChild);
+  bar.appendChild(btn);
+  var brand=document.createElement('span');
+  brand.className='cn-topbar-brand';
+  brand.textContent='Certeiro One';
+  bar.appendChild(brand);
+  var wrap=document.querySelector('.app-wrap');
+  if(wrap)wrap.parentNode.insertBefore(bar,wrap);
+  else document.body.insertBefore(bar,document.body.firstChild);
 }
 
 function addOverlay(){

@@ -273,37 +273,12 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
   </div>
 </div>
 
-<div class="hdr">
-  <div class="hdr-logo">
-    <div class="brand">Certeiro One</div>
-    <div class="sub">Registro</div>
-  </div>
-  <div class="hdr-date">
-    <div class="d1" id="hdrData">-</div>
-    <div class="d2" id="hdrDia">-</div>
-  </div>
-</div>
 
 <div id="stepBarWrap" class="hidden">
   <div class="step-bar" id="stepBar"></div>
 </div>
 
 <div class="app-wrap cn-wrap">
-<nav class="bottom-nav" id="bottomNav">
-  <button class="nav-btn" id="nav-alertas" onclick="irDashboard('alertas')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span><span class="nav-label">Alertas</span></button>
-  <button class="nav-btn" id="nav-imoveis" onclick="irDashboard('excl')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></span><span class="nav-label">Exclusividades</span></button>
-  <button class="nav-btn active" id="nav-registro"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/></svg></span><span class="nav-label">Registro</span></button>
-  <button class="nav-btn" id="nav-mais" onclick="abrirMais()"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></span><span class="nav-label">Mais</span></button>
-  <div class="nav-sep"></div>
-  <button class="nav-btn nav-module" id="navModCaptacao" onclick="irModulo('captacao')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span><span class="nav-label">Captacao</span></button>
-  <button class="nav-btn nav-module" id="navModVendas" onclick="irModulo('vendas')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span><span class="nav-label">Vendas</span></button>
-  <button class="nav-btn nav-module" id="navModMarketing" onclick="irModulo('marketing')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></span><span class="nav-label">Marketing</span></button>
-  <button class="nav-btn nav-module" id="navModConteudo" onclick="irModulo('conteudo')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/></svg></span><span class="nav-label">Conteudo</span></button>
-  <button class="nav-btn nav-module" id="navModFinanceiro" onclick="irModulo('financeiro')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span class="nav-label">Financeiro</span></button>
-  <button class="nav-btn nav-module" id="navModUsuarios" onclick="irDashboard('usuarios')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="nav-label">Usuarios</span></button>
-  <div class="nav-sep"></div>
-  <button class="nav-btn nav-module" onclick="logoutUser()"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><span class="nav-label" id="navNomeLabel">Sair</span></button>
-</nav>
 <div class="page cn-page" id="mainPage">
   <div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando...</div></div>
 </div>
@@ -314,22 +289,6 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
   <button class="btn-next" id="btnNext" onclick="avancarPasso()">Continuar</button>
 </div>
 
-<div class="mais-overlay" id="maisOverlay" onclick="fecharMais()"></div>
-<div class="mais-drawer" id="maisDrawer">
-  <div class="mais-handle"></div>
-  <div class="mais-title">Modulos</div>
-  <div class="mais-grid">
-    <div class="mais-item active-item"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/></svg></span><div class="mais-info"><div class="mais-lbl">Registro</div><div class="mais-sub">Visitas e propostas</div></div></div>
-    <div class="mais-item" onclick="irDashboard('excl');fecharMais()"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></span><div class="mais-info"><div class="mais-lbl">Exclusividades</div><div class="mais-sub">Ver todos imoveis</div></div></div>
-    <div class="mais-item" id="maisItemCaptacao" style="display:none" onclick="irModulo('captacao')"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span><div class="mais-info"><div class="mais-lbl">Captacao</div><div class="mais-sub">Pipeline de captacao</div></div></div>
-    <div class="mais-item" id="maisItemVendas" style="display:none" onclick="irModulo('vendas')"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span><div class="mais-info"><div class="mais-lbl">Vendas</div><div class="mais-sub">VGV e vendas fechadas</div></div></div>
-    <div class="mais-item" id="maisItemMarketing" style="display:none" onclick="irModulo('marketing')"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></span><div class="mais-info"><div class="mais-lbl">Marketing</div><div class="mais-sub">Canais e investimento</div></div></div>
-    <div class="mais-item" id="maisItemConteudo" style="display:none" onclick="irModulo('conteudo')"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/></svg></span><div class="mais-info"><div class="mais-lbl">Conteudo</div><div class="mais-sub">Producoes e publicacoes</div></div></div>
-    <div class="mais-item" id="maisItemFinanceiro" style="display:none" onclick="irModulo('financeiro')"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><div class="mais-info"><div class="mais-lbl">Financeiro</div><div class="mais-sub">Resultado e custos</div></div></div>
-    <div class="mais-item" id="maisItemUsuarios" style="display:none" onclick="irDashboard('usuarios');fecharMais()"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><div class="mais-info"><div class="mais-lbl">Usuarios</div><div class="mais-sub">Gerenciar acessos</div></div></div>
-    <div class="mais-item" onclick="logoutUser();fecharMais()"><span class="mais-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><div class="mais-info"><div class="mais-lbl">Sair</div><div class="mais-sub" id="maisSubNome">-</div></div></div>
-  </div>
-</div>
 
 
 <div class="confirm-overlay" id="confirmModal" style="display:none"></div>
@@ -367,14 +326,7 @@ async function init(){
   }
 }
 
-function initHeader(){
-  var d=new Date();
-  var m=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-  document.getElementById('hdrData').textContent=d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear();
-  var dano=Math.floor((d-new Date(d.getFullYear(),0,0))/86400000);
-  var total=(((d.getFullYear()%4===0&&d.getFullYear()%100!==0)||d.getFullYear()%400===0)?366:365);
-  document.getElementById('hdrDia').textContent='Dia '+dano+' / '+total;
-}
+function initHeader(){}
 
 async function loadImoveis(){
   var res=await sb.from('imoveis').select('id,nome,preco,ativo').eq('ativo',true).order('nome');
@@ -1178,7 +1130,7 @@ async function logoutUser(){
 }
 
 function applyRoleUI(){
-  var isAdmin=currentRole==='admin';var isEditor=currentRole==='editor';var canEdit=isAdmin||isEditor;
+  var isAdmin=currentRole==='master';var isEditor=currentRole==='operacional';var canEdit=isAdmin||isEditor;
   // Mais drawer
   ['maisItemCaptacao','maisItemVendas','maisItemMarketing','maisItemConteudo'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=canEdit?'flex':'none';});
   var fin=document.getElementById('maisItemFinanceiro');if(fin)fin.style.display=isAdmin?'flex':'none';
@@ -1189,17 +1141,16 @@ function applyRoleUI(){
   var fin2=document.getElementById('navModFinanceiro');if(fin2)fin2.classList.toggle('role-vis',isAdmin);
   var usr2=document.getElementById('navModUsuarios');if(usr2)usr2.classList.toggle('role-vis',isAdmin);
   var nm=document.getElementById('navNomeLabel');if(nm)nm.textContent=currentNome?'Sair ('+currentNome+')':'Sair';
-  var sairBtn=document.querySelector('#bottomNav .nav-btn[onclick="logoutUser()"]');if(sairBtn)sairBtn.classList.add('role-vis');
 }
 
-function abrirMais(){var d=document.getElementById('maisDrawer');if(d.classList.contains('open')){fecharMais();return;}document.getElementById('maisOverlay').classList.add('open');d.classList.add('open');}
-function fecharMais(){document.getElementById('maisOverlay').classList.remove('open');document.getElementById('maisDrawer').classList.remove('open');}
+function abrirMais(){}
+function fecharMais(){}
 
 var _initialized=false;
 sb.auth.onAuthStateChange(function(event,session){
   if((event==='SIGNED_IN'||event==='INITIAL_SESSION')&&session&&session.user){
     _logUser=session.user;
-    sb.from('perfis').select('*').eq('id',session.user.id).single().then(function(pr){
+    sb.from('usuarios').select('*').eq('auth_id',session.user.id).single().then(function(pr){
       if(pr.data){currentRole=pr.data.role||'padrao';currentNome=pr.data.nome||session.user.email;}
       else{currentRole='padrao';currentNome=session.user.email;}
       _logUser._nome=currentNome;
@@ -1219,11 +1170,12 @@ sb.auth.onAuthStateChange(function(event,session){
       document.getElementById('authOverlay').style.display='flex';
     }else{
       _logUser=r.data.session.user;
-      sb.from('perfis').select('*').eq('id',_logUser.id).single().then(function(pr){
+      sb.from('usuarios').select('*').eq('auth_id',_logUser.id).single().then(function(pr){
         if(pr.data){currentRole=pr.data.role||'padrao';currentNome=pr.data.nome||_logUser.email;}
         else{currentRole='padrao';currentNome=_logUser.email;}
         _logUser._nome=currentNome;
-        applyRoleUI();
+        applyRoleUI();CertNav.init('registro');CertNav.setUser(currentNome,currentRole);
+        document.getElementById('authOverlay').style.display='none';
         if(!_initialized){_initialized=true;init();}
       });
     }
