@@ -375,4 +375,4 @@ igpm, ipca, percentual_fixo
 ## INSTRUCAO PARA PROXIMA SESSAO
 Abrir Sonnet. Mandar este briefing como contexto. Dizer:
 "Le o briefing e executa o Passo 0 (reestruturar navegacao com sidebar lateral). Depois Passo 1 (SQL no Supabase)."
-Ler o skill de frontend design (/mnt/skills/public/frontend-design/SKILL.md) antes de construir qualquer HTML.
+Para design profissional, usar paleta #191949 (navy), #FFFFFF (branco), #CCCCCC (cinza). Sidebar estilo Pipedrive. Funcional primeiro, visual depois.
