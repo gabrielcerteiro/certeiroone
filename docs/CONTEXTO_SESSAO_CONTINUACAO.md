@@ -23,7 +23,7 @@
 
 ---
 
-## TAREFA 1 — AJUSTES UX NO FORMULARIO vendas.html
+## TAREFA 1 — AJUSTES UX NO FORMULARIO E TABELA vendas.html
 
 ### 1a. Mascara de dinheiro nos campos de valor
 
@@ -49,7 +49,6 @@ function aplicarMascaraDinheiro(input) {
     });
   });
 }
-// Aplicar nos dois campos ao carregar a pagina
 ```
 
 Ao salvar no Supabase, extrair apenas os digitos antes de fazer o INSERT/UPDATE:
@@ -61,43 +60,49 @@ const valorContrato = parseInt(campoValorContrato.value.replace(/\D/g, ''), 10) 
 
 O campo `percentual_comissao` deve ser readonly e calculado automaticamente:
 - Formula: `(valor_honorarios / valor_contrato) * 100`
-- Recalcular sempre que `valor_honorarios` ou `valor_contrato` mudar
+- Recalcular sempre que qualquer dos dois mudar
 - Exibir com 1 casa decimal: ex. "6,7%"
 - Se qualquer dos dois for zero/vazio, exibir "--"
 
 ### 1c. Substituir campos de tipo participacao por "Tipo da Venda"
 
-Remover do formulario os campos:
-- `is_parceria` (checkbox ou select Sim/Nao)
-- `tipo_participacao` (select Corretor/Gestao)
+Remover do formulario os campos `is_parceria` e `tipo_participacao`.
+Substituir por UM select "Tipo da Venda":
 
-Substituir por UM unico select chamado "Tipo da Venda" com as opcoes:
+| Opcao visivel      | is_parceria | tipo_participacao | percentual_comissao |
+|--------------------|-------------|-------------------|---------------------|
+| Venda Direta       | false       | corretor          | 6                   |
+| Venda com Parceria | true        | corretor          | 6                   |
+| Venda Gestao       | false       | gestao            | 1                   |
 
-| Opcao visivel     | is_parceria | tipo_participacao | percentual_comissao |
-|-------------------|-------------|-------------------|---------------------|
-| Venda Direta      | false       | corretor          | 6                   |
-| Venda com Parceria| true        | corretor          | 6                   |
-| Venda Gestao      | false       | gestao            | 1                   |
-
-Ao selecionar, preencher automaticamente os tres campos no backend.
+Ao selecionar, preencher os tres campos automaticamente no backend.
 O campo `nome_parceiro` so aparece quando "Venda com Parceria" for selecionado.
 
 ### 1d. Campo competencia — ocultar do formulario
 
-O campo `competencia` e tecnicamente util para DRE futuro, mas nao faz sentido
-para preenchimento manual agora.
+- Remover `competencia` do formulario visivel
+- Ao salvar: `competencia = data_venda` (automatico)
+- Campo continua no banco, apenas nao exibido
 
-- Remover o campo `competencia` do formulario visivel
-- Ao salvar, preencher automaticamente: `competencia = data_venda`
-- O campo continua existindo no banco, apenas nao e exibido
+### 1e. Filtro "Formato da Venda" na tabela de listagem
+
+Substituir o filtro atual "Parceria: Sim/Nao" por um filtro chamado
+"Formato da Venda" com as opcoes:
+
+| Opcao visivel      | Logica de filtro                          |
+|--------------------|-------------------------------------------|
+| Todos              | sem filtro                                |
+| Venda Direta       | is_parceria = false AND tipo_participacao = 'corretor' |
+| Parceria           | is_parceria = true                        |
+| Gestao             | tipo_participacao = 'gestao'              |
+
+O filtro funciona por multi-select (mesmo padrao dos outros filtros da tabela).
 
 ---
 
 ## TAREFA 2 — BARRA SUPERIOR DO exclusividades.html
 
-A barra de resumo no topo deve exibir TMM calculado corretamente:
-
-### Logica de calculo
+TMM calculado por tipologia do imovel:
 
 ```javascript
 function calcularTMM(imovel) {
@@ -120,10 +125,8 @@ Exibir como: `R$ 27.500/mes`
 
 ## TAREFA 3 — STATUS EM TODOS OS ARQUIVOS
 
-Atualizar todos os arquivos para usar os novos status:
-
-- 'repaginacao' → 'repaginando' (filtros, badges, selects, JS)
-- Adicionar 'gestao' e 'perdida' como opcoes em todos os selects e filtros
+- 'repaginacao' → 'repaginando' em todos os filtros, badges, selects, JS
+- Adicionar 'gestao' e 'perdida' em todos os selects e filtros
 
 ### Badges novos
 - gestao: bg #EDE9FE, texto #5B21B6, label "Gestao"
@@ -135,7 +138,6 @@ Arquivos a verificar: exclusividades.html, index.html, registro.html
 
 ## TAREFA 4 — GRUPO GESTAO NO DASHBOARD (index.html)
 
-Adicionar grupo para exclusividades com status 'gestao':
 - Card igual ao grupo 'ativa'
 - Badge roxo "Gestao"
 - TMM exibido com "(20%)" ao lado
@@ -145,7 +147,7 @@ Adicionar grupo para exclusividades com status 'gestao':
 ## ORDEM DE EXECUCAO
 
 1. Tarefa 1 (vendas.html) — mostrar diff, aguardar aprovacao
-2. Tarefas 2, 3, 4 (exclusividades + status + dashboard) — apos aprovacao da Tarefa 1
+2. Tarefas 2, 3, 4 — apos aprovacao da Tarefa 1
 
 ---
 
@@ -157,7 +159,7 @@ tail -3 ARQUIVO.html                              # </html> nas ultimas 3 linhas
 ```
 
 Commits:
-- `fix: mascara dinheiro, comissao auto, tipo da venda em vendas.html`
+- `fix: mascara dinheiro, tipo da venda, filtro formato em vendas.html`
 - `feat: TMM correto na barra de exclusividades`
 - `fix: status repaginando + badges gestao e perdida`
 - `feat: grupo gestao no dashboard`
