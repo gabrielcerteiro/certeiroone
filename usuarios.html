@@ -252,8 +252,7 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 var sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 var currentUser=null,currentRole='padrao',currentNome='',currentUsuarioId=null;
 var logUsuarioId=null;var logUsuarioNomeCache='';var logFiltroAtivo='todos';var logDados=[];
-var logFiltroAtivo='todos';var logDados=[];
-var logDados=[];
+var tabMap={};
 var LOG_LABELS={todos:'Todos',login:'Login',exclusividade_atualizada:'Exclusividades',visita_cadastrada:'Visitas',proposta_cadastrada:'Propostas',usuario_criado:'Usuarios criados',permissao_alterada:'Permissoes'};
 
 function switchView(id){
@@ -271,13 +270,51 @@ function inicial(n){return(n||'?').charAt(0).toUpperCase();}
 function hoje(){var d=new Date(),m=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear();}
 function diaDoAno(d){d=d||new Date();return Math.floor((d-new Date(d.getFullYear(),0,0))/86400000);}
 function diasNoAno(a){a=a||new Date().getFullYear();return((a%4===0&&a%100!==0)||a%400===0)?366:365;}
-async function loginUser(){var email=document.getElementById('authEmail').value.trim();var senha=document.getElementById('authSenha').value;var btn=document.getElementById('authBtn');var err=document.getElementById('authErr');err.textContent='';if(!email||!senha){err.textContent='Preencha email e senha.';return;}btn.disabled=true;btn.textContent='Entrando...';try{var res=await sb.auth.signInWithPassword({email:email,password:senha});if(res.error)throw res.error;// onAuthStateChange will handle the rest
+async function loginUser(){var email=document.getElementById('authEmail').value.trim();var senha=document.getElementById('authSenha').value;var btn=document.getElementById('authBtn');var err=document.getElementById('authErr');err.textContent='';if(!email||!senha){err.textContent='Preencha email e senha.';return;}btn.disabled=true;btn.textContent='Entrando...';try{var res=await sb.auth.signInWithPassword({email:email,password:senha});if(res.error)throw res.error;}catch(e){err.textContent=e.message||'Erro ao entrar.';btn.disabled=false;btn.textContent='Entrar';}}
 async function recuperarSenha(){var email=document.getElementById('authEmail').value.trim();if(!email){document.getElementById('authErr').textContent='Digite seu email acima primeiro.';return;}var res=await sb.auth.resetPasswordForEmail(email);if(res.error){document.getElementById('authErr').textContent=res.error.message;}else{document.getElementById('authErr').style.color='#10B981';document.getElementById('authErr').textContent='Email de recuperacao enviado!';}}
 async function logoutUser(){await sb.auth.signOut();currentUser=null;currentRole='padrao';currentNome='';currentUsuarioId=null;document.getElementById('authOverlay').style.display='flex';document.getElementById('authBtn').disabled=false;document.getElementById('authBtn').textContent='Entrar';document.getElementById('authEmail').value='';document.getElementById('authSenha').value='';document.getElementById('authErr').textContent='';}
 async function onLogin(user,doLog){currentUser=user;var pr=await sb.from('usuarios').select('*').eq('auth_id',user.id).single();if(pr.data){currentRole=pr.data.role||'padrao';currentNome=pr.data.nome||user.email;currentUsuarioId=pr.data.id;}else{currentRole='padrao';currentNome=user.email;}applyRoleUI();CertNav.init('usuarios');CertNav.setUser(currentNome,currentRole);document.getElementById('authOverlay').style.display='none';var hash=window.location.hash.slice(1);if(hash&&tabMap[hash]){history.replaceState(null,'',window.location.pathname);loadDashboard().then(function(){switchTab(hash);});}else{loadDashboard();}if(doLog)logActivity('login',null,null,null);}
 function applyRoleUI(){var isAdmin=currentRole==='master';var isEditor=currentRole==='operacional';var isPadrao=currentRole==='padrao';var canEdit=isAdmin||isEditor;}
 function logActivity(action,entityType,entityNome,detalhes){if(!currentUser)return;sb.from('activity_log').insert({user_id:currentUser.id,user_nome:currentNome,action:action,entity_type:entityType||null,entity_nome:entityNome||null,detalhes:detalhes||null}).then(function(){});}
+async function loadDashboard(){await renderUsuarios();}
 async function renderUsuarios(){
+  var r=await sb.from('usuarios').select('*').order('nome');
+  if(r.error){document.getElementById('listaUsuarios').innerHTML='<div style="color:var(--red);font-size:12px;padding:12px 0">Erro: '+r.error.message+'</div>';return;}
+  var users=r.data||[];
+  if(!users.length){document.getElementById('listaUsuarios').innerHTML='<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Nenhum usuario cadastrado.</div>';return;}
+  var roleLabel={master:'Master',operacional:'Operacional',padrao:'Padrao'};
+  var rolePill={master:'pill-navy',operacional:'pill-blue',padrao:'pill-muted'};
+  var html=users.map(function(u){
+    var ini=inicial(u.nome);var cor=avatarCor(u.nome);
+    return '<div class="card" style="margin-bottom:8px">'
+      +'<div style="display:flex;align-items:center;gap:12px">'
+      +'<div style="width:36px;height:36px;border-radius:50%;background:'+cor+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0">'+ini+'</div>'
+      +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:800;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+u.nome+'</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-top:1px">'+(u.email||'-')+'</div></div>'
+      +'<span class="pill '+(rolePill[u.role]||'pill-muted')+'">'+(roleLabel[u.role]||u.role)+'</span>'
+      +(u.ativo===false?'<span class="pill pill-muted" style="margin-left:4px">Inativo</span>':'')
+      +'</div>'
+      +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'
+      +'<button onclick="abrirEditUsuario(\''+u.id+'\')" style="flex:1;background:var(--bg);border:1.5px solid var(--s2);border-radius:8px;padding:7px;font-size:11px;font-weight:700;font-family:\'Nunito Sans\',sans-serif;color:var(--navy);cursor:pointer">Editar</button>'
+      +'<button onclick="abrirLogUsuario(\''+u.id+'\',\''+u.nome+'\')" style="background:var(--bg);border:1.5px solid var(--s2);border-radius:8px;padding:7px 12px;font-size:11px;font-weight:700;font-family:\'Nunito Sans\',sans-serif;color:var(--muted);cursor:pointer">Log</button>'
+      +'<button onclick="excluirUsuario(\''+u.id+'\',\''+u.nome+'\',\''+(u.auth_id||'')+'\')" style="background:none;border:1.5px solid var(--red);border-radius:8px;padding:7px 12px;font-size:11px;font-weight:700;font-family:\'Nunito Sans\',sans-serif;color:var(--red);cursor:pointer">Excluir</button>'
+      +'</div>'
+      +'<div id="editPanel_'+u.id+'" style="display:none;border-top:1px solid var(--s2);margin-top:12px;padding-top:12px">'
+      +'<div style="display:flex;flex-direction:column;gap:8px">'
+      +'<input id="eu_nome_'+u.id+'" class="edit-input" value="'+u.nome+'" placeholder="Nome">'
+      +'<input id="eu_email_'+u.id+'" class="edit-input" value="'+(u.email||'')+'" placeholder="Email">'
+      +'<select id="eu_role_'+u.id+'" class="edit-input"><option value="padrao"'+(u.role==='padrao'?' selected':'')+'>Padrao</option><option value="operacional"'+(u.role==='operacional'?' selected':'')+'>Operacional</option><option value="master"'+(u.role==='master'?' selected':'')+'>Master</option></select>'
+      +'<label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--navy)"><input type="checkbox" id="eu_corretor_'+u.id+'"'+(u.is_corretor?' checked':'')+'>Corretor</label>'
+      +'<label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--navy)"><input type="checkbox" id="eu_ativo_'+u.id+'"'+(u.ativo!==false?' checked':'')+'>Ativo</label>'
+      +'</div>'
+      +'<div style="display:flex;gap:8px;margin-top:10px">'
+      +'<button onclick="salvarEdicaoUsuario(\''+u.id+'\')" style="flex:1;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:10px;font-size:12px;font-weight:800;font-family:\'Nunito Sans\',sans-serif;cursor:pointer">Salvar</button>'
+      +'<button onclick="fecharEditUsuario(\''+u.id+'\')" style="background:none;border:1.5px solid var(--s2);border-radius:8px;padding:10px 14px;font-size:12px;font-weight:700;font-family:\'Nunito Sans\',sans-serif;color:var(--muted);cursor:pointer">Cancelar</button>'
+      +(u.email?'<button onclick="enviarLinkSenha(\''+u.email+'\')" style="background:none;border:1.5px solid var(--blue);border-radius:8px;padding:10px 14px;font-size:12px;font-weight:700;font-family:\'Nunito Sans\',sans-serif;color:var(--blue);cursor:pointer">Reset Senha</button>':'')
+      +'</div></div></div>';
+  }).join('');
+  document.getElementById('listaUsuarios').innerHTML=html;
+}
 function abrirEditUsuario(uid){var p=document.getElementById('editPanel_'+uid);if(p)p.style.display=p.style.display==='none'?'block':'none';}
 function fecharEditUsuario(uid){var p=document.getElementById('editPanel_'+uid);if(p)p.style.display='none';}
 async function salvarEdicaoUsuario(uid){var nome=document.getElementById('eu_nome_'+uid).value.trim();var email=document.getElementById('eu_email_'+uid).value.trim();var role=document.getElementById('eu_role_'+uid).value;var isCorretor=document.getElementById('eu_corretor_'+uid).checked;var ativo=document.getElementById('eu_ativo_'+uid).checked;if(!nome){showToast('Nome obrigatorio.');return;}var r=await sb.from('usuarios').update({nome:nome,email:email||null,role:role,is_corretor:isCorretor,ativo:ativo}).eq('id',uid);if(r.error){showToast('Erro: '+r.error.message);}else{logActivity('usuario_editado','usuario',nome,{role:role,ativo:ativo});showToast('Usuario atualizado!');renderUsuarios();}}
