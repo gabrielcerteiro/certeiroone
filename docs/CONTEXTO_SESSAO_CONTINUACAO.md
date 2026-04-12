@@ -1,4 +1,4 @@
-# Sessao: Passo 3 (Seed) + Padrao de Layout
+# Sessao: TMM correto + novos status de exclusividade
 
 **Data:** 12/04/2026
 **Gerado por:** Claudion
@@ -6,155 +6,171 @@
 
 ---
 
-## ANTES DE QUALQUER COISA -- LEITURA OBRIGATORIA
+## LEITURA OBRIGATORIA ANTES DE COMECAR
 
-Leia os seguintes arquivos em ordem antes de escrever uma linha de codigo:
-
-1. `CONTEXTO_CLAUDE_CODE.md` -- contexto tecnico completo da plataforma
-2. `~/.claude/skills/frontend-design/SKILL.md` -- padrao visual obrigatorio
-
-O skill de frontend-design define os tokens, componentes e regras de layout
-que DEVEM ser seguidos em TODO o codigo novo desta sessao e de todas as sessoes
-futuras. Nao e opcional.
+1. `CONTEXTO_CLAUDE_CODE.md`
+2. `~/.claude/skills/frontend-design/SKILL.md`
 
 ---
 
-## PADRAO DE LAYOUT -- REGRA PERMANENTE
+## CONTEXTO: O QUE JA FOI FEITO NO BANCO (nao repetir)
 
-A partir desta sessao, TODO formulario, modal ou pagina criado ou editado
-no Certeiro One deve seguir obrigatoriamente este padrao:
+O Claudion ja executou as migrations diretamente no Supabase:
 
-### Container
-- Formularios em paginas inteiras: `max-width: 800px; margin: 0 auto;`
-- Modais: `max-width: 720px; margin: 0 auto;`
-- Nunca deixar o conteudo editorial esticar ate a borda da tela
+- Constraint `funil_snapshot.status_exclusividade` atualizada para:
+  'ativa', 'vendida', 'repaginando', 'aguardando', 'perdida', 'gestao', 'encerrada'
+- Dados existentes: 'repaginacao' renomeado para 'repaginando' em todos os registros
+- Constraint `exclusividades.status` atualizada para:
+  'ativa', 'encerrada', 'renovada', 'gestao'
 
-### Grid de campos por tipo
-- Campos curtos (data, numero de controle, status, %, tipo): grid 3 ou 4 colunas
-- Campos medios (nome, valor R$, area): grid 2 colunas
-- Campos longos (endereco, observacao, textarea): 1 coluna full-width dentro do container
-- Gap: 12px horizontal, 14px vertical
-- Campo de data nunca deve exceder ~220px de largura visual
+NAO rodar nenhum SQL de alteracao de constraint ou UPDATE de status -- ja foi feito.
 
-### Agrupamento semantico
-- Agrupar campos relacionados em secoes com label uppercase acima
-  (ex: "DADOS DA VENDA", "IMOVEL", "PARTES ENVOLVIDAS")
-- Usar card ou separador visual entre secoes
+---
 
-### Exemplo de grid correto
-```css
-.form-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.form-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.form-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+## LOGICA DE NEGOCIO: STATUS DE EXCLUSIVIDADE
+
+| Status      | Computa TMM? | Observacao                                      |
+|-------------|-------------|--------------------------------------------------|
+| ativa       | Sim, 100%   | Exclusividade ativa normal                       |
+| gestao      | Sim, 20%    | Gabriel retém 1%, repassa resto — divide TMM / 5 |
+| repaginando | Nao         | Imovel em repaginacao                            |
+| aguardando  | Nao         | Cliente ainda nao desocupou                      |
+| vendida     | Nao         | Ja vendida                                       |
+| perdida     | Nao         | Nao conseguimos vender                           |
+| encerrada   | Nao         | Legado                                           |
+
+---
+
+## LOGICA DE NEGOCIO: CALCULO DO TMM
+
+TMM = VGV / (dias_tipo / 30)
+
+Dias por tipologia do imovel (campo `tipo_imovel` no funil_snapshot):
+- Repaginado: 40 dias
+- Mobiliado:  80 dias
+- Vazio:     120 dias
+
+Exemplo: apto vazio com preco R$ 2.200.000
+  VGV = preco * 0.05 = R$ 110.000
+  TMM = 110.000 / (120 / 30) = 110.000 / 4 = R$ 27.500/mes
+
+Para status 'gestao': TMM_gestao = TMM_calculado / 5
+
+Exibir TMM sempre formatado como dinheiro: R$ 27.500/mes
+
+---
+
+## TAREFA 1 — BARRA SUPERIOR DO exclusividades.html
+
+A barra de resumo no topo da pagina de exclusividades deve exibir:
+
+- Total de exclusividades ativas (status 'ativa' + 'gestao')
+- VGV total (soma dos precos das exclusividades ativas e gestao)
+- **TMM total** = soma dos TMMs individuais de cada exclusividade ativa/gestao
+
+### Como calcular o TMM de cada exclusividade:
+
+```javascript
+function calcularTMM(imovel) {
+  const preco = parseFloat(imovel.preco) || 0;
+  const vgv = preco * 0.05;
+  
+  const diasPorTipo = {
+    'Repaginado': 40,
+    'Mobiliado': 80,
+    'Vazio': 120
+  };
+  
+  const dias = diasPorTipo[imovel.tipo_imovel] || 120;
+  const tmm = vgv / (dias / 30);
+  
+  // Gestao: divide por 5 (Gabriel retém apenas 20%)
+  if (imovel.status_exclusividade === 'gestao') {
+    return tmm / 5;
+  }
+  
+  return tmm;
+}
+
+// TMM total da barra
+const tmmTotal = imoveisAtivos
+  .filter(im => ['ativa', 'gestao'].includes(im.status_exclusividade))
+  .reduce((sum, im) => sum + calcularTMM(im), 0);
 ```
 
-Este padrao se aplica a qualquer codigo novo e tambem a edicoes em arquivos
-existentes -- ao tocar em um formulario, corrija o layout se ainda estiver full-width.
-
----
-
-## TAREFA 1 -- PASSO 3: SEED DOS 91 REGISTROS HISTORICOS
-
-### Objetivo
-Inserir os 91 registros historicos de vendas na tabela `vendas` do Supabase.
-
-### Arquivo de dados
-`data/vendas_classificadas_completo.csv` -- 91 registros classificados
-
-### O que fazer
-1. Leia o arquivo CSV completo
-2. Gere um script SQL de INSERT para todos os 91 registros
-3. Execute o script via Supabase MCP (use `apply_migration` com nome `seed_vendas_historicas`)
-4. Confirme quantos registros foram inseridos com:
-   `SELECT COUNT(*) FROM vendas;`
-
-### Campos a mapear do CSV para a tabela
-O CSV tem colunas de classificacao que foram definidas na sessao anterior.
-Mapeie os campos disponiveis. Campos sem equivalente no CSV ficam NULL --
-serao preenchidos incrementalmente pelo Gabriel via interface.
-
-### Campos obrigatorios no INSERT
-- `numero_controle` -- vem do CSV (ex: V0261, V0262...)
-- `status_venda` -- vem do CSV
-- `is_construtora` -- vem do CSV (boolean)
-- `is_parceria` -- vem do CSV (boolean)
-- `imovel_tipologia` -- vem do CSV
-- `categoria` -- vem do CSV (1, 2, 3 ou 4)
-
-### Campos opcionais (se existirem no CSV)
-- `imovel_nome`, `imovel_regiao`, `forma_pagamento`
-- `valor_contrato`, `valor_honorarios`
-- `data_venda`, `competencia`
-
-### Regras criticas
-- `vgv` e GENERATED ALWAYS -- NAO incluir no INSERT
-- `numero_controle` e UNIQUE -- se der conflito, parar e reportar
-- Executar tudo em uma unica migration para ser atomico
-- Se algum registro falhar, o batch inteiro deve falhar (sem inserts parciais)
-
-### Validacao apos seed
-```sql
-SELECT COUNT(*) as total FROM vendas;
-SELECT status_venda, COUNT(*) FROM vendas GROUP BY status_venda;
-SELECT is_construtora, is_parceria, COUNT(*) FROM vendas GROUP BY is_construtora, is_parceria;
+### Formatacao do TMM
+```javascript
+function formatarDinheiro(valor) {
+  return valor.toLocaleString('pt-BR', { 
+    style: 'currency', 
+    currency: 'BRL',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  });
+}
+// Exibir como: R$ 27.500/mes
 ```
-Mostrar resultado das tres queries antes de continuar.
 
 ---
 
-## TAREFA 2 -- CORRECAO DE LAYOUT NOS FORMULARIOS EXISTENTES
+## TAREFA 2 — ATUALIZAR STATUS EM TODOS OS ARQUIVOS
 
-Executar SOMENTE apos Tarefa 1 concluida e validada.
+Os status de exclusividade mudaram. Atualizar em todos os arquivos HTML/JS:
 
-### Objetivo
-Aplicar o padrao de layout definido acima nos formularios existentes que
-ainda estao com campos full-width.
+### Mapeamento de mudancas
+- 'repaginacao' → 'repaginando' (em todos os filtros, badges, selects, logica JS)
+- Adicionar 'gestao' como novo status valido em todos os selects e filtros
+- Adicionar 'perdida' se ainda nao existir como opcao visivel
 
-### Etapa 2a -- registro.html (fazer e PARAR)
-Reorganizar campos do formulario com grid conforme padrao acima.
-Exibir diff completo e aguardar aprovacao antes de continuar.
+### Arquivos a verificar
+- `exclusividades.html` — filtros, badges, modal de nova exclusividade, modal de edicao
+- `index.html` — grupos do dashboard, modal de nova exclusividade
+- `nav.js` — se tiver logica de status
+- `registro.html` — se tiver filtro por status
 
-### Etapa 2b -- modais do index.html (somente apos aprovacao da 2a)
-Identificar todos os modais com formularios (inputs, selects) e aplicar
-max-width: 720px + grid de campos.
-Manter toda logica JS intacta -- apenas CSS/HTML estrutural.
+### Badge visual para 'gestao'
+Adicionar badge com estilo proprio para o novo status 'gestao':
+- Background: #EDE9FE (roxo claro)
+- Texto: #5B21B6 (roxo escuro)
+- Label: "Gestao"
 
-### O que NAO mudar
-- Nenhuma logica JavaScript
-- Nenhuma query ao Supabase
-- Nenhum ID, name ou evento de campo
-
-### Validacao obrigatoria apos CADA etapa (nao pular)
-
-1. Verificar acentos em blocos JS:
-   `grep -n "[\x80-\xFF]" ARQUIVO.html | head -20`
-   Resultado esperado: nenhuma linha.
-
-2. Verificar fechamento do arquivo:
-   `tail -3 ARQUIVO.html`
-   Resultado esperado: `</html>` nas ultimas 3 linhas.
-
-3. Confirmar campos de data:
-   `grep -n "type=\"date\"" ARQUIVO.html`
-   Nenhum com width > 220px ou herdando 100% sem container com max-width.
-
-Somente apos os tres comandos passarem, fazer commit:
-- Tarefa 1: `feat: seed 91 registros historicos na tabela vendas`
-- Tarefa 2a: `style: grid layout em registro.html`
-- Tarefa 2b: `style: grid layout em modais do index.html`
+### Badge visual para 'perdida'
+- Background: #FEE2E2 (vermelho claro)
+- Texto: #991B1B (vermelho escuro)
+- Label: "Perdida"
 
 ---
 
-## ESTADO ATUAL DO SISTEMA (referencia)
+## TAREFA 3 — DASHBOARD: GRUPO GESTAO
 
-- Passo 0: concluido (sidebar, modulos separados, roles corrigidas)
-- Passo 1: concluido (tabelas vendas e parcelas_comissao criadas)
-- Passo 2: concluido (vendas.html construido)
-- Bug leads_abertos: corrigido diretamente no banco via Claudion
-- Passo 3: PENDENTE -- esta sessao
-- Passo 4 (webhook Pipedrive->n8n->Supabase): futuro
-- Passo 5 (Conta Azul): futuro
+No index.html, adicionar um novo grupo para exclusividades com status 'gestao':
+
+### GRUPO GESTAO (status = 'gestao')
+- Card igual ao grupo "ativa" mas com indicador visual de gestao
+- Badge roxo "Gestao" no card
+- TMM exibido com nota "(20%)" ao lado para indicar que é parcial
+
+---
+
+## VALIDACAO APOS CADA TAREFA
+
+1. Verificar acentos em JS: `grep -n "[\x80-\xFF]" ARQUIVO.html | head -20`
+   Esperado: nenhuma linha.
+
+2. Verificar fechamento: `tail -3 ARQUIVO.html`
+   Esperado: `</html>` nas ultimas 3 linhas.
+
+3. Testar no browser: abrir exclusividades.html e confirmar que
+   - TMM aparece na barra superior formatado como R$ X.XXX/mes
+   - Status 'gestao' aparece como opcao nos selects
+   - Badge roxo aparece para imoveis em gestao
+
+Commits por tarefa:
+- `feat: TMM correto na barra de exclusividades`
+- `fix: status repaginando + badge gestao e perdida em todos os arquivos`
+- `feat: grupo gestao no dashboard`
 
 ---
 
 *Gerado por Claudion em 12/04/2026*
+*SQL de migration ja executado diretamente no Supabase — nao repetir*
