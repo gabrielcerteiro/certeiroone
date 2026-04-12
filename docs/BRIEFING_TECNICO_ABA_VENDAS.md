@@ -131,7 +131,7 @@ CREATE TABLE vendas (
   -- Valores comerciais
   valor_contrato NUMERIC,
   valor_honorarios NUMERIC,
-  vgv NUMERIC, -- calculado no frontend (valor_honorarios / 0.05) mas editavel manualmente
+  vgv NUMERIC GENERATED ALWAYS AS (CASE WHEN valor_honorarios IS NOT NULL AND valor_honorarios > 0 THEN valor_honorarios / 0.05 ELSE NULL END) STORED,
   percentual_comissao NUMERIC DEFAULT 6, -- 6% padrao, 5% construtora, ~1% gestao
   is_parceria BOOLEAN DEFAULT FALSE,
   parceiro_nome TEXT,
@@ -348,7 +348,7 @@ igpm, ipca, percentual_fixo
 ## REGRAS DE NEGOCIO PARA A INTERFACE
 
 1. numero_controle e sequencial e NUNCA pode ter buraco -- sistema sugere proximo numero automaticamente
-2. VGV e calculado no frontend (valor_honorarios / 0.05) -- campo editavel manualmente para casos de gestao e parceria que distorcem o calculo automatico
+2. VGV e GENERATED ALWAYS no banco (valor_honorarios / 0.05) -- campo readonly na interface, nao editavel. Se o VGV parece errado, corrija o valor_honorarios.
 3. TMM so aparece para vendas com exclusividade vinculada
 4. Parcelas podem ser fixas (data_prevista definitiva) ou atreladas a evento (condicao_evento preenchido, data_prevista e estimativa)
 5. Dropdown de exclusividades mostra: codigo + imovel_nome + proprietario
@@ -370,7 +370,7 @@ igpm, ipca, percentual_fixo
 ---
 
 *Briefing tecnico gerado em 12/04/2026 -- Sessao Claudion*
-*Atualizado em 12/04/2026 -- Adicionado Passo 0 (reestruturacao navegacao), paleta de cores corrigida, VGV editavel*
+*Atualizado em 12/04/2026 -- Adicionado Passo 0 (reestruturacao navegacao), paleta de cores corrigida, VGV revertido para GENERATED ALWAYS*
 
 ## INSTRUCAO PARA PROXIMA SESSAO
 Abrir Sonnet. Mandar este briefing como contexto. Dizer:
