@@ -1,6 +1,24 @@
 # CONTEXTO COMPLETO — PLATAFORMA CERTEIRO
 > Arquivo para onboarding de nova sessão no Claude Code.
-> Atualizado em: 08/04/2026 — v1.3.0 fechada, repo renomeado para certeiroone
+> Atualizado em: 12/04/2026 — skill frontend-design adicionado
+
+---
+
+## 0. SKILL DE FRONTEND — LER ANTES DE QUALQUER TRABALHO VISUAL
+
+Um skill de design de frontend esta instalado em `~/.claude/skills/frontend-design/`.
+
+**REGRA OBRIGATORIA:** antes de criar, editar ou refatorar qualquer HTML/CSS
+que envolva layout, componentes visuais, formularios, modais, cards ou qualquer
+elemento de interface, leia o SKILL.md do skill:
+
+```
+~/.claude/skills/frontend-design/SKILL.md
+```
+
+Isso se aplica a TODA sessao que tocar em visual — sem excecao.
+O skill define tokens de design, padroes de componentes e regras de layout
+que devem sobrepor qualquer convencao generica.
 
 ---
 
@@ -276,49 +294,40 @@ URL: certeiroone.vercel.app. Repo: github.com/gabrielcerteiro/certeiroone.
 Banco: criados Laguna 1202, Reserva Perequê 2101, Smart Sao Joao 506.
 Banco: deletados Lago di Garda 1301 e registros de teste.
 
+### v1.3.1 — 12/04/2026
+Reestruturacao de navegacao: sidebar lateral, modulos em HTMLs separados.
+Tabelas vendas e parcelas_comissao criadas no Supabase.
+Bug leads_abertos corrigido no banco.
+Skill frontend-design instalado em ~/.claude/skills/frontend-design/.
+
 ---
 
 ## 12. PENDENCIAS ATIVAS — v1.3.1
 
 ### Alta prioridade
+- [ ] Hash routing no exclusividades.html (URLs compartilhaveis, botao voltar)
+- [ ] Nav duplicada no registro.html — verificar se ja foi corrigida
+- [ ] Ajustes visuais: remover "PLATAFORMA OPERACIONAL" da sidebar
+- [ ] Seed dos 91 registros historicos na tabela vendas
+- [ ] Layout de formularios: max-width + grid por tipo de campo
+      (prompt completo em docs/CONTEXTO_SESSAO_CONTINUACAO.md)
 - [ ] Botao excluir no formulario de edicao (vEdit)
 - [ ] Campo status inicial no modal de nova exclusividade
-- [ ] Aba Analise: tabela de disparos consolidados para a Rafaela
 - [ ] Cadastro de usuarios via Edge Function (service_role)
 - [ ] Anon Key exposta no repositorio — mover para variavel de ambiente
 - [ ] Controle de acesso por role no frontend
 
 ### Media prioridade
-- [ ] Roteamento por hash (URL unica por secao)
-      CONTEXTO: hoje todas as secoes do index.html (Alertas, Exclusividades,
-      Captacao, Vendas etc.) ficam na mesma URL certeiroone.vercel.app sem
-      distinguir qual secao esta aberta. O registro.html fica em URL separada.
-      SOLUCAO: implementar roteamento por hash no index.html usando
-      window.location.hash e o evento hashchange.
-      URLs resultantes:
-        certeiroone.vercel.app/#/alertas
-        certeiroone.vercel.app/#/exclusividades
-        certeiroone.vercel.app/#/registro
-        certeiroone.vercel.app/#/captacao
-        certeiroone.vercel.app/#/vendas
-        certeiroone.vercel.app/#/marketing
-        certeiroone.vercel.app/#/financeiro
-        certeiroone.vercel.app/#/usuarios
-      IMPLEMENTACAO: ao clicar em item do menu, atualizar window.location.hash
-      em vez de chamar showView() diretamente. A funcao showView() passa a ser
-      chamada pelo listener de hashchange. Ao carregar a pagina, ler o hash
-      atual e exibir a view correspondente (ou default para exclusividades).
-      O registro.html pode ser mantido separado ou migrado para
-      certeiroone.vercel.app/#/registro — a decidir.
-      BENEFICIO: links diretos funcionam, historico do browser funciona,
-      comportamento identico ao Pipedrive e outros SaaS.
+- [ ] Testar vendas.html com dados reais apos seed
+- [ ] Webhook Pipedrive -> n8n -> Supabase (Passo 4)
+- [ ] Conta Azul — Victoria criar categorias v4 (Passo 5)
 - [ ] Repositorio privado no GitHub
 - [ ] Branches para desenvolvimento
 - [ ] Logs de auditoria + Backup automatizado documentado
 
 ### Backlog futuro
+- [ ] Aba Analise: tabela de disparos consolidados para a Rafaela
 - [ ] Modulo Analise completo, Modulo Vendas, Modulo Financeiro
-- [ ] Migrar index.html para modulos separados
 - [ ] Testes automatizados antes do deploy
 
 ---
