@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Certeiro &mdash; Registro</title>
+<title>Registro | Certeiro One</title>
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#191949">
 <meta name="mobile-web-app-capable" content="yes">
@@ -13,6 +13,7 @@
 <link rel="apple-touch-icon" href="./icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="nav.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 .auth-overlay{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px}
@@ -287,7 +288,7 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
   <div class="step-bar" id="stepBar"></div>
 </div>
 
-<div class="app-wrap">
+<div class="app-wrap cn-wrap">
 <nav class="bottom-nav" id="bottomNav">
   <button class="nav-btn" id="nav-alertas" onclick="irDashboard('alertas')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span><span class="nav-label">Alertas</span></button>
   <button class="nav-btn" id="nav-imoveis" onclick="irDashboard('excl')"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></span><span class="nav-label">Exclusividades</span></button>
@@ -303,7 +304,7 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
   <div class="nav-sep"></div>
   <button class="nav-btn nav-module" onclick="logoutUser()"><span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><span class="nav-label" id="navNomeLabel">Sair</span></button>
 </nav>
-<div class="page" id="mainPage">
+<div class="page cn-page" id="mainPage">
   <div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando...</div></div>
 </div>
 </div>
@@ -357,7 +358,7 @@ function passos(){return S.tipo==='proposta'?PASSOS_PROPOSTA:PASSOS_VISITA;}
 async function init(){
   initHeader();
   try{
-    await Promise.all([loadImoveis(),loadCorretores(),loadRecentes()]);
+    await Promise.all([loadImoveis(),loadCorretores()]);
     renderPasso();
   }catch(e){
     document.getElementById('mainPage').innerHTML=
@@ -392,6 +393,88 @@ async function loadRecentes(){
   visitasRecentes=vr.data||[];
   var pr=await sb.from('propostas').select('*').order('created_at',{ascending:false}).limit(20);
   propostasRecentes=pr.data||[];
+}
+
+async function buscarRegistros(){
+  var tipo=document.getElementById('fBuscaTipo').value;
+  var imovelId=document.getElementById('fBuscaImovel').value;
+  var corretorNome=document.getElementById('fBuscaCorretor').value;
+  var de=document.getElementById('fBuscaDe').value;
+  var ate=document.getElementById('fBuscaAte').value;
+  var res=document.getElementById('buscaResultados');
+  res.innerHTML='<div class="loading"><div class="loading-spin"></div><div class="loading-txt">Buscando...</div></div>';
+  try{
+    var vis=[];var props=[];
+    if(tipo==='visitas'||(tipo==='todos'&&corretorNome)){
+      var qv=sb.from('visitas').select('*');
+      if(imovelId)qv=qv.eq('imovel_id',imovelId);
+      if(corretorNome)qv=qv.eq('corretor',corretorNome);
+      if(de)qv=qv.gte('data_visita',de);
+      if(ate)qv=qv.lte('data_visita',ate);
+      qv=qv.order('data_visita',{ascending:false}).limit(50);
+      var rv=await qv;
+      if(rv.error)throw rv.error;
+      vis=rv.data||[];
+    }else if(tipo==='propostas'){
+      var qp=sb.from('propostas').select('*');
+      if(imovelId)qp=qp.eq('imovel_id',imovelId);
+      if(de)qp=qp.gte('data',de);
+      if(ate)qp=qp.lte('data',ate);
+      qp=qp.order('data',{ascending:false}).limit(50);
+      var rp=await qp;
+      if(rp.error)throw rp.error;
+      props=rp.data||[];
+    }else{
+      var qv2=sb.from('visitas').select('*');
+      if(imovelId)qv2=qv2.eq('imovel_id',imovelId);
+      if(de)qv2=qv2.gte('data_visita',de);
+      if(ate)qv2=qv2.lte('data_visita',ate);
+      qv2=qv2.order('data_visita',{ascending:false}).limit(50);
+      var qp2=sb.from('propostas').select('*');
+      if(imovelId)qp2=qp2.eq('imovel_id',imovelId);
+      if(de)qp2=qp2.gte('data',de);
+      if(ate)qp2=qp2.lte('data',ate);
+      qp2=qp2.order('data',{ascending:false}).limit(50);
+      var all=await Promise.all([qv2,qp2]);
+      if(all[0].error)throw all[0].error;
+      if(all[1].error)throw all[1].error;
+      vis=all[0].data||[];
+      props=all[1].data||[];
+    }
+    visitasRecentes=vis;
+    propostasRecentes=props;
+    renderResultadoBusca(vis,props,tipo);
+  }catch(e){
+    res.innerHTML='<div class="recentes-empty">Erro na busca: '+escHtml(e.message)+'</div>';
+  }
+}
+
+function renderResultadoBusca(vis,props,tipo){
+  var res=document.getElementById('buscaResultados');
+  if(!vis.length&&!props.length){
+    res.innerHTML='<div class="recentes-empty">Nenhum registro encontrado para esses filtros.</div>';
+    return;
+  }
+  var partes=[];
+  if(vis.length)partes.push(vis.length+' visita'+(vis.length!==1?'s':''));
+  if(props.length)partes.push(props.length+' proposta'+(props.length!==1?'s':''));
+  var total=vis.length+props.length;
+  var html='<div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:12px">'+partes.join(' e ')+' encontrada'+(total!==1?'s':'')+'</div>';
+  if(tipo==='visitas'){
+    for(var i=0;i<vis.length;i++)html+=renderVisitaCard(vis[i]);
+  }else if(tipo==='propostas'){
+    for(var j=0;j<props.length;j++)html+=renderPropostaCard(props[j]);
+  }else{
+    var merged=[];
+    for(var a=0;a<vis.length;a++)merged.push({_tp:'v',_dt:vis[a].data_visita||'',obj:vis[a]});
+    for(var b=0;b<props.length;b++)merged.push({_tp:'p',_dt:props[b].data||'',obj:props[b]});
+    merged.sort(function(x,y){return x._dt<y._dt?1:x._dt>y._dt?-1:0;});
+    for(var c=0;c<merged.length;c++){
+      if(merged[c]._tp==='v')html+=renderVisitaCard(merged[c].obj);
+      else html+=renderPropostaCard(merged[c].obj);
+    }
+  }
+  res.innerHTML=html;
 }
 
 function nomeImovel(imovelId){
@@ -488,14 +571,24 @@ function renderTipo(){
     '<div class="tipo-btn" style="padding:18px 8px" onclick="selTipo(\'visita\')"><div class="tipo-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 012-2h8a2 2 0 012 2v18"/><path d="M6 12H4a2 2 0 00-2 2v6a2 2 0 002 2h2"/><path d="M18 9h2a2 2 0 012 2v9a2 2 0 01-2 2h-2"/><line x1="10" y1="6" x2="10" y2="6"/><line x1="14" y1="6" x2="14" y2="6"/><line x1="10" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="14" y2="14"/></svg></div><div class="tipo-label">Visita</div><div class="tipo-sub">Registre uma visita</div></div>'+
     '<div class="tipo-btn" style="padding:18px 8px" onclick="selTipo(\'proposta\')"><div class="tipo-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/></svg></div><div class="tipo-label">Proposta</div><div class="tipo-sub">Registre uma proposta</div></div>'+
   '</div>';
-  html+='<div class="recentes-section"><div class="section-title" style="margin-top:20px">Ultimas visitas</div>';
-  if(!visitasRecentes.length){html+='<div class="recentes-empty">Nenhuma visita registrada.</div>';}
-  else{var vs=visitasRecentes.slice(0,5);for(var i=0;i<vs.length;i++){html+=renderVisitaCard(vs[i]);}}
-  html+='</div>';
-  html+='<div class="recentes-section"><div class="section-title">Ultimas propostas</div>';
-  if(!propostasRecentes.length){html+='<div class="recentes-empty">Nenhuma proposta registrada.</div>';}
-  else{var ps=propostasRecentes.slice(0,5);for(var j=0;j<ps.length;j++){html+=renderPropostaCard(ps[j]);}}
-  html+='</div></div>';
+  var imOpts='<option value="">Todas as exclusividades</option>';
+  for(var k=0;k<imoveis.length;k++){imOpts+='<option value="'+escHtml(imoveis[k].id)+'">'+escHtml(imoveis[k].nome)+'</option>';}
+  var crOpts='<option value="">Todos os corretores</option>';
+  for(var m=0;m<corretores.length;m++){crOpts+='<option value="'+escHtml(corretores[m].nome)+'">'+escHtml(corretores[m].nome)+'</option>';}
+  html+='<div style="margin-top:24px">'+
+  '<div class="section-title">Buscar registros</div>'+
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">'+
+  '<div><div class="field-lbl">Tipo</div><select class="finput" id="fBuscaTipo"><option value="todos">Todos</option><option value="visitas">Visitas</option><option value="propostas">Propostas</option></select></div>'+
+  '<div><div class="field-lbl">Exclusividade</div><select class="finput" id="fBuscaImovel">'+imOpts+'</select></div>'+
+  '<div><div class="field-lbl">Corretor</div><select class="finput" id="fBuscaCorretor">'+crOpts+'</select></div>'+
+  '<div><div class="field-lbl">Periodo</div><div style="display:flex;gap:6px">'+
+  '<div style="flex:1"><div style="font-size:9px;color:var(--muted);font-weight:700;margin-bottom:4px;letter-spacing:0.5px">De</div><input type="date" class="finput" id="fBuscaDe" style="padding:8px 10px;font-size:12px"></div>'+
+  '<div style="flex:1"><div style="font-size:9px;color:var(--muted);font-weight:700;margin-bottom:4px;letter-spacing:0.5px">Ate</div><input type="date" class="finput" id="fBuscaAte" style="padding:8px 10px;font-size:12px"></div>'+
+  '</div></div>'+
+  '</div>'+
+  '<button class="btn-next" style="width:100%;margin-bottom:16px" onclick="buscarRegistros()">Buscar</button>'+
+  '<div id="buscaResultados"></div>'+
+  '</div></div>';
   return html;
 }
 
@@ -1110,7 +1203,7 @@ sb.auth.onAuthStateChange(function(event,session){
       if(pr.data){currentRole=pr.data.role||'padrao';currentNome=pr.data.nome||session.user.email;}
       else{currentRole='padrao';currentNome=session.user.email;}
       _logUser._nome=currentNome;
-      applyRoleUI();
+      applyRoleUI();CertNav.init('registro');CertNav.setUser(currentNome,currentRole);
       document.getElementById('authOverlay').style.display='none';
       if(!_initialized){_initialized=true;init();}
     });

@@ -3,14 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Dashboard | Certeiro One</title>
-<link rel="manifest" href="./manifest.json">
+<title>Usuarios | Certeiro One</title>
 <meta name="theme-color" content="#191949">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Certeiro One">
-<link rel="apple-touch-icon" href="./icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="nav.js"></script>
@@ -216,22 +210,57 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 
 <div class="app-wrap">
   <div class="page">
-    <div id="dashContent">
-      <div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando...</div></div>
+    <div class="view on" id="vUsuarios">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div class="lbl">Usu&#225;rios</div>
+        <button onclick="abrirNovoUsuario()" style="background:var(--navy);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:800;font-family:'Nunito Sans',sans-serif;cursor:pointer">+ Convidar</button>
+      </div>
+      <div id="novoUsuarioPanel" style="display:none;background:var(--white);border-radius:var(--card-radius);padding:14px 16px;border:1px solid var(--s2);margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Novo usuario</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <input id="nuNome" type="text" placeholder="Nome completo" style="border:1.5px solid var(--s2);border-radius:8px;padding:10px 12px;font-size:13px;font-family:'Nunito Sans',sans-serif;color:var(--navy);outline:none">
+          <input id="nuEmail" type="email" placeholder="email@exemplo.com" style="border:1.5px solid var(--s2);border-radius:8px;padding:10px 12px;font-size:13px;font-family:'Nunito Sans',sans-serif;color:var(--navy);outline:none">
+          <select id="nuRole" style="border:1.5px solid var(--s2);border-radius:8px;padding:10px 12px;font-size:13px;font-family:'Nunito Sans',sans-serif;color:var(--navy);outline:none;background:#fff">
+            <option value="padrao">Padrao &#8212; registra visitas e propostas proprias</option>
+            <option value="operacional">Operacional &#8212; edita tudo em exclusividades e registro</option>
+            <option value="master">Master &#8212; acesso total + gerenciar usuarios</option>
+          </select>
+          <input id="nuSenha" type="password" placeholder="Senha inicial" style="border:1.5px solid var(--s2);border-radius:8px;padding:10px 12px;font-size:13px;font-family:'Nunito Sans',sans-serif;color:var(--navy);outline:none">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button onclick="criarUsuario()" style="flex:1;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:800;font-family:'Nunito Sans',sans-serif;cursor:pointer">Criar</button>
+          <button onclick="document.getElementById('novoUsuarioPanel').style.display='none'" style="background:none;border:1.5px solid var(--s2);border-radius:8px;padding:10px 16px;font-size:13px;font-weight:700;font-family:'Nunito Sans',sans-serif;color:var(--muted);cursor:pointer">Cancelar</button>
+        </div>
+        <div id="nuErr" style="font-size:12px;color:#EF4444;font-weight:700;margin-top:8px;min-height:16px"></div>
+      </div>
+      <div id="listaUsuarios"><div class="loading"><div class="loading-spin"></div>
     </div>
-    <div class="view" id="vAlertas"></div>
+    <div class="view" id="vLogUsuario">
+      <div class="det-topbar">
+        <button class="back-btn" onclick="switchView('vUsuarios')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Usu&#225;rios</button>
+      </div>
+      <div id="logUsuarioNomeEl" style="font-size:15px;font-weight:900;color:var(--navy);margin-bottom:4px"></div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Historico de atividades</div>
+      <div id="logFiltros" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none"></div>
+      <div id="logLista"></div>
+    </div>
   </div>
 </div>
 <script>
 var SUPA_URL='https://vtykzralkxlbqqkleofl.supabase.co';
 var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0eWt6cmFsa3hsYnFxa2xlb2ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjMyNjAsImV4cCI6MjA4OTkzOTI2MH0.rYBifw2NXqVDGrKbDWKJgrFAIdoruxxsIPc9RXibgy0';
 var sb=supabase.createClient(SUPA_URL,SUPA_KEY);
-var imoveis=[],currentUser=null,currentRole='padrao',currentNome='',currentUsuarioId=null;
+var currentUser=null,currentRole='padrao',currentNome='',currentUsuarioId=null;
+var logUsuarioId=null;var logUsuarioNomeCache='';var logFiltroAtivo='todos';var logDados=[];
+var logFiltroAtivo='todos';var logDados=[];
+var logDados=[];
+var LOG_LABELS={todos:'Todos',login:'Login',exclusividade_atualizada:'Exclusividades',visita_cadastrada:'Visitas',proposta_cadastrada:'Propostas',usuario_criado:'Usuarios criados',permissao_alterada:'Permissoes'};
 
 function switchView(id){
   document.querySelectorAll('.view').forEach(function(v){v.classList.remove('on');});
   var el=document.getElementById(id);
-  if(el){el.classList.add('on');window.scrollTo({top:0});}
+  if(el)el.classList.add('on');
+  window.scrollTo({top:0});
 }
 
 function initHeader(){var d=new Date();document.getElementById('hdrData').textContent=hoje();document.getElementById('hdrDia').textContent='Dia '+diaDoAno(d)+' / '+diasNoAno();}
@@ -242,84 +271,30 @@ function inicial(n){return(n||'?').charAt(0).toUpperCase();}
 function hoje(){var d=new Date(),m=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear();}
 function diaDoAno(d){d=d||new Date();return Math.floor((d-new Date(d.getFullYear(),0,0))/86400000);}
 function diasNoAno(a){a=a||new Date().getFullYear();return((a%4===0&&a%100!==0)||a%400===0)?366:365;}
-function renderAlertas(){var hoje=new Date();hoje.setHours(0,0,0,0);var dismissed=JSON.parse(localStorage.getItem('alertas_dismissed')||'[]');var groups=[];imoveis.forEach(function(im){var nome=(im.nome||'').toUpperCase();var alerts=[];function addAlert(nivel,msg,key){if(dismissed.indexOf(key)>=0)return;alerts.push({nivel:nivel,msg:msg,key:key});}var dataFimD=im.data_fim?new Date(im.data_fim+'T00:00:00'):null;var diasRest=dataFimD?Math.round((dataFimD-hoje)/86400000):999;var metaInt=calcMetaInterna(im);if(diasRest<=30&&diasRest>0)addAlert('critico',diasRest+'d restantes de contrato','fim_'+im.id);if(diasRest<=0)addAlert('critico','contrato vencido ha '+Math.abs(diasRest)+'d','venc_'+im.id);if(metaInt&&Math.round((new Date(metaInt+'T00:00:00')-hoje)/86400000)<=0)addAlert('critico','meta interna ultrapassada','metaint_'+im.id);if((im.total_visitas||0)===0&&im.data_midia_entregue)addAlert('atencao','campanha no ar sem visita','semvisita_'+im.id);if((im.total_propostas||0)===0&&(im.total_visitas||0)>=3)addAlert('atencao',(im.total_visitas)+'visitas sem proposta','semproposta_'+im.id);if(!im.data_gravacao_conteudo&&im.data_inicio){var diasSemGrav=diffDias(im.data_inicio,hoje.toISOString().split('T')[0]);if(diasSemGrav>30)addAlert('atencao',diasSemGrav+'d sem gravacao de conteudo','semgrav_'+im.id);}if(alerts.length)groups.push({nome:nome,alerts:alerts,id:im.id});});var nc=0,na=0;groups.forEach(function(g){g.alerts.forEach(function(a){if(a.nivel==='critico')nc++;else na++;});});var html='<div class="stats-row"><div class="stat-box" style="'+(nc>0?'background:var(--red-bg);border-color:var(--red-l)':'')+'"><div class="stat-n" style="color:'+(nc>0?'var(--red)':'var(--green)')+'">'+nc+'</div><div class="stat-l">Critico</div></div><div class="stat-box" style="'+(na>0?'background:var(--yellow-bg);border-color:var(--yellow-l)':'')+'"><div class="stat-n" style="color:'+(na>0?'var(--yellow)':'var(--green)')+'">'+na+'</div><div class="stat-l">Atencao</div></div><div class="stat-box"><div class="stat-n" style="color:var(--blue)">0</div><div class="stat-l">Melhoria</div></div></div>';groups.forEach(function(g){var gnc=g.alerts.filter(function(a){return a.nivel==='critico';}).length;var gna=g.alerts.filter(function(a){return a.nivel==='atencao';}).length;var gid='alertGrp_'+g.id;html+='<div class="card" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding-bottom:10px" onclick="toggleSecao(\''+gid+'\',this)"><div><div style="font-size:13px;font-weight:800;color:var(--navy)">'+g.nome+'</div><div style="display:flex;gap:6px;margin-top:4px">'+(gnc?'<span class="pill pill-red">'+gnc+' cr&iacute;tico</span>':'')+(gna?'<span class="pill pill-yellow">'+gna+' aten&ccedil;&atilde;o</span>':'')+'</div></div><span style="color:var(--muted);font-size:18px">&#8250;</span></div><div id="'+gid+'" style="display:none;border-top:1px solid var(--s2);padding-top:10px">';g.alerts.forEach(function(a){var cor=a.nivel==='critico'?'var(--red)':'var(--yellow)';html+='<div id="alertrow_'+a.key+'" style="display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--s2)"><div style="display:flex;align-items:flex-start;gap:8px;flex:1;cursor:pointer" onclick="switchTab(\'excl\');setTimeout(function(){openDetail(\''+g.id+'\');},100)"><div style="width:8px;height:8px;border-radius:50%;background:'+cor+';flex-shrink:0;margin-top:4px"></div><div style="font-size:12px;font-weight:600;color:var(--text);line-height:1.4">'+a.msg+'</div></div><button onclick="dismissAlerta(\''+a.key+'\')" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 0 0 10px;line-height:1;flex-shrink:0" title="Dispensar">&times;</button></div>';});html+='</div></div>';});if(!groups.length)html+='<div class="card" style="text-align:center;padding:40px"><div style="font-size:32px;margin-bottom:8px;color:var(--green)">&#10003;</div><div style="font-size:14px;font-weight:800;color:var(--green)">Tudo dentro da meta</div></div>';var badge=document.querySelector('.nav-btn[data-tab="alertas"] .nav-badge');if(badge)badge.remove();if(nc>0)document.querySelector('.nav-btn[data-tab="alertas"]').insertAdjacentHTML('beforeend','<span class="nav-badge">'+nc+'</span>');document.getElementById('vAlertas').innerHTML=html;}
-function dismissAlerta(key){var dismissed=JSON.parse(localStorage.getItem('alertas_dismissed')||'[]');if(dismissed.indexOf(key)<0)dismissed.push(key);localStorage.setItem('alertas_dismissed',JSON.stringify(dismissed));renderAlertas();}
-function fmtM(v){if(v>=1000000)return 'R$ '+(v/1000000).toFixed(1).replace('.',',')+'M';if(v>=1000)return 'R$ '+(v/1000).toFixed(0)+'K';return 'R$ '+v.toLocaleString('pt-BR');}
-function parsePrecM(preco){var s=(preco||'').trim();if(s.toUpperCase().indexOf('M')>=0){return parseFloat(s.replace(/[^\d,]/g,'').replace(',','.'))||0;}var clean=s.replace(/[R$\s]/g,'');var raw;if(clean.indexOf(',')>=0){raw=parseFloat(clean.replace(/\./g,'').replace(',','.'))||0;}else{var dots=(clean.match(/\./g)||[]).length;if(dots>1){raw=parseFloat(clean.replace(/\./g,''))||0;}else if(dots===1){var pts=clean.split('.');raw=pts[1]&&pts[1].length===3?parseFloat(clean.replace(/\./g,''))||0:parseFloat(clean)||0;}else{raw=parseFloat(clean)||0;}}return raw>=1000?raw/1000000:raw;}
 async function loginUser(){var email=document.getElementById('authEmail').value.trim();var senha=document.getElementById('authSenha').value;var btn=document.getElementById('authBtn');var err=document.getElementById('authErr');err.textContent='';if(!email||!senha){err.textContent='Preencha email e senha.';return;}btn.disabled=true;btn.textContent='Entrando...';try{var res=await sb.auth.signInWithPassword({email:email,password:senha});if(res.error)throw res.error;// onAuthStateChange will handle the rest
 async function recuperarSenha(){var email=document.getElementById('authEmail').value.trim();if(!email){document.getElementById('authErr').textContent='Digite seu email acima primeiro.';return;}var res=await sb.auth.resetPasswordForEmail(email);if(res.error){document.getElementById('authErr').textContent=res.error.message;}else{document.getElementById('authErr').style.color='#10B981';document.getElementById('authErr').textContent='Email de recuperacao enviado!';}}
 async function logoutUser(){await sb.auth.signOut();currentUser=null;currentRole='padrao';currentNome='';currentUsuarioId=null;document.getElementById('authOverlay').style.display='flex';document.getElementById('authBtn').disabled=false;document.getElementById('authBtn').textContent='Entrar';document.getElementById('authEmail').value='';document.getElementById('authSenha').value='';document.getElementById('authErr').textContent='';}
-async function onLogin(user,doLog){currentUser=user;var pr=await sb.from('usuarios').select('*').eq('auth_id',user.id).single();if(pr.data){currentRole=pr.data.role||'padrao';currentNome=pr.data.nome||user.email;currentUsuarioId=pr.data.id;}else{currentRole='padrao';currentNome=user.email;}applyRoleUI();CertNav.init('exclusividades');CertNav.setUser(currentNome,currentRole);document.getElementById('authOverlay').style.display='none';var hash=window.location.hash.slice(1);if(hash&&tabMap[hash]){history.replaceState(null,'',window.location.pathname);loadDashboard().then(function(){switchTab(hash);});}else{loadDashboard();}if(doLog)logActivity('login',null,null,null);}
+async function onLogin(user,doLog){currentUser=user;var pr=await sb.from('usuarios').select('*').eq('auth_id',user.id).single();if(pr.data){currentRole=pr.data.role||'padrao';currentNome=pr.data.nome||user.email;currentUsuarioId=pr.data.id;}else{currentRole='padrao';currentNome=user.email;}applyRoleUI();CertNav.init('usuarios');CertNav.setUser(currentNome,currentRole);document.getElementById('authOverlay').style.display='none';var hash=window.location.hash.slice(1);if(hash&&tabMap[hash]){history.replaceState(null,'',window.location.pathname);loadDashboard().then(function(){switchTab(hash);});}else{loadDashboard();}if(doLog)logActivity('login',null,null,null);}
 function applyRoleUI(){var isAdmin=currentRole==='master';var isEditor=currentRole==='operacional';var isPadrao=currentRole==='padrao';var canEdit=isAdmin||isEditor;
 function logActivity(action,entityType,entityNome,detalhes){if(!currentUser)return;sb.from('activity_log').insert({user_id:currentUser.id,user_nome:currentNome,action:action,entity_type:entityType||null,entity_nome:entityNome||null,detalhes:detalhes||null}).then(function(){});}
+async function renderUsuarios(){
+function abrirEditUsuario(uid){var p=document.getElementById('editPanel_'+uid);if(p)p.style.display=p.style.display==='none'?'block':'none';}
+function fecharEditUsuario(uid){var p=document.getElementById('editPanel_'+uid);if(p)p.style.display='none';}
+async function salvarEdicaoUsuario(uid){var nome=document.getElementById('eu_nome_'+uid).value.trim();var email=document.getElementById('eu_email_'+uid).value.trim();var role=document.getElementById('eu_role_'+uid).value;var isCorretor=document.getElementById('eu_corretor_'+uid).checked;var ativo=document.getElementById('eu_ativo_'+uid).checked;if(!nome){showToast('Nome obrigatorio.');return;}var r=await sb.from('usuarios').update({nome:nome,email:email||null,role:role,is_corretor:isCorretor,ativo:ativo}).eq('id',uid);if(r.error){showToast('Erro: '+r.error.message);}else{logActivity('usuario_editado','usuario',nome,{role:role,ativo:ativo});showToast('Usuario atualizado!');renderUsuarios();}}
+async function excluirUsuario(uid,nome,authId){if(!confirm('Excluir o usuario "'+nome+'"? Esta acao nao pode ser desfeita.'))return;try{if(authId){var sess=(await sb.auth.getSession()).data.session;if(sess){var res=await fetch(SUPA_URL+'/functions/v1/excluir-usuario',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+sess.access_token},body:JSON.stringify({auth_id:authId})});var json=await res.json();if(!res.ok)console.warn('Auth delete falhou:',json.error);}}var rd=await sb.from('usuarios').delete().eq('id',uid);if(rd.error)throw rd.error;logActivity('usuario_excluido','usuario',nome,null);showToast('Usuario excluido.');renderUsuarios();}catch(e){showToast('Erro: '+e.message);}}
+async function toggleAtivo(uid,current){var novoVal=!current;var r=await sb.from('usuarios').update({ativo:novoVal}).eq('id',uid);if(r.error){showToast('Erro: '+r.error.message);}else{showToast(novoVal?'Usuario ativado.':'Usuario desativado.');renderUsuarios();}}
+async function enviarLinkSenha(email){var r=await sb.auth.resetPasswordForEmail(email);if(r.error){showToast('Erro: '+r.error.message);}else{showToast('Link de senha enviado para '+email+'.');}}
+async function criarUsuario(){var nome=document.getElementById('nuNome').value.trim();var email=document.getElementById('nuEmail').value.trim();var role=document.getElementById('nuRole').value;var senha=document.getElementById('nuSenha').value;var err=document.getElementById('nuErr');err.textContent='';if(!nome||!email||!senha){err.textContent='Preencha todos os campos.';return;}try{var sess=(await sb.auth.getSession()).data.session;if(!sess)throw new Error('Sessao expirada.');var res=await fetch(SUPA_URL+'/functions/v1/criar-usuario',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+sess.access_token},body:JSON.stringify({nome:nome,email:email,role:role,senha:senha})});var json=await res.json();if(!res.ok)throw new Error(json.error||'Erro ao criar usuario.');document.getElementById('novoUsuarioPanel').style.display='none';document.getElementById('nuNome').value='';document.getElementById('nuEmail').value='';document.getElementById('nuSenha').value='';logActivity('usuario_criado','usuario',nome,{email:email,role:role});showToast('Usuario criado! Oriente o usuario a fazer login.');renderUsuarios();}catch(e){err.textContent=e.message||'Erro ao criar usuario.';}}
+function abrirNovoUsuario(){document.getElementById('novoUsuarioPanel').style.display='block';document.getElementById('nuNome').focus();}
+async function abrirLogUsuario(uid,nome){logUsuarioId=uid;logUsuarioNomeCache=nome;logFiltroAtivo='todos';switchTab('logUsuario');document.getElementById('logUsuarioNomeEl').textContent=nome;document.getElementById('logLista').innerHTML='<div class="loading"><div class="loading-spin"></div></div>';var r=await sb.from('activity_log').select('*').eq('user_id',uid).order('created_at',{ascending:false}).limit(200);logDados=r.data||[];renderLogFiltros();renderLogLista();}
+function renderLogFiltros(){var tipos=['todos','login','exclusividade_atualizada','visita_cadastrada','proposta_cadastrada','usuario_criado','permissao_alterada'];var contagens={todos:logDados.length};logDados.forEach(function(l){contagens[l.action]=(contagens[l.action]||0)+1;});var html=tipos.filter(function(t){return t==='todos'||contagens[t];}).map(function(t){var ativo=logFiltroAtivo===t;var n=contagens[t]||0;return '<button onclick="filtrarLog(\''+t+'\')" style="flex-shrink:0;border:1.5px solid '+(ativo?'var(--navy)':'var(--s2)')+';background:'+(ativo?'var(--navy)':'var(--white)')+';color:'+(ativo?'#fff':'var(--muted)')+';border-radius:20px;padding:6px 12px;font-size:11px;font-weight:700;font-family:\'Nunito Sans\',sans-serif;cursor:pointer;white-space:nowrap">'+(LOG_LABELS[t]||t)+(t!=='todos'?' ('+n+')':'')+'</button>';}).join('');document.getElementById('logFiltros').innerHTML=html;}
+function filtrarLog(tipo){logFiltroAtivo=tipo;renderLogFiltros();renderLogLista();}
+function renderLogLista(){var filtrado=logFiltroAtivo==='todos'?logDados:logDados.filter(function(l){return l.action===logFiltroAtivo;});var icones={login:'&#128272;',exclusividade_atualizada:'&#128203;',visita_cadastrada:'&#128682;',proposta_cadastrada:'&#128172;',usuario_criado:'&#128100;',permissao_alterada:'&#128273;'};var labels={login:'Entrou na plataforma',exclusividade_atualizada:'Atualizou exclusividade',visita_cadastrada:'Registrou visita',proposta_cadastrada:'Registrou proposta',usuario_criado:'Criou usuario',permissao_alterada:'Alterou permissao'};if(!filtrado.length){document.getElementById('logLista').innerHTML='<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Nenhuma atividade encontrada.</div>';return;}var html=filtrado.map(function(l){var dt=new Date(l.created_at);var dStr=dt.toLocaleDateString('pt-BR');var hStr=dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});var icone=icones[l.action]||'&#128204;';var label=labels[l.action]||l.action;var detalhe=l.entity_nome?'<div style="font-size:11px;color:var(--muted);margin-top:2px">'+l.entity_nome+'</div>':'';return '<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--s2)"><div style="font-size:20px;flex-shrink:0;margin-top:1px">'+icone+'</div><div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--navy)">'+label+'</div>'+detalhe+'</div><div style="text-align:right;flex-shrink:0"><div style="font-size:11px;color:var(--muted)">'+dStr+'</div><div style="font-size:11px;color:var(--muted)">'+hStr+'</div></div></div>';}).join('');document.getElementById('logLista').innerHTML='<div class="card" style="padding:0 16px">'+html+'</div>';}
 
 sb.auth.onAuthStateChange(function(event,session){if((event==='SIGNED_IN'||event==='INITIAL_SESSION')&&session&&session.user){onLogin(session.user,event==='SIGNED_IN');}else if(event==='SIGNED_OUT'){document.getElementById('authOverlay').style.display='flex';}});
 // Verificar sessao existente
 (function(){sb.auth.getSession().then(function(r){if(!r.data.session){document.getElementById('authOverlay').style.display='flex';}});})();
-
 initHeader();
-
-async function loadDashboard(){
-  try{
-    var res=await sb.from('dashboard_imoveis').select('*').order('dias_restantes',{ascending:true});
-    if(res.error)throw res.error;
-    imoveis=res.data||[];
-    renderDashboard();
-    renderAlertas();
-  }catch(err){
-    document.getElementById('dashContent').innerHTML='<div class="erro-box"><p>Erro: '+err.message+'</p><button onclick="loadDashboard()">Tentar novamente</button></div>';
-  }
-}
-
-function renderDashboard(){
-  var ativas=imoveis.filter(function(x){return x.status_exclusividade==='ativa';});
-  var repag=imoveis.filter(function(x){return x.status_exclusividade==='repaginacao';});
-  var aguard=imoveis.filter(function(x){return x.status_exclusividade==='aguardando';});
-  var vendidas=imoveis.filter(function(x){return x.status_exclusividade==='vendida';});
-  var vgv=ativas.reduce(function(s,x){return s+(parsePrecM(x.preco)||0);},0);
-  var alertasCnt=0;
-  var hoje=new Date();hoje.setHours(0,0,0,0);
-  imoveis.forEach(function(im){
-    if(!im.data_fim)return;
-    var fim=new Date(im.data_fim+'T00:00:00');
-    var diff=Math.round((fim-hoje)/86400000);
-    if(diff>=0&&diff<=30)alertasCnt++;
-  });
-  var html='<div class="card-navy" style="margin-bottom:14px">'
-    +'<div class="lbl">VGV em carteira</div>'
-    +'<div style="font-size:32px;font-weight:900;color:#fff;line-height:1">'+fmtM(Math.round(vgv*1000000))+'</div>'
-    +'<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px">'+ativas.length+' exclusividade'+(ativas.length===1?'':'s')+' ativas</div>'
-    +'</div>';
-  html+='<div class="stats-row" style="margin-bottom:14px">'
-    +'<div class="stat-box"><div class="stat-n">'+ativas.length+'</div><div class="stat-l">Em Campanha</div></div>'
-    +'<div class="stat-box"><div class="stat-n">'+repag.length+'</div><div class="stat-l">Repaginacao</div></div>'
-    +'<div class="stat-box"><div class="stat-n">'+aguard.length+'</div><div class="stat-l">Aguardando</div></div>'
-    +'<div class="stat-box"><div class="stat-n">'+vendidas.length+'</div><div class="stat-l">Vendidas</div></div>'
-    +'</div>';
-  html+='<div class="card" style="margin-bottom:12px">'
-    +'<div style="display:flex;justify-content:space-between;align-items:center">'
-    +'<div class="lbl" style="margin-bottom:0">Exclusividades</div>'
-    +'<a href="exclusividades.html" style="font-size:12px;color:var(--blue);font-weight:700;text-decoration:none">Ver pipeline &rarr;</a>'
-    +'</div>'
-    +'</div>';
-  if(alertasCnt>0){
-    html+='<div class="card" style="border-left:3px solid var(--red);margin-bottom:12px">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center">'
-      +'<div><div style="font-size:13px;font-weight:800;color:var(--red)">'+alertasCnt+' alerta'+(alertasCnt===1?'':'s')+' de prazo</div>'
-      +'<div style="font-size:11px;color:var(--muted);margin-top:2px">Exclusividades vencendo em 30 dias</div></div>'
-      +'<button onclick="switchView('vAlertas')" style="background:var(--red-bg);color:var(--red);border:none;border-radius:8px;padding:7px 12px;font-size:11px;font-weight:800;font-family:'Nunito Sans',sans-serif;cursor:pointer">Ver</button>'
-      +'</div>'
-      +'</div>';
-  }
-  document.getElementById('dashContent').innerHTML=html;
-}
-
-function applyRoleUI(){
-  var nm=document.getElementById('navNomeLabel');
-  if(nm)nm.textContent=currentNome?'Sair ('+currentNome+')':'Sair';
-}
-
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(function(){});}
 </script>
 </body>
 </html>
