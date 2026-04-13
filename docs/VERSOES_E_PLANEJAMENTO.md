@@ -2,110 +2,133 @@
 
 ---
 
-## v1.0.0 — 06/04/2026
-Pipeline inicial funcionando.
-- Dashboard com cards de exclusividades
+## v1.0.0 — 06/04/2026 — Base operacional
+
+Construido do zero. Primeira versao funcional.
+
+Adicionado:
+- Dashboard com cards de exclusividades ativas
 - Registro de visitas e propostas
-- Relatorio vendedor (link publico)
-- Autenticacao com Supabase Auth
+- Relatorio para o vendedor (link publico compartilhavel)
+- Autenticacao com Supabase Auth (email + senha)
 
 ---
 
-## v1.1.0 — 07/04/2026
-Operacao real comecando.
-- RLS configurado em todas as tabelas
-- Propostas salvando corretamente
-- Funil com dados reais (leads, visitas, propostas)
-- Nova exclusividade via modal
-- Disparos de base e parceiros
-- Acoes de venda (checklist)
-- Midia planejada vs realizada
+## v1.1.0 — 07/04/2026 — Operacao real
+
+Primeira versao usada com dados reais.
+
+Adicionado:
+- RLS configurado em todas as tabelas (seguranca)
+- Propostas salvando corretamente no banco
+- Funil com dados reais: leads, visitas, propostas
+- Modal de nova exclusividade
+- Disparos para base e para parceiros (datas + quantidades)
+- Checklist de acoes de venda (DWV, site, YouTube, Instagram, TikTok, Facebook)
+- Midia planejada vs realizada com barra de comparacao
 - Editar e excluir visitas e propostas
-- Protecao contra duplo envio
+- Protecao contra duplo envio nos formularios
 
 ---
 
-## v1.2.0 — 07/04/2026
-Visual profissional.
-- Visual estilo Pipedrive
-- Fluxo de criacao unificado no Dashboard
+## v1.2.0 — 07/04/2026 — Visual profissional
 
-### v1.2.1 — 07/04/2026
-- Corrigido: painel de propostas no Registro nao exibia registros
+Adicionado:
+- Redesign visual estilo Pipedrive
+- Fluxo de criacao unificado no Dashboard (sem paginas separadas)
+
+### v1.2.1 — 07/04/2026 — Correcao de bug
+
+Corrigido:
+- Painel de listagem de propostas no Registro nao exibia os registros
+  (mesma causa do bug anterior de visitas — chave de lookup incorreta)
 
 ---
 
-## v1.3.0 — 08/04/2026
-Dashboard reorganizado.
-- Dashboard em 4 grupos: Em Campanha, Em Repaginacao, Aguardando, Vendidas
-- Grid 3 colunas no desktop
-- Barra de topo simplificada
-- Novos status: repaginacao e aguardando
-- URL: certeiroone.vercel.app
-- Repo: github.com/gabrielcerteiro/certeiroone
-- Banco: imóveis criados e limpos
+## v1.3.0 — 08/04/2026 — Dashboard reorganizado
 
-### v1.3.1 — 12/04/2026
-Reestruturacao de navegacao.
-- Sidebar lateral estilo Pipedrive via nav.js
-- Modulos em HTMLs separados (exclusividades, vendas, usuarios)
-- Hash routing em exclusividades.html (#lista, #alertas, #detalhe/UUID, #editar/UUID)
-- Nav duplicada e header superior removidos
+Adicionado:
+- Dashboard reorganizado em 4 grupos: Em Campanha / Em Repaginacao / Aguardando / Vendidas
+- Grid de 3 colunas no desktop para exclusividades Em Campanha
+- Barra de topo com contagem de exclusividades ativas
+- Novos status operacionais: repaginacao e aguardando
+- URL renomeada para certeiroone.vercel.app
+- Repositorio renomeado para github.com/gabrielcerteiro/certeiroone
+
+Banco de dados:
+- Criados: Laguna 1202, Reserva Perequê 2101, Smart São João 506
+- Deletados: Lago di Garda 1301 e registros de teste
+
+### v1.3.1 — 12/04/2026 — Reestruturacao de navegacao
+
+Adicionado:
+- Sidebar lateral estilo Pipedrive via nav.js (compartilhada por todas as paginas)
+- Modulos em arquivos HTML separados: exclusividades.html, vendas.html, usuarios.html
+- Hash routing em exclusividades.html: #lista, #alertas, #detalhe/UUID, #editar/UUID
+- Tabela `vendas` criada no Supabase (37 campos + VGV calculado)
+- Tabela `parcelas_comissao` criada
+- 94 registros historicos de vendas inseridos no banco (V0261–V0348)
+- Skill de frontend-design instalado em ~/.claude/skills/
+
+Corrigido:
+- Nav duplicada removida do registro.html
+- Header superior (.hdr) removido de todas as paginas
 - "Plataforma Operacional" removido da sidebar
-- Tabelas vendas e parcelas_comissao criadas no Supabase
-- 94 registros historicos de vendas inseridos (V0261–V0354)
-- Bug leads_abertos corrigido no banco
-- Skill frontend-design instalado em ~/.claude/skills/
+- Bug leads_abertos: coluna criada no banco (estava faltando)
 
 ---
 
-## v1.4.0 — 13/04/2026
-UX profissional e TMM correto.
+## v1.4.0 — 13/04/2026 — UX profissional
 
-### Pipeline
-- Header redesenhado: contadores (ativas/repag/aguar) + TMM + meta fixa R$ 5,8M + pipeline futuro
-- Barra de progresso TMM: verde >= 100%, amarelo 70-99%, vermelho < 70%
-- Pipeline futuro: TMM de repaginando + aguardando exibido separado
-- Botao "+ Nova exclusividade" integrado na barra (nao mais flutuante)
+### Pipeline header
+- Label "CERTEIRO ONE — PIPELINE" removida (nao acrescentava nada)
+- Contadores integrados na barra: X ativas · X repag. · X aguar.
+- TMM total das exclusividades ativas com barra de progresso vs meta
+- Meta TMM fixa: R$ 5.800.000/mes (hardcoded)
+- Pipeline futuro: TMM de repaginando + aguardando exibido separado na barra
+- Botao "+ Nova exclusividade" integrado na barra (nao mais flutuante abaixo)
 
-### Grupos
-- Nova ordem: Em Campanha → Gestao → Repaginando → Aguardando → Vendidas → Perdidas
-- Status 'gestao': card completo com badge roxo e TMM com "(20%)"
-- Status 'repaginando': card resumido com data prevista de campanha
-- Status 'aguardando': card resumido com data de cadastro
-- Status 'perdida': card minimalista colapsado (novo renderCardPerdida)
-- TMM individual exibido nos cards Repaginando e Aguardando
+### Grupos redesenhados
+Nova ordem: Em Campanha → Gestao → Repaginando → Aguardando → Vendidas → Perdidas
 
-### UX
-- Status clicavel direto no card — popover inline sem abrir edicao
-- Indicador "Sem atualizacao ha Xd" nos cards (baseado em atualizado_em)
-- Prazo do contrato: input digitavel (nao mais select 120/180)
-- Botao editar aparece em TODOS os status para master/operacional
+- Gestao: card completo igual ao Em Campanha + badge roxo + TMM com "(20%)"
+- Repaginando: card resumido com data prevista de campanha e TMM individual
+- Aguardando: card resumido com data de cadastro e TMM individual
+- Perdidas: novo grupo colapsado com card minimalista (badge vermelho)
+- Status normalizados no banco: ativa, gestao, repaginando, aguardando, vendida, perdida
+- Removidos do banco e da interface: encerrada, inativa, renovada
 
-### TMM
-- Formula corrigida: TMM = preco x (30 / dias_tipo) — SEM honorarios
-- Dias por tipo: Repaginado=40, Mobiliado=80, Vazio=120
-- Funcao diasTMM separada de prazoMesesIm (que era usada erroneamente)
-- Formatacao: numero completo com pontos de milhar (sem M/K)
+### Melhorias de interacao
+- Status clicavel direto no card: popover inline sem precisar abrir edicao
+- Indicador "Sem atualizacao ha Xd" nos cards (campo atualizado_em)
+- Prazo do contrato: input digitavel qualquer numero (antes era select 120/180)
+- Botao editar em TODOS os status para roles master e operacional (antes bugado)
+
+### TMM corrigido
+- Formula: TMM = preco x (30 / dias_tipologia). Sem honorarios. Sem prazo_interno.
+- Dias: Repaginado = 40 / Mobiliado = 80 / Vazio = 120
+- Gestao: TMM dividido por 5 (Gabriel retém 20%)
+- Formatacao: numero completo com pontos de milhar (ex: R$ 1.162.500/mes, nunca R$ 1,2M)
+- Validacao: Soho Vazio R$2,2M → R$550.000/mes | Casa Mobiliado R$3,1M → R$1.162.500/mes
 
 ### CSS global
-- Classes cn-form, cn-grid-2/3/4, cn-full adicionadas ao nav.js
-- Aplicadas em todos os formularios de edicao
+- Classes cn-form, cn-grid-2, cn-grid-3, cn-grid-4, cn-full adicionadas ao nav.js
+- Disponıveis em todas as paginas automaticamente
+- Aplicadas nos formularios de edicao: exclusividades, registro, usuarios, vendas
 
-### vendas.html
-- Mascara R$ em tempo real nos campos de valor
-- % Comissao calculada automaticamente (honorarios/contrato)
-- Select "Tipo da Venda" substituindo is_parceria + tipo_participacao
-- Campo competencia oculto (preenchido automaticamente = data_venda)
+### Modulo vendas.html
+- Mascara R$ em tempo real nos campos valor contrato e honorarios
+- Percentual de comissao calculado automaticamente (honorarios / contrato)
+- Select "Tipo da Venda" substituindo campos separados is_parceria + tipo_participacao:
+  Venda Direta | Venda com Parceria | Venda Gestao
+- Campo competencia oculto do formulario (preenchido automaticamente = data_venda)
 - Filtro "Formato da Venda": Direta / Parceria / Gestao
-- sugerirNumeroControle ordenando por numero_controle DESC (nao created_at)
+- Numero de controle sugerido corretamente (ordenado por numero_controle, nao created_at)
 
-### Banco (Claudion direto)
-- Status normalizados: ativa, gestao, repaginando, aguardando, vendida, perdida
-- Removidos: encerrada, inativa, renovada
-- Colunas de leads por canal criadas no funil_snapshot
-- Laguna 1202: preco corrigido de "1.750M" para "1.750.000"
-- Tipos de imovel corrigidos no banco
+Banco de dados (Claudion direto):
+- Colunas de leads por canal criadas no funil_snapshot (leads_meta_ads, leads_google_ads, etc.)
+- Laguna 1202: preco corrigido de "1.750M" para "1.750.000" (formato invalido causava TMM errado)
+- Tipos de imovel corrigidos: Casa Ressacada e Marechiaro = Mobiliado, Soho = Vazio
 
 ---
 
@@ -113,89 +136,74 @@ UX profissional e TMM correto.
 
 ### Alta prioridade
 
-#### Redesign tela detalhe/edicao de exclusividade
-A tela atual abre formulario gigante full-page sem contexto.
-Construir layout dois paineis:
-- Esquerda: dados em secoes colapsaveis com edicao inline por secao
-- Direita: timeline operacional + acoes de venda (sempre visiveis)
+**Redesign tela detalhe/edicao de exclusividade** (issue #1)
+A tela atual abre formulario gigante full-page. Perda total de contexto ao editar.
+Construir layout dois paineis estilo Pipedrive:
+- Esquerda: dados em secoes colapsaveis com edicao inline por secao (nao sair da tela)
+- Direita: timeline operacional + acoes de venda sempre visiveis
 - TMM individual destacado no painel direito
-- Nao sair da tela para editar — edicao acontece inline
-Ver issue #1 no GitHub.
+- Campos com largura proporcional ao conteudo (nao mais full-width)
 
-#### Corrigir registro.html
-- Ainda le da tabela `perfis` (legado) — migrar para `usuarios`
+**Corrigir registro.html**
+- Ainda le da tabela legada `perfis` — migrar para `usuarios`
 - Roles ainda usam admin/editor — trocar para master/operacional/padrao
 - Adicionar "Disparo de parceiros" como origem de visita (hoje so existe "Disparo de base")
-
-#### Deploy das Edge Functions
-- `criar-usuario`: cria usuario no Supabase Auth + insere em `usuarios` com service_role
-- `excluir-usuario`: ja existe, verificar se esta deployada corretamente
-Ver issue #3 no GitHub.
-
-#### Busca e filtros no registro.html
 - Busca por nome do interessado
 - Filtros por: tipo (visita/proposta), exclusividade, corretor, periodo
 
-#### Anon Key para variavel de ambiente
-- Mover para Vercel Environment Variables antes de tornar repo privado
-Ver issue #2 no GitHub.
+**Deploy das Edge Functions** (issue #3)
+- `criar-usuario`: cria usuario no Supabase Auth + insere em `usuarios` com service_role
+- Verificar se `excluir-usuario` esta deployada corretamente
+
+**Anon Key para variavel de ambiente** (issue #2)
+- Mover para Vercel Environment Variables
+- Fazer antes de tornar o repositorio privado
 
 ### Media prioridade
 
-#### Webhook Pipedrive → n8n → Supabase
-- Deal Won no Pipedrive → INSERT automatico em `vendas`
-- Notificacao via WhatsApp
-Ver issue #4 no GitHub.
+**Webhook Pipedrive → n8n → Supabase** (issue #4)
+- Deal Won no Pipedrive → INSERT automatico em `vendas` + notificacao WhatsApp
 
-#### Command palette Cmd+K
+**Command palette Cmd+K** (issue #5)
 - Busca global: exclusividades, registros, acoes
 - Navegar com setas, confirmar com Enter, fechar com Esc
-Ver issue #5 no GitHub.
 
-#### Favicon e logo na aba do browser
+**Favicon e logo na aba do browser**
 - Aguardando arquivo PNG da logo para gerar favicon
 
-#### Controle de acesso por role no frontend
-- Role 'padrao': apenas visualizacao (sem botoes Atualizar/Editar)
-- Role 'operacional': edicao de dados operacionais, sem usuarios
-- Role 'master': acesso total
+**Controle de acesso por role no frontend**
+- Role padrao: so visualizacao
+- Role operacional: edicao operacional, sem acesso a usuarios
+- Role master: acesso total
 
-#### Repositorio privado
+**Repositorio privado** (issue #6)
 - Fazer apos mover Anon Key para variavel de ambiente
-Ver issue #6 no GitHub.
 
-### Ideias futuras (backlog)
+### Backlog futuro
 
-#### Aba Analise para Rafaela
-- Tabela de disparos consolidados por exclusividade
-- Funil de conversao por canal
+**Aba Analise para Rafaela** (issue #7)
 - Nao iniciar sem briefing completo aprovado pelo Claudion
-Ver issue #7 no GitHub.
 
-#### Integracao Meta Ads e Google Ads via n8n
+**Integracao automatica Meta Ads e Google Ads via n8n**
 - Puxar gastos, alcance e leads automaticamente para o funil_snapshot
 - Eliminar preenchimento manual dos campos de midia
 
-#### Modulo Financeiro — DRE simplificado
-- Integracao com Conta Azul API
-- Pre-requisito: Victoria configurar categorias v4
-- Acesso restrito: apenas role master
-Ver issue #8 no GitHub.
+**Modulo Financeiro — DRE** (issue #8)
+- Pre-requisito: Victoria configurar categorias v4 no Conta Azul
 
-#### Tabelas obsoletas
-- Remover tabelas `perfis` e `corretores` apos migrar registro.html
+**Limpeza do banco**
+- Remover tabelas obsoletas `perfis` e `corretores` apos migrar registro.html
 
-#### URLs limpas
+**URLs limpas**
 - /exclusividades/26 via vercel.json rewrites + campo slug no banco
 
 ---
 
 ## Regras de versionamento
 
-- v1.X.0 = entrega de conjunto de funcionalidades
-- v1.X.Y = correcao de bugs em versao existente
-- Toda versao entregue deve atualizar CONTEXTO_CLAUDE_CODE.md e este arquivo
-- Versao e commitada junto com o codigo, nao separada
+- v1.X.0 — entrega de funcionalidades novas
+- v1.X.Y — correcao de bugs em versao existente
+- Toda versao atualiza CONTEXTO_CLAUDE_CODE.md e este arquivo no mesmo commit
 
 ---
 
