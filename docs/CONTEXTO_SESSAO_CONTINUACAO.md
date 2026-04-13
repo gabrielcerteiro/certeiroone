@@ -15,96 +15,124 @@
 
 ## O QUE JA FOI FEITO NO BANCO (nao repetir)
 
-- Status 'encerrada' e 'inativa' convertidos para 'perdida'
-- Constraint: aceita APENAS ativa, gestao, repaginando, aguardando, vendida, perdida
+O Claudion ja executou as migrations:
+- Status 'encerrada' e 'inativa' convertidos para 'perdida' nas duas tabelas
+- Constraint atualizada para aceitar APENAS: ativa, gestao, repaginando, aguardando, vendida, perdida
+- 'renovada' removida dos valores validos
 
 ---
 
 ## TAREFA 1 — REDESENHO DOS GRUPOS E CARDS no exclusividades.html
 
-### Ordem dos grupos (topo para baixo)
+### Ordem dos grupos (do topo para baixo)
 1. EM CAMPANHA (status = 'ativa')
 2. GESTAO (status = 'gestao')
 3. EM REPAGINANDO (status = 'repaginando')
 4. AGUARDANDO (status = 'aguardando')
-5. VENDIDAS — colapsado por padrao (status = 'vendida')
-6. PERDIDAS — colapsado por padrao (status = 'perdida')
+5. VENDIDAS — colapsado por padrao, expande ao clicar (status = 'vendida')
+6. PERDIDAS — colapsado por padrao, expande ao clicar (status = 'perdida')
 
-### Cards por tipo
+### Card por tipo
 
-#### ATIVA e GESTAO — card completo com funil de barras
-- GESTAO: badge roxo "Gestao", border-left roxo (#8B5CF6), TMM com "(20%)" ao lado
-- ATIVA: comportamento atual sem alteracao
+#### ATIVA e GESTAO — card completo (igual ao atual renderCard)
+- Exibir funil de barras (Tempo, Leads, Visitas, Propostas)
+- Para GESTAO: adicionar badge roxo "Gestao" no canto superior direito do card
+- Para GESTAO: TMM individual exibido com "(20%)" ao lado
+- Border-left: verde para ativa, roxo (#8B5CF6) para gestao
 
-#### REPAGINANDO e AGUARDANDO — card resumido
-- Nome, proprietario, preco, badge status, barra de progresso
-- Data relevante:
-  - Repaginando: label "Campanha prevista a partir de" + data_repaginacao_concluida
-    (ou "Repaginacao em andamento" se nao preenchida)
-  - Aguardando: label "Cadastrado em" + data_inicio
-- Botao Atualizar + link Ver detalhe
+#### REPAGINANDO e AGUARDANDO — card resumido com data de inicio
+Card simplificado com:
+- Nome do imovel + proprietario
+- Preco
+- Badge do status (amarelo "Repaginando" ou cinza "Aguardando")
+- Data de inicio do prazo real: para Repaginando = data_repaginacao_concluida;
+  para Aguardando = data_inicio
+- Barra de progresso do contrato (dias passados / dias totais)
+- Botao "Atualizar" e link "Ver detalhe"
 
-#### PERDIDA — colapsado igual ao grupo VENDIDAS atual
-Badge vermelho "Perdida". Cards com nome, datas, observacoes.
+Label da data:
+- Repaginando: "Campanha prevista a partir de" + data_repaginacao_concluida
+  (ou "Repaginacao em andamento" se data nao preenchida)
+- Aguardando: "Cadastrado em" + data_inicio
 
-### Selects a atualizar
-- Formulario de edicao (renderEdit): APENAS ativa, repaginando, aguardando, gestao, vendida, perdida
-- Modal nova exclusividade: mesmo conjunto, remover inativa/encerrada/renovada
+#### VENDIDA — card historico (igual ao atual renderCardVendida)
+
+#### PERDIDA — card minimalista colapsado
+Badge vermelho "Perdida". Cards com: nome, data_inicio, data_fim, observacoes.
+
+### O que REMOVER
+- Grupo "Inativas" — nao existe mais
+- Status 'inativa' e 'encerrada' de todos os selects, filtros e badges
+- Select de status no formulario de edicao: APENAS ativa, repaginando, aguardando, gestao, vendida, perdida
+- Select de status no modal de nova exclusividade: APENAS ativa, repaginando, aguardando, gestao
 
 ---
 
-## TAREFA 2 — CORRIGIR TMM NOS CARDS E NA BARRA
+## TAREFA 2 — CORRECAO DA FORMULA DO TMM
 
-### Formula correta do TMM
+### Formula correta
+TMM = preco_do_imovel x (30 / dias_tipo)
 
-**IMPORTANTE: O TMM e calculado sobre o PRECO CHEIO do imovel, NAO sobre o VGV (5%).**
-
-TMM = preco_reais / dias_tipo * 30
-
-Exemplos:
-- Vazio R$ 2.200.000 / 120 dias * 30 = R$ 550.000/mes
-- Mobiliado R$ 3.100.000 / 80 dias * 30 = R$ 1.162.500/mes
-- Repaginado R$ 7.200.000 / 40 dias * 30 = R$ 5.400.000/mes
-
-Dias por tipologia (SEMPRE usar tipo_imovel, NUNCA prazo_interno_dias para TMM):
+Dias por tipologia:
 - Repaginado: 40 dias
-- Mobiliado: 80 dias
-- Vazio: 120 dias (padrao se tipo nao identificado)
+- Mobiliado:  80 dias
+- Vazio:     120 dias
 
-### Correcao no renderCard
+Exemplos de validacao:
+- Casa Ressacada, Mobiliado, R$ 3.100.000: TMM = 3.100.000 / 80 x 30 = R$ 1.162.500/mes
+- Apto Vazio, R$ 2.200.000:                TMM = 2.200.000 / 120 x 30 = R$ 550.000/mes
+- Repaginado R$ 7.200.000:                 TMM = 7.200.000 / 40 x 30 = R$ 5.400.000/mes
 
-A funcao parsePrecM retorna o preco em MILHOES (ex: 3.1 para R$ 3.100.000).
-Precisa multiplicar por 1.000.000 antes de dividir pelos dias.
+### O que mudar no codigo
 
+#### renderCard (TMM individual no card)
 ```javascript
-// REMOVER prazoMesesIm do calculo de TMM — ele usa prazo_interno_dias (errado para TMM)
-// USAR sempre os dias padrao por tipologia
+// ERRADO — usa honorarios (0.05):
+var tmmVal = parsePrecM(im.preco) * 0.05 / prazoMesesIm(im);
 
-var diasTMM = {'Repaginado': 40, 'Mobiliado': 80, 'Vazio': 120};
-var dTMM = diasTMM[im.tipo_imovel] || 120;
-var precoReais = parsePrecM(im.preco) * 1000000;
-var tmmVal = precoReais / dTMM * 30;
-// Para gestao: var tmmVal = (precoReais / dTMM * 30) / 5;
+// CORRETO — usa preco do imovel direto:
+var tmmVal = parsePrecM(im.preco) * 1000000 / prazoMesesIm(im);
+// parsePrecM retorna em milhoes (ex: 3.1 para 3.100.000)
+// multiplicar por 1000000 converte de volta para reais
+// prazoMesesIm ja retorna dias/30 (ex: 80/30 = 2.667 para Mobiliado)
+```
 
-// Formatacao: numero completo com pontos de milhar, SEM abreviacao M ou K
+Para GESTAO: dividir o resultado por 5 (Gabriel retém 20%):
+```javascript
+if (im.status_exclusividade === 'gestao') tmmVal = tmmVal / 5;
+```
+
+#### calcTMM (TMM total da barra superior)
+Localizar dentro de calcTMM:
+```javascript
+var vgv_im = preco_reais * 0.05;
+var tmm_imovel = vgv_im / (dias_tipo / 30);
+```
+
+Substituir por:
+```javascript
+var tmm_imovel = preco_reais / (dias_tipo / 30);
+```
+
+Para gestao: `if (im.status_exclusividade === 'gestao') tmm_imovel = tmm_imovel / 5;`
+
+### Regra de formatacao — numero completo, SEM abreviacao M ou K
+```javascript
 function fmtTMM(v) {
   return 'R$ ' + Math.round(v).toLocaleString('pt-BR') + '/mes';
 }
-// fmtTMM(1162500)  → "R$ 1.162.500/mes"
-// fmtTMM(550000)   → "R$ 550.000/mes"
+// fmtTMM(1162500) → "R$ 1.162.500/mes"
+// fmtTMM(550000)  → "R$ 550.000/mes"
 ```
 
-### Correcao no calcTMM (barra superior)
+Substituir a formatacao atual dos cards (que usa M/K) por fmtTMM().
+A funcao interna fmtValM dentro de calcTMM tambem deve usar toLocaleString.
 
-A funcao calcTMM ja existe e calcula um TMM diferente (baseado em honorarios/VGV)
-para fins de meta financeira. Manter essa logica para a barra superior — ela
-esta correta para o objetivo dela (comparar honorarios esperados com meta mensal).
-
-O que precisa de correcao na barra:
-1. Os elementos HTML `tmmValor` e `tmmMeta` nao existem no pipelineHeader — adicionar:
+### Bug 3: Elementos HTML do TMM nao existem na barra
+Adicionar ao pipelineHeader:
 
 ```html
-<div id="pipelineHeader" style="background:var(--navy);border-radius:var(--card-radius);padding:14px 24px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+<div id="pipelineHeader" ...>
   <span style="color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px">CERTEIRO ONE — PIPELINE</span>
   <div style="display:flex;gap:24px;align-items:center">
     <div style="text-align:right">
@@ -123,36 +151,31 @@ O que precisa de correcao na barra:
 </div>
 ```
 
-2. A funcao fmtValM interna do calcTMM deve usar numero completo:
-```javascript
-function fmtValM(v) {
-  return 'R$ ' + Math.round(v).toLocaleString('pt-BR');
-}
-```
-
 ---
 
 ## ORDEM DE EXECUCAO
 
-1. Tarefa 1 — mostrar diff, aguardar aprovacao
-2. Tarefa 2 — apos aprovacao da Tarefa 1
+1. Tarefa 1 (grupos) — mostrar diff, aguardar aprovacao
+2. Tarefa 2 (TMM) — apos aprovacao da Tarefa 1
 
 ---
 
-## VALIDACAO OBRIGATORIA
+## VALIDACAO OBRIGATORIA APOS CADA TAREFA
 
 ```bash
-grep -n "[\x80-\xFF]" exclusividades.html | head -20
-tail -3 exclusividades.html
+grep -n "[\x80-\xFF]" exclusividades.html | head -20   # zero resultados
+tail -3 exclusividades.html                              # </html> nas ultimas 3 linhas
 ```
 
-Verificacao manual: Casa Ressacada N81 (Mobiliado, R$ 3.100.000) deve exibir
-TMM = R$ 1.162.500/mes nos cards.
+Verificar no browser com Casa Ressacada (Mobiliado, R$ 3.100.000):
+- TMM no card deve exibir: R$ 1.162.500/mes
+- Se mostrar qualquer outro valor, a formula esta errada
 
 Commits:
-- `feat: redesenho grupos exclusividades nova ordem e cards por tipo`
-- `fix: TMM preco cheio sem VGV numero completo sem abreviacao`
+- `feat: redesenho grupos exclusividades - nova ordem e cards por tipo`
+- `fix: TMM formula correta - preco direto sem honorarios - numero completo`
 
 ---
 
 *Gerado por Claudion em 12/04/2026*
+*Migration de banco ja executada pelo Claudion — nao repetir SQL*
