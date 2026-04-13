@@ -1,4 +1,4 @@
-# Sessao: Pendencias vendas.html + TMM + Status
+# Sessao: Correcao TMM na barra + cards de exclusividades
 
 **Data:** 12/04/2026
 **Gerado por:** Claudion
@@ -13,155 +13,128 @@
 
 ---
 
-## CONTEXTO DO QUE JA FOI FEITO (nao repetir)
+## CONTEXTO: O QUE JA FOI FEITO NO BANCO (nao repetir)
 
-- Constraints de status no banco ja atualizadas pelo Claudion
-- 'repaginacao' renomeado para 'repaginando' nos dados
-- 'gestao' ja e status valido em exclusividades e funil_snapshot
-- vendas.html ja tem grid de campos, filtros, ordenacao e visibilidade de colunas
-
----
-
-## PENDENCIAS NAO IMPLEMENTADAS — vendas.html
-
-A sessao anterior NAO implementou os itens abaixo. Verificar o codigo atual
-do vendas.html e implementar o que estiver faltando:
+- Constraints de status ja atualizadas no Supabase
+- 'repaginacao' ja renomeado para 'repaginando' nos dados
+- 'gestao' ja e status valido
 
 ---
 
-### PENDENCIA 1 — Mascara de dinheiro nos campos de valor
+## PROBLEMA IDENTIFICADO (pelo Claudion via analise do codigo)
 
-Abrir vendas.html e verificar se os campos valor_contrato e valor_honorarios
-ja tem mascara de formatacao em tempo real.
+O arquivo exclusividades.html tem DOIS bugs de TMM:
 
-Se NAO tiverem, implementar:
-- Usuario digita `3000000` → campo exibe `R$ 3.000.000`
-- Valor salvo no Supabase: numerico puro sem formatacao
-- Extrair digitos antes do INSERT/UPDATE:
-  `parseInt(campo.value.replace(/\D/g, ''), 10) || null`
-- A mascara deve funcionar tanto no formulario de nova venda quanto no de edicao
+### BUG 1 — Barra superior nao exibe TMM
 
----
+A funcao `calcTMM()` calcula o tmm_total corretamente mas tenta atualizar
+elementos HTML que NAO EXISTEM no arquivo:
+- `document.getElementById('tmmValor')` → null
+- `document.getElementById('tmmMeta')` → null
+- `document.getElementById('tmmMeses')` → null
+- `document.getElementById('tmmAtivas')` → null
 
-### PENDENCIA 2 — % Comissao calculada automaticamente
-
-Verificar se o campo percentual_comissao e readonly e calculado automaticamente.
-
-Se NAO for, implementar:
-- Campo readonly (nao editavel pelo usuario)
-- Formula: `(valor_honorarios / valor_contrato) * 100`
-- Recalcular em tempo real sempre que valor_contrato ou valor_honorarios mudar
-- Exibir com 1 casa decimal: "6,7%"
-- Se qualquer dos dois for zero ou vazio: exibir "--"
-
----
-
-### PENDENCIA 3 — Substituir campos por "Tipo da Venda"
-
-Verificar se o formulario ainda tem os campos separados `is_parceria`
-e `tipo_participacao`.
-
-Se ainda tiver, substituir por UM unico select chamado "TIPO DA VENDA":
-
-Opcoes do select e o que cada uma preenche automaticamente no banco:
-
-  "Venda Direta"
-    → is_parceria = false
-    → tipo_participacao = 'corretor'
-    → percentual_comissao = 6
-
-  "Venda com Parceria"
-    → is_parceria = true
-    → tipo_participacao = 'corretor'
-    → percentual_comissao = 6
-    → exibir campo nome_parceiro (oculto nas outras opcoes)
-
-  "Venda Gestao"
-    → is_parceria = false
-    → tipo_participacao = 'gestao'
-    → percentual_comissao = 1
-
-Ao selecionar qualquer opcao, os tres campos de banco sao preenchidos
-automaticamente — o usuario so ve o select "Tipo da Venda".
-
-O campo nome_parceiro aparece SOMENTE quando "Venda com Parceria" for selecionado.
-
----
-
-### PENDENCIA 4 — Campo competencia oculto
-
-Verificar se o campo competencia ainda aparece no formulario.
-
-Se ainda aparecer, remover do formulario visivel.
-Ao salvar: `competencia = data_venda` (preenchido automaticamente no JS antes do INSERT).
-O campo continua existindo no banco.
-
----
-
-### PENDENCIA 5 — Filtro "Formato da Venda" na tabela
-
-Verificar se o filtro "Parceria: Sim/Nao" foi substituido por "Formato da Venda".
-
-Se NAO foi, substituir por filtro multi-select com as opcoes:
-- Todos → sem filtro
-- Venda Direta → is_parceria = false AND tipo_participacao = 'corretor'
-- Parceria → is_parceria = true
-- Gestao → tipo_participacao = 'gestao'
-
----
-
-## OUTRAS TAREFAS (apos confirmar pendencias acima)
-
-### TAREFA 2 — TMM na barra do exclusividades.html
-
-```javascript
-function calcularTMM(imovel) {
-  const preco = parseFloat(imovel.preco) || 0;
-  const vgv = preco * 0.05;
-  const diasPorTipo = { 'Repaginado': 40, 'Mobiliado': 80, 'Vazio': 120 };
-  const dias = diasPorTipo[imovel.tipo_imovel] || 120;
-  const tmm = vgv / (dias / 30);
-  return imovel.status_exclusividade === 'gestao' ? tmm / 5 : tmm;
-}
-const tmmTotal = imoveis
-  .filter(im => ['ativa','gestao'].includes(im.status_exclusividade))
-  .reduce((sum, im) => sum + calcularTMM(im), 0);
+O `pipelineHeader` so tem:
+```html
+<span>CERTEIRO ONE — PIPELINE</span>
+<span id="pipelineAtivas">- ativas</span>
 ```
-Exibir na barra como: `R$ 27.500/mes`
 
-### TAREFA 3 — Status em todos os arquivos
+FIX: adicionar os elementos de TMM no pipelineHeader. Resultado esperado:
 
-- 'repaginacao' → 'repaginando' em filtros, badges, selects, JS
-- Adicionar 'gestao' (badge: bg #EDE9FE texto #5B21B6) e 'perdida' (bg #FEE2E2 texto #991B1B)
-- Arquivos: exclusividades.html, index.html, registro.html
+```html
+<div id="pipelineHeader" ...>
+  <span>CERTEIRO ONE — PIPELINE</span>
+  <div style="display:flex;gap:24px;align-items:center">
+    <div style="text-align:right">
+      <div style="color:rgba(255,255,255,0.45);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Exclusividades ativas</div>
+      <div id="pipelineAtivas" style="color:#fff;font-size:13px;font-weight:800">-</div>
+    </div>
+    <div style="text-align:right">
+      <div style="color:rgba(255,255,255,0.45);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase">TMM total</div>
+      <div id="tmmValor" style="color:#34D399;font-size:13px;font-weight:800">-</div>
+    </div>
+    <div style="text-align:right">
+      <div style="color:rgba(255,255,255,0.45);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Meta mensal</div>
+      <div id="tmmMeta" style="color:rgba(255,255,255,0.7);font-size:13px;font-weight:800">-</div>
+    </div>
+  </div>
+</div>
+```
 
-### TAREFA 4 — Grupo Gestao no dashboard
+### BUG 2 — TMM nos cards individuais usa preco bruto ao inves de VGV
 
-- Novo grupo no index.html para status 'gestao'
-- Badge roxo, TMM com "(20%)" ao lado
+Na funcao `renderCard`, o TMM e calculado assim:
+```javascript
+var tmmVal = parsePrecM(im.preco) / prazoMesesIm(im);
+```
+
+Isso usa o preco bruto. O correto e usar o VGV = preco * 0.05:
+```javascript
+var tmmVal = parsePrecM(im.preco) * 0.05 / prazoMesesIm(im);
+```
+
+A funcao prazoMesesIm ja usa os dias certos por tipologia (Repaginado 40d,
+Mobiliado 80d, Vazio 120d) — so falta o * 0.05.
+
+Exemplo correto: apto vazio R$ 2.200.000
+- VGV = 2.200.000 * 0.05 = 110.000
+- Meses = 120 / 30 = 4
+- TMM = 110.000 / 4 = R$ 27.500/mes (nao R$ 550.000)
+
+Tambem ajustar a formatacao do TMM no card para exibir como dinheiro:
+- Atual: `R$ 0,6 M` (errado — estava usando o preco bruto)
+- Correto: `R$ 27.500/mes` (usando VGV)
+
+Funcao de formatacao para o TMM do card:
+```javascript
+function fmtTMM(v) {
+  if (v >= 1000000) return 'R$ ' + (v/1000000).toFixed(1).replace('.',',') + 'M/mes';
+  if (v >= 1000) return 'R$ ' + Math.round(v/1000) + 'K/mes';
+  return 'R$ ' + Math.round(v).toLocaleString('pt-BR') + '/mes';
+}
+```
 
 ---
 
-## ORDEM DE EXECUCAO
+## TAREFA — CORRIGIR OS DOIS BUGS
 
-1. Verificar e corrigir as 5 pendencias do vendas.html — mostrar o que encontrou e o que mudou, aguardar aprovacao
-2. Tarefas 2, 3, 4 — apos aprovacao
+1. No `pipelineHeader`: adicionar os elementos `tmmValor`, `tmmMeta` conforme
+   estrutura acima. Manter `pipelineAtivas` existente.
+
+2. Na funcao `renderCard`: corrigir o calculo do TMM adicionando `* 0.05`
+   e atualizar a formatacao para usar `fmtTMM()`.
+
+3. Verificar se a funcao `calcTMM` ja atualiza `tmmValor` e `tmmMeta`
+   corretamente. Se sim, nao mexer na logica — so adicionar os elementos HTML.
 
 ---
 
-## VALIDACAO OBRIGATORIA APOS CADA ARQUIVO
+## PENDENCIAS ADICIONAIS (apos corrigir TMM)
+
+Se sobrar tempo na sessao, verificar e implementar se ainda nao estiver feito:
+
+### vendas.html
+- Mascara R$ nos campos valor_contrato e valor_honorarios
+- Campo % comissao calculado automaticamente (honorarios / contrato * 100)
+- Select "Tipo da Venda" substituindo is_parceria + tipo_participacao
+- Campo competencia oculto (preenchido automaticamente = data_venda)
+- Filtro "Formato da Venda" substituindo "Parceria: Sim/Nao"
+
+---
+
+## VALIDACAO OBRIGATORIA
 
 ```bash
-grep -n "[\x80-\xFF]" ARQUIVO.html | head -20
-tail -3 ARQUIVO.html
+grep -n "[\x80-\xFF]" exclusividades.html | head -20   # zero resultados
+tail -3 exclusividades.html                              # </html> nas ultimas 3 linhas
 ```
 
 Commits:
-- `fix: pendencias UX vendas.html - mascara, comissao auto, tipo venda, filtro formato`
-- `feat: TMM na barra de exclusividades`
-- `fix: status repaginando e badges gestao perdida`
-- `feat: grupo gestao no dashboard`
+- `fix: TMM correto na barra e nos cards de exclusividades`
+- `fix: pendencias UX vendas.html` (se implementar)
 
 ---
 
 *Gerado por Claudion em 12/04/2026*
+*Analise tecnica direta do codigo — bugs identificados com precisao*
