@@ -86,7 +86,15 @@ function navCSS(){
     '}',
     '.cn-topbar{display:flex;align-items:center;gap:8px;background:var(--cn-bg);padding:12px 16px;position:sticky;top:0;z-index:200}',
     '.cn-topbar-brand{color:#fff;font-size:13px;font-weight:900;letter-spacing:2px;text-transform:uppercase;font-family:"Nunito Sans",sans-serif}',
-    '@media(min-width:900px){.cn-topbar{display:none!important}}'
+    '@media(min-width:900px){.cn-topbar{display:none!important}}',
+    '.cn-form{max-width:760px;margin:0 auto}',
+    '.cn-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}',
+    '.cn-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}',
+    '.cn-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}',
+    '.cn-full{grid-column:1/-1}',
+    '@media(max-width:899px){.cn-grid-3,.cn-grid-4{grid-template-columns:1fr 1fr}}',
+    '@media(max-width:479px){.cn-grid-2,.cn-grid-3,.cn-grid-4{grid-template-columns:1fr}}',
+    '.cn-grid-2>.edit-row,.cn-grid-3>.edit-row,.cn-grid-4>.edit-row{border-bottom:none}'
   ].join('');
 }
 

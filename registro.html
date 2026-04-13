@@ -591,10 +591,12 @@ function selCorretor(el,id,nome,creci){
 function renderInteressado(){
   var origens=['Meta Ads','Google Ads','Instagram Organico','Indicacao','Disparo de base','Corretor parceiro','Site / Organico','YouTube','TikTok','Relacionamento','Outro'];
   var html='<div class="section-title">Dados do interessado</div>'+
+  '<div class="cn-grid-2">'+
   '<div class="field"><div class="field-lbl">Nome do interessado <span class="req">*</span></div>'+
   '<input type="text" class="finput" id="fNome" placeholder="Nome completo" value="'+escHtml(S.nome)+'" oninput="S.nome=this.value"></div>'+
   '<div class="field"><div class="field-lbl">Data da visita <span class="req">*</span></div>'+
   '<input type="date" class="finput" id="fData" value="'+(S.data||hoje())+'" onchange="S.data=this.value"></div>'+
+  '</div>'+
   '<div class="field"><div class="field-lbl">Origem do lead</div><div class="chips" id="origensWrap">';
   for(var i=0;i<origens.length;i++){
     var s=S.origem===origens[i];
@@ -942,10 +944,12 @@ function editarVisita(id){
     '<div class="edit-modal-body">'+
     '<div class="field"><div class="field-lbl">Nome do interessado</div>'+
     '<input type="text" class="finput" id="ev_nome" value="'+escHtml(v.nome_interessado||'')+'"></div>'+
+    '<div class="cn-grid-2">'+
     '<div class="field"><div class="field-lbl">Data da visita</div>'+
     '<input type="date" class="finput" id="ev_data" value="'+(v.data_visita||'')+'"></div>'+
     '<div class="field"><div class="field-lbl">Hora</div>'+
     '<input type="time" class="finput" id="ev_hora" value="'+(v.hora_visita||'')+'"></div>'+
+    '</div>'+
     '<div class="field"><div class="field-lbl">Corretor</div>'+
     '<input type="text" class="finput" id="ev_corretor" value="'+escHtml(v.corretor||'')+'" list="evCorretoresList"></div>'+
     '<datalist id="evCorretoresList">';
@@ -1042,10 +1046,12 @@ function editarProposta(id){
     '<div class="edit-modal-body">'+
     '<div class="field"><div class="field-lbl">Nome do interessado</div>'+
     '<input type="text" class="finput" id="ep_nome" value="'+escHtml(p.nome_interessado||'')+'"></div>'+
+    '<div class="cn-grid-2">'+
     '<div class="field"><div class="field-lbl">Data</div>'+
     '<input type="date" class="finput" id="ep_data" value="'+(p.data||'')+'"></div>'+
     '<div class="field"><div class="field-lbl">Valor proposto</div>'+
     '<div class="valor-wrap"><span class="valor-prefix">R$</span><input type="text" inputmode="numeric" class="valor-input" id="ep_valor" placeholder="0" value="'+escHtml(valorFmt)+'" oninput="mascaraValor(this)"></div></div>'+
+    '</div>'+
     '<div class="field"><div class="field-lbl">Forma de pagamento</div><div class="chips" id="ep_pagto">';
   for(var pi=0;pi<pts.length;pi++){var psel=p.forma_pagamento===pts[pi].v;html+='<div class="chip'+(psel?' sel sel-active':'')+'" data-val="'+pts[pi].v+'" onclick="epSelPagto(this)">'+escHtml(pts[pi].l)+'</div>';}
   html+='</div></div><div class="field"><div class="field-lbl">Status</div><div class="chips" id="ep_status">';
