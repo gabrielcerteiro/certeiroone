@@ -79,7 +79,7 @@ function navCSS(){
     '}',
     '@media(max-width:899px){',
     '.cn-sidebar{position:fixed!important;left:-230px;top:0;height:100%;width:220px;',
-    'flex-direction:column;display:flex!important;',
+    'flex-direction:column;display:flex!important;z-index:500;',
     'transition:left .25s ease;box-shadow:4px 0 24px rgba(0,0,0,0.3)}',
     '.cn-sidebar.open{left:0}',
     '.cn-page{padding:14px 16px 80px}',
