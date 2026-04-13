@@ -4,7 +4,9 @@ V0250,Velazquez 1301,Vazio,Nao,Sim,Nao,negocio_concluido
 V0251,Casa Parque Atalaia,Mobiliado,Nao,Nao,Nao,negocio_concluido
 V0252,Terreno Aririba BC,Terreno,Nao,Nao,Nao,negocio_concluido
 V0253,Soul Brava 502,Na planta,Nao,Sim,Nao,negocio_concluido
+V0258,Saint Moritz 1004,Mobiliado,Sim,Nao,Sim,negocio_concluido
 V0259,Pantai Brava 2102,Na planta,Nao,Sim,Nao,negocio_concluido
+V0260,Garden Club 904B,Mobiliado,Nao,Nao,Nao,negocio_concluido
 V0261,Casa Dom Bosco 85,Mobiliado,Sim,Nao,Nao,negocio_concluido
 V0262,Marettimo 802,Mobiliado,Sim,Nao,Nao,negocio_concluido
 V0263,Sao Vicente 601F,Na planta,Nao,Nao,Nao,negocio_concluido
@@ -42,7 +44,6 @@ V0294,Terreno Bombinhas,,,,,cancelado
 V0295,Classic 1101,Vazio,Sim,Nao,Nao,negocio_concluido
 V0296,Marechiaro 102,Mobiliado,Sim,Nao,Nao,negocio_concluido
 V0297,Torre de Vedras 901,Repaginado,Sim,Nao,Nao,negocio_concluido
-V0298,Classic 1901 (LPC),,,,,cancelado
 V0299,Valencia 1302,Mobiliado,Nao,Nao,Sim,negocio_concluido
 V0300,Felice Due 301,Mobiliado,Sim,Nao,Nao,negocio_concluido
 V0301,Permuta Amores,Permuta,Nao,Nao,Nao,negocio_concluido
@@ -88,7 +89,7 @@ V0340,Parque Europeu,Mobiliado,Nao,Nao,Nao,negocio_concluido
 V0341,November 1302,Mobiliado,Nao,Nao,Nao,negocio_concluido
 V0342,Solares Brava 801,Repaginado,Sim,Sim,Sim,negocio_concluido
 V0343,Terreno Fiore Di Milano (Lucas),,,,,cancelado
-V0344,Cezanne 1701,,,,,cancelado
+V0344,Cezanne 1701,,,Sim,,,cancelado
 V0345,Serenity 801,Vazio,Sim,Nao,Nao,negocio_concluido
 V0346,Montpellier 1601,Mobiliado,Nao,Nao,Sim,negocio_concluido
 V0347,Beira Rio 804,Mobiliado,Sim,Nao,Nao,negocio_concluido
