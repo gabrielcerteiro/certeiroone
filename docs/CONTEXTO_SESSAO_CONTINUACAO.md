@@ -15,77 +15,96 @@
 
 ## O QUE JA FOI FEITO NO BANCO (nao repetir)
 
-O Claudion ja executou as migrations:
-- Status 'encerrada' e 'inativa' convertidos para 'perdida' nas duas tabelas
-- Constraint atualizada para aceitar APENAS: ativa, gestao, repaginando, aguardando, vendida, perdida
-- 'renovada' removida dos valores validos
+- Status 'encerrada' e 'inativa' convertidos para 'perdida'
+- Constraint: aceita APENAS ativa, gestao, repaginando, aguardando, vendida, perdida
 
 ---
 
 ## TAREFA 1 — REDESENHO DOS GRUPOS E CARDS no exclusividades.html
 
-### Ordem dos grupos (do topo para baixo)
+### Ordem dos grupos (topo para baixo)
 1. EM CAMPANHA (status = 'ativa')
 2. GESTAO (status = 'gestao')
 3. EM REPAGINANDO (status = 'repaginando')
 4. AGUARDANDO (status = 'aguardando')
-5. VENDIDAS — colapsado por padrao, expande ao clicar (status = 'vendida')
-6. PERDIDAS — colapsado por padrao, expande ao clicar (status = 'perdida')
+5. VENDIDAS — colapsado por padrao (status = 'vendida')
+6. PERDIDAS — colapsado por padrao (status = 'perdida')
 
-### Card por tipo
+### Cards por tipo
 
-#### ATIVA e GESTAO — card completo (igual ao atual renderCard)
-- Exibir funil de barras (Tempo, Leads, Visitas, Propostas)
-- Para GESTAO: adicionar badge roxo "Gestao" no canto superior direito do card
-- Para GESTAO: TMM individual exibido com "(20%)" ao lado
-- Border-left: verde para ativa, roxo (#8B5CF6) para gestao
+#### ATIVA e GESTAO — card completo com funil de barras
+- GESTAO: badge roxo "Gestao", border-left roxo (#8B5CF6), TMM com "(20%)" ao lado
+- ATIVA: comportamento atual sem alteracao
 
-#### REPAGINANDO e AGUARDANDO — card resumido com data de inicio
-Card simplificado com:
-- Nome do imovel + proprietario
-- Preco
-- Badge do status (amarelo "Repaginando" ou cinza "Aguardando")
-- Data de inicio do prazo real: para Repaginando = data_repaginacao_concluida
-  (quando a repaginacao termina e o prazo real começa); para Aguardando =
-  data_inicio (quando o imovel foi cadastrado, prazo so vale quando liberar)
-- Barra de progresso do contrato (dias passados / dias totais)
-- Botao "Atualizar" e link "Ver detalhe"
+#### REPAGINANDO e AGUARDANDO — card resumido
+- Nome, proprietario, preco, badge status, barra de progresso
+- Data relevante:
+  - Repaginando: label "Campanha prevista a partir de" + data_repaginacao_concluida
+    (ou "Repaginacao em andamento" se nao preenchida)
+  - Aguardando: label "Cadastrado em" + data_inicio
+- Botao Atualizar + link Ver detalhe
 
-Label da data por tipo:
-- Repaginando: "Campanha prevista a partir de" + data_repaginacao_concluida
-  (ou "Repaginacao em andamento" se data nao preenchida)
-- Aguardando: "Cadastrado em" + data_inicio
+#### PERDIDA — colapsado igual ao grupo VENDIDAS atual
+Badge vermelho "Perdida". Cards com nome, datas, observacoes.
 
-#### VENDIDA — card historico (igual ao atual renderCardVendida, ja existe)
-
-#### PERDIDA — card minimalista colapsado
-Mesmo padrao visual do grupo VENDIDAS: botao para expandir/colapsar,
-dentro mostra cards com: nome, data_inicio, data_fim (se tiver), observacoes.
-Badge vermelho "Perdida".
-
-### O que REMOVER
-- Grupo "Inativas" — nao existe mais
-- Status 'inativa' e 'encerrada' de todos os selects, filtros e badges
-- O select de status do formulario de edicao deve ter APENAS:
-  Em campanha (ativa), Repaginando, Aguardando, Gestao, Vendida, Perdida
-
-### O que ATUALIZAR nos selects do modal de nova exclusividade
-Opcoes do campo "Status inicial":
-- Em campanha (ativa) → value="ativa"
-- Repaginando → value="repaginando"
-- Aguardando → value="aguardando"
-- Gestao → value="gestao"
+### Selects a atualizar
+- Formulario de edicao (renderEdit): APENAS ativa, repaginando, aguardando, gestao, vendida, perdida
+- Modal nova exclusividade: mesmo conjunto, remover inativa/encerrada/renovada
 
 ---
 
-## TAREFA 2 — TMM: BARRA SUPERIOR + CARDS
+## TAREFA 2 — CORRIGIR TMM NOS CARDS E NA BARRA
 
-### Bug 1: Barra superior nao exibe TMM
-A funcao `calcTMM()` calcula corretamente mas os elementos HTML nao existem.
-Adicionar ao `pipelineHeader`:
+### Formula correta do TMM
+
+**IMPORTANTE: O TMM e calculado sobre o PRECO CHEIO do imovel, NAO sobre o VGV (5%).**
+
+TMM = preco_reais / dias_tipo * 30
+
+Exemplos:
+- Vazio R$ 2.200.000 / 120 dias * 30 = R$ 550.000/mes
+- Mobiliado R$ 3.100.000 / 80 dias * 30 = R$ 1.162.500/mes
+- Repaginado R$ 7.200.000 / 40 dias * 30 = R$ 5.400.000/mes
+
+Dias por tipologia (SEMPRE usar tipo_imovel, NUNCA prazo_interno_dias para TMM):
+- Repaginado: 40 dias
+- Mobiliado: 80 dias
+- Vazio: 120 dias (padrao se tipo nao identificado)
+
+### Correcao no renderCard
+
+A funcao parsePrecM retorna o preco em MILHOES (ex: 3.1 para R$ 3.100.000).
+Precisa multiplicar por 1.000.000 antes de dividir pelos dias.
+
+```javascript
+// REMOVER prazoMesesIm do calculo de TMM — ele usa prazo_interno_dias (errado para TMM)
+// USAR sempre os dias padrao por tipologia
+
+var diasTMM = {'Repaginado': 40, 'Mobiliado': 80, 'Vazio': 120};
+var dTMM = diasTMM[im.tipo_imovel] || 120;
+var precoReais = parsePrecM(im.preco) * 1000000;
+var tmmVal = precoReais / dTMM * 30;
+// Para gestao: var tmmVal = (precoReais / dTMM * 30) / 5;
+
+// Formatacao: numero completo com pontos de milhar, SEM abreviacao M ou K
+function fmtTMM(v) {
+  return 'R$ ' + Math.round(v).toLocaleString('pt-BR') + '/mes';
+}
+// fmtTMM(1162500)  → "R$ 1.162.500/mes"
+// fmtTMM(550000)   → "R$ 550.000/mes"
+```
+
+### Correcao no calcTMM (barra superior)
+
+A funcao calcTMM ja existe e calcula um TMM diferente (baseado em honorarios/VGV)
+para fins de meta financeira. Manter essa logica para a barra superior — ela
+esta correta para o objetivo dela (comparar honorarios esperados com meta mensal).
+
+O que precisa de correcao na barra:
+1. Os elementos HTML `tmmValor` e `tmmMeta` nao existem no pipelineHeader — adicionar:
 
 ```html
-<div id="pipelineHeader" ...>
+<div id="pipelineHeader" style="background:var(--navy);border-radius:var(--card-radius);padding:14px 24px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
   <span style="color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px">CERTEIRO ONE — PIPELINE</span>
   <div style="display:flex;gap:24px;align-items:center">
     <div style="text-align:right">
@@ -104,50 +123,36 @@ Adicionar ao `pipelineHeader`:
 </div>
 ```
 
-### Bug 2: TMM nos cards usa preco bruto ao inves de VGV
-Na funcao `renderCard`, corrigir:
+2. A funcao fmtValM interna do calcTMM deve usar numero completo:
 ```javascript
-// ERRADO (atual):
-var tmmVal = parsePrecM(im.preco) / prazoMesesIm(im);
-
-// CORRETO:
-var tmmVal = parsePrecM(im.preco) * 0.05 / prazoMesesIm(im);
-```
-
-### Regra de formatacao TMM — numero completo, SEM abreviacao M ou K
-```javascript
-function fmtTMM(v) {
-  return 'R$ ' + Math.round(v).toLocaleString('pt-BR') + '/mes';
+function fmtValM(v) {
+  return 'R$ ' + Math.round(v).toLocaleString('pt-BR');
 }
-// fmtTMM(27500)    → "R$ 27.500/mes"
-// fmtTMM(110000)   → "R$ 110.000/mes"
 ```
-
-Aplicar em: card individual + barra superior (tmmValor e tmmMeta).
-A funcao interna `fmtValM` dentro de `calcTMM` tambem deve usar
-`toLocaleString('pt-BR')` ao inves de abreviar com M/K.
 
 ---
 
 ## ORDEM DE EXECUCAO
 
-1. Tarefa 1 (grupos e cards) — mostrar diff, aguardar aprovacao
-2. Tarefa 2 (TMM) — apos aprovacao da Tarefa 1
+1. Tarefa 1 — mostrar diff, aguardar aprovacao
+2. Tarefa 2 — apos aprovacao da Tarefa 1
 
 ---
 
-## VALIDACAO OBRIGATORIA APOS CADA ARQUIVO
+## VALIDACAO OBRIGATORIA
 
 ```bash
-grep -n "[\x80-\xFF]" exclusividades.html | head -20   # zero resultados
-tail -3 exclusividades.html                              # </html> nas ultimas 3 linhas
+grep -n "[\x80-\xFF]" exclusividades.html | head -20
+tail -3 exclusividades.html
 ```
 
+Verificacao manual: Casa Ressacada N81 (Mobiliado, R$ 3.100.000) deve exibir
+TMM = R$ 1.162.500/mes nos cards.
+
 Commits:
-- `feat: redesenho grupos exclusividades - nova ordem e cards por tipo`
-- `fix: TMM correto na barra e nos cards com numero completo`
+- `feat: redesenho grupos exclusividades nova ordem e cards por tipo`
+- `fix: TMM preco cheio sem VGV numero completo sem abreviacao`
 
 ---
 
 *Gerado por Claudion em 12/04/2026*
-*Migration de banco ja executada pelo Claudion — nao repetir SQL*
