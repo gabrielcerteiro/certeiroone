@@ -335,7 +335,7 @@ async function loadImoveis(){
 }
 
 async function loadCorretores(){
-  var res=await sb.from('corretores').select('id,nome,creci,foto_url').eq('ativo',true).order('nome');
+  var res=await sb.from('usuarios').select('id,nome,creci,foto_url').eq('is_corretor',true).eq('ativo',true).order('nome');
   if(res.error)throw res.error;
   corretores=res.data||[];
 }
