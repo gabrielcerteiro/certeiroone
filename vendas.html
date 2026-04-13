@@ -135,7 +135,7 @@ var sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 var currentUser=null,currentRole='padrao',currentNome='',currentUsuarioId=null;
 var tabMap={lista:'vList',nova:'vNova',detalhe:'vDetalhe',editar:'vEdit'};
 var vendas=[],excList=[],vendaAtual=null,parcelasForm=[];
-var filtros={status:['contrato_assinado','negocio_concluido'],anos:[],tipologias:[],construtora:'',parceria:''};
+var filtros={status:['contrato_assinado','negocio_concluido'],anos:[],tipologias:[],construtora:'',formato:[]};
 var sortCol='data_venda',sortDir='desc';
 var colVis={nc:true,nome:true,data:true,contrato:true,vgv:true,status:true,tipologia:false,parceria:false,construtora:false};
 var openDd=null;
@@ -218,8 +218,10 @@ function renderLista(){
     if(filtros.tipologias.length&&filtros.tipologias.indexOf(v.imovel_tipologia)===-1)return false;
     if(filtros.construtora==='sim'&&!v.is_construtora)return false;
     if(filtros.construtora==='nao'&&v.is_construtora)return false;
-    if(filtros.parceria==='sim'&&!v.is_parceria)return false;
-    if(filtros.parceria==='nao'&&v.is_parceria)return false;
+    if(filtros.formato.length){
+      var fmt=v.tipo_participacao==='gestao'?'gestao':(v.is_parceria?'parceria':'direta');
+      if(filtros.formato.indexOf(fmt)===-1)return false;
+    }
     return true;
   });
 
@@ -303,7 +305,8 @@ function renderLista(){
   if(anoItems.length)h+=multiDd('anos','Ano',anoItems,filtros.anos,'anos');
   h+=multiDd('tipologia','Tipologia',tipItems,filtros.tipologias,'tipologias');
   h+=singleDd('construtora','Construtora',[{v:'',l:'Todos'},{v:'sim',l:'Sim'},{v:'nao',l:'Nao'}],filtros.construtora);
-  h+=singleDd('parceria','Parceria',[{v:'',l:'Todos'},{v:'sim',l:'Sim'},{v:'nao',l:'Nao'}],filtros.parceria);
+  var fmtItems=[{v:'direta',l:'Venda Direta'},{v:'parceria',l:'Parceria'},{v:'gestao',l:'Gestao'}];
+  h+=multiDd('formato','Formato',fmtItems,filtros.formato,'formato');
   // Colunas toggle
   h+='<div class="filter-dropdown" style="margin-left:auto">';
   h+='<button class="filter-dd-btn" onclick="event.stopPropagation();toggleDd(\'colunas\')">Colunas'+ddArrow()+'</button>';
@@ -470,6 +473,7 @@ async function abrirNova(){
   parcelasForm=[];
   var nc=await sugerirNumeroControle();
   document.getElementById('novaContent').innerHTML=buildForm(null,nc,false);
+  aplicarMascaras();
 }
 
 async function abrirEditar(id){
@@ -482,6 +486,7 @@ async function abrirEditar(id){
     var rp=await sb.from('parcelas_comissao').select('*').eq('venda_id',id).order('numero_parcela');
     parcelasForm=(rp.data||[]).map(function(p){return{id:p.id,valor:p.valor||'',data_prevista:p.data_prevista||'',condicao_evento:p.condicao_evento||'',status:p.status||'pendente'};});
     document.getElementById('editContent').innerHTML=buildForm(vendaAtual,null,true);
+    aplicarMascaras();
   }catch(err){
     document.getElementById('editContent').innerHTML='<div class="erro-box"><p>Erro: '+err.message+'</p><button onclick="switchView(\'vList\')">Voltar</button></div>';
   }
@@ -493,6 +498,10 @@ function buildForm(v,nc,isEdit){
   var saveFn=isEdit?'atualizarVenda(\''+vv.id+'\')':'salvarVenda()';
   var backFn=isEdit?'switchView(\'vDetalhe\')':'switchView(\'vList\')';
   var vgvCalc=vv.valor_honorarios?fmtM(Number(vv.valor_honorarios)/0.05):'-';
+  var pctInit=(vv.valor_contrato&&vv.valor_honorarios)?((vv.valor_honorarios/vv.valor_contrato)*100).toFixed(1).replace('.',',')+'%':'--';
+  var maskCtrato=vv.valor_contrato?parseInt(vv.valor_contrato,10).toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}):'';
+  var maskHon=vv.valor_honorarios?parseInt(vv.valor_honorarios,10).toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}):'';
+  var tipoVendaInit=vv.tipo_participacao==='gestao'?'gestao':(vv.is_parceria?'parceria':'direta');
 
   var h='<div class="form-wrap">';
   h+='<div class="det-topbar">';
@@ -510,12 +519,11 @@ function buildForm(v,nc,isEdit){
   });
   h+='</select></div></div>';
 
-  // Dados da venda (4 colunas: num.controle, data, competencia, status)
+  // Dados da venda (3 colunas: num.controle, data, status)
   h+='<div class="edit-section"><div class="edit-section-title">Dados da venda</div>';
   h+='<div class="form-grid-4">';
   h+='<div class="fg"><div class="edit-lbl">Num. controle</div><input id="f_nc" class="edit-input" value="'+(vv.numero_controle||nc||'')+'"></div>';
   h+='<div class="fg"><div class="edit-lbl">Data da venda</div><input id="f_dv" class="edit-input" type="date" value="'+(vv.data_venda||'')+'"></div>';
-  h+='<div class="fg"><div class="edit-lbl">Competencia</div><input id="f_comp" class="edit-input" type="date" value="'+(vv.competencia||'')+'"></div>';
   h+='<div class="fg"><div class="edit-lbl">Status</div><select id="f_status" class="edit-input">';
   [{v:'contrato_assinado',l:'Contrato assinado'},{v:'negocio_concluido',l:'Negocio concluido'},{v:'cancelado',l:'Cancelado'},{v:'sem_comissao',l:'Sem comissao'}].forEach(function(s){h+='<option value="'+s.v+'"'+((vv.status_venda||'contrato_assinado')===s.v?' selected':'')+'>'+s.l+'</option>';});
   h+='</select></div>';
@@ -554,19 +562,22 @@ function buildForm(v,nc,isEdit){
   // Valores (2 colunas)
   h+='<div class="edit-section"><div class="edit-section-title">Valores</div>';
   h+='<div class="form-grid">';
-  h+='<div class="fg"><div class="edit-lbl">Valor contrato (R$)</div><input id="f_vctrato" class="edit-input" type="number" step="0.01" value="'+(vv.valor_contrato||'')+'" oninput="atualizarVGV()"></div>';
-  h+='<div class="fg"><div class="edit-lbl">Honorarios (R$)</div><input id="f_vhon" class="edit-input" type="number" step="0.01" value="'+(vv.valor_honorarios||'')+'" oninput="atualizarVGV()"></div>';
+  h+='<div class="fg"><div class="edit-lbl">Valor contrato</div><input id="f_vctrato" class="edit-input" type="text" inputmode="numeric" value="'+maskCtrato+'" oninput="atualizarVGV()" placeholder="R$ 0"></div>';
+  h+='<div class="fg"><div class="edit-lbl">Honorarios</div><input id="f_vhon" class="edit-input" type="text" inputmode="numeric" value="'+maskHon+'" oninput="atualizarVGV()" placeholder="R$ 0"></div>';
   h+='<div class="fg"><div class="edit-lbl">VGV (calculado)</div><input id="f_vgv" class="edit-input" readonly value="'+vgvCalc+'" style="background:var(--s2)"></div>';
-  h+='<div class="fg"><div class="edit-lbl">% Comissao</div><input id="f_pct" class="edit-input" type="number" step="0.1" value="'+(vv.percentual_comissao||6)+'"></div>';
-  h+='<div class="fg"><div class="edit-lbl">E parceria?</div><select id="f_isp" class="edit-input"><option value="false"'+(!vv.is_parceria?' selected':'')+'>Nao</option><option value="true"'+(vv.is_parceria?' selected':'')+'>Sim</option></select></div>';
-  h+='<div class="fg"><div class="edit-lbl">Nome do parceiro</div><input id="f_parc" class="edit-input" value="'+(vv.parceiro_nome||'')+'"></div>';
+  h+='<div class="fg"><div class="edit-lbl">% Comissao</div><input id="f_pct" class="edit-input" readonly value="'+pctInit+'" style="background:var(--s2)"><div id="f_pct_hint" style="font-size:10px;color:var(--muted);margin-top:3px">Calculado automaticamente</div></div>';
+  h+='<div class="fg span-full"><div class="edit-lbl">Tipo da venda</div><select id="f_tipovenda" class="edit-input" onchange="onTipoVenda(this.value)">';
+  h+='<option value="direta"'+(tipoVendaInit==='direta'?' selected':'')+'>Venda Direta</option>';
+  h+='<option value="parceria"'+(tipoVendaInit==='parceria'?' selected':'')+'>Venda com Parceria</option>';
+  h+='<option value="gestao"'+(tipoVendaInit==='gestao'?' selected':'')+'>Venda Gestao (1%)</option>';
+  h+='</select></div>';
+  h+='<div class="fg span-full" id="f_parc_wrap" style="display:'+(tipoVendaInit==='parceria'?'flex':'none')+';flex-direction:column;gap:5px"><div class="edit-lbl">Nome do parceiro</div><input id="f_parc" class="edit-input" value="'+(vv.parceiro_nome||'')+'"></div>';
   h+='</div></div>';
 
   // Classificacao (2 colunas, descricao permuta full-width)
   h+='<div class="edit-section"><div class="edit-section-title">Classificacao</div>';
   h+='<div class="form-grid">';
   h+='<div class="fg"><div class="edit-lbl">E construtora?</div><select id="f_isc" class="edit-input"><option value="false"'+(!vv.is_construtora?' selected':'')+'>Nao</option><option value="true"'+(vv.is_construtora?' selected':'')+'>Sim</option></select></div>';
-  h+='<div class="fg"><div class="edit-lbl">Tipo participacao</div><select id="f_tpart" class="edit-input"><option value="corretor"'+((vv.tipo_participacao||'corretor')==='corretor'?' selected':'')+'>Corretor (6%)</option><option value="gestao"'+(vv.tipo_participacao==='gestao'?' selected':'')+'>Gestao (~1%)</option></select></div>';
   h+='<div class="fg"><div class="edit-lbl">Categoria</div><select id="f_cat" class="edit-input"><option value="1"'+((vv.categoria||1)===1?' selected':'')+'>1 - Negocio original</option><option value="2"'+(vv.categoria===2?' selected':'')+'>2 - Pagto do 1o</option><option value="3"'+(vv.categoria===3?' selected':'')+'>3 - Pagto do 2o</option><option value="4"'+(vv.categoria===4?' selected':'')+'>4 - Raro</option></select></div>';
   h+='<div class="fg"><div class="edit-lbl">Forma de pagamento</div><select id="f_fpagto" class="edit-input"><option value="">--</option>';
   Object.keys(PL).forEach(function(k){h+='<option value="'+k+'"'+(vv.forma_pagamento===k?' selected':'')+'>'+PL[k]+'</option>';});
@@ -610,7 +621,26 @@ function buildForm(v,nc,isEdit){
   return h;
 }
 
-function atualizarVGV(){var hon=parseFloat(document.getElementById('f_vhon').value)||0;var el=document.getElementById('f_vgv');if(el)el.value=hon>0?fmtM(hon/0.05):'-';}
+function atualizarVGV(){
+  var rawC=parseInt((document.getElementById('f_vctrato').value||'').replace(/\D/g,''),10)||0;
+  var rawH=parseInt((document.getElementById('f_vhon').value||'').replace(/\D/g,''),10)||0;
+  var elVgv=document.getElementById('f_vgv');
+  if(elVgv)elVgv.value=rawH>0?fmtM(rawH/0.05):'-';
+  var elPct=document.getElementById('f_pct');
+  if(elPct)elPct.value=(rawC>0&&rawH>0)?((rawH/rawC)*100).toFixed(1).replace('.',',')+'%':'--';
+}
+function aplicarMascaraDinheiro(input){
+  input.addEventListener('input',function(){
+    var raw=this.value.replace(/\D/g,'');
+    if(!raw){this.value='';return;}
+    this.value=parseInt(raw,10).toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0});
+  });
+}
+function aplicarMascaras(){
+  var fc=document.getElementById('f_vctrato');var fh=document.getElementById('f_vhon');
+  if(fc)aplicarMascaraDinheiro(fc);if(fh)aplicarMascaraDinheiro(fh);
+}
+function onTipoVenda(v){var w=document.getElementById('f_parc_wrap');if(w)w.style.display=v==='parceria'?'flex':'none';}
 
 function onSelectExcl(excId){
   if(!excId)return;
@@ -653,7 +683,7 @@ function coletarPayload(isEdit){
     exclusividade_id:document.getElementById('f_excl').value||null,
     numero_controle:document.getElementById('f_nc').value.trim()||null,
     data_venda:document.getElementById('f_dv').value||null,
-    competencia:document.getElementById('f_comp').value||null,
+    competencia:document.getElementById('f_dv').value||null,
     status_venda:document.getElementById('f_status').value,
     imovel_nome:document.getElementById('f_inome').value.trim()||null,
     imovel_regiao:document.getElementById('f_ireg').value||null,
@@ -666,13 +696,13 @@ function coletarPayload(isEdit){
     vendedor_nome:document.getElementById('f_vnome').value.trim()||null,
     vendedor_cpf_cnpj:document.getElementById('f_vcpf').value.trim()||null,
     construtora:document.getElementById('f_vconstrutora').value.trim()||null,
-    valor_contrato:parseFloat(document.getElementById('f_vctrato').value)||null,
-    valor_honorarios:parseFloat(document.getElementById('f_vhon').value)||null,
-    percentual_comissao:parseFloat(document.getElementById('f_pct').value)||6,
-    is_parceria:document.getElementById('f_isp').value==='true',
-    parceiro_nome:document.getElementById('f_parc').value.trim()||null,
+    valor_contrato:parseInt((document.getElementById('f_vctrato').value||'').replace(/\D/g,''),10)||null,
+    valor_honorarios:parseInt((document.getElementById('f_vhon').value||'').replace(/\D/g,''),10)||null,
+    percentual_comissao:(function(){var pv=parseFloat((document.getElementById('f_pct').value||'').replace(',','.').replace('%','').trim());return isNaN(pv)?6:pv;}()),
+    is_parceria:(function(){var tv=document.getElementById('f_tipovenda').value;return tv==='parceria';}()),
+    parceiro_nome:(function(){var el=document.getElementById('f_parc');return el?el.value.trim()||null:null;}()),
     is_construtora:document.getElementById('f_isc').value==='true',
-    tipo_participacao:document.getElementById('f_tpart').value,
+    tipo_participacao:(function(){var tv=document.getElementById('f_tipovenda').value;return tv==='gestao'?'gestao':'corretor';}()),
     categoria:parseInt(document.getElementById('f_cat').value)||1,
     forma_pagamento:document.getElementById('f_fpagto').value||null,
     banco_financiamento:document.getElementById('f_banco').value.trim()||null,

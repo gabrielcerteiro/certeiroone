@@ -122,7 +122,7 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 .vgv-cat-val{color:#fff;font-size:13px;font-weight:900;line-height:1}
 .vgv-cat-n{color:rgba(255,255,255,0.3);font-size:8.5px;margin-top:3px}
 .icard{background:var(--white);border-radius:var(--card-radius);margin-bottom:12px;overflow:hidden;box-shadow:var(--card-shadow);border:1px solid var(--s2);border-left:3px solid var(--s3)}
-.icard[data-status="ok"]{border-left-color:var(--green)}.icard[data-status="melhoria"]{border-left-color:var(--yellow)}.icard[data-status="atencao"]{border-left-color:var(--red)}.icard[data-status="vendida"],.icard[data-status="encerrada"],.icard[data-status="perdida"]{border-left-color:var(--muted)}.icard[data-status="repaginacao"]{border-left-color:var(--yellow)}.icard[data-status="aguardando"]{border-left-color:var(--muted)}.icard[data-status="vendida-hist"]{border-left-color:var(--green)}
+.icard[data-status="ok"]{border-left-color:var(--green)}.icard[data-status="melhoria"]{border-left-color:var(--yellow)}.icard[data-status="atencao"]{border-left-color:var(--red)}.icard[data-status="vendida"],.icard[data-status="encerrada"],.icard[data-status="perdida"]{border-left-color:var(--muted)}.icard[data-status="repaginando"]{border-left-color:var(--yellow)}.icard[data-status="gestao"]{border-left-color:#8B5CF6}.icard[data-status="aguardando"]{border-left-color:var(--muted)}.icard[data-status="vendida-hist"]{border-left-color:var(--green)}
 .group-header{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--s2)}
 .icard-inner{padding:12px 12px 0;cursor:pointer}
 .card-actions{display:flex;justify-content:space-between;align-items:center;padding:9px 12px 11px}
@@ -269,7 +269,8 @@ async function loadDashboard(){
 
 function renderDashboard(){
   var ativas=imoveis.filter(function(x){return x.status_exclusividade==='ativa';});
-  var repag=imoveis.filter(function(x){return x.status_exclusividade==='repaginacao';});
+  var gestao=imoveis.filter(function(x){return x.status_exclusividade==='gestao';});
+  var repag=imoveis.filter(function(x){return x.status_exclusividade==='repaginando';});
   var aguard=imoveis.filter(function(x){return x.status_exclusividade==='aguardando';});
   var vendidas=imoveis.filter(function(x){return x.status_exclusividade==='vendida';});
   var vgv=ativas.reduce(function(s,x){return s+(parsePrecM(x.preco)||0);},0);
@@ -286,9 +287,13 @@ function renderDashboard(){
     +'<div style="font-size:32px;font-weight:900;color:#fff;line-height:1">'+fmtM(Math.round(vgv*1000000))+'</div>'
     +'<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px">'+ativas.length+' exclusividade'+(ativas.length===1?'':'s')+' ativas</div>'
     +'</div>';
+  var diasPT={'Repaginado':40,'Mobiliado':80,'Vazio':120};
+  var tmmGestao=gestao.reduce(function(s,im){var pr=parsePrecM(im.preco)*1000000;var d=diasPT[im.tipo_imovel]||120;return s+(pr*0.05/(d/30)/5);},0);
+  function fmtTMMK(v){if(v>=1000000)return 'R$'+(v/1000000).toFixed(1).replace('.',',')+'M';if(v>=1000)return 'R$'+(v/1000).toFixed(0)+'K';return 'R$'+Math.round(v);}
   html+='<div class="stats-row" style="margin-bottom:14px">'
     +'<div class="stat-box"><div class="stat-n">'+ativas.length+'</div><div class="stat-l">Em Campanha</div></div>'
-    +'<div class="stat-box"><div class="stat-n">'+repag.length+'</div><div class="stat-l">Repaginacao</div></div>'
+    +(gestao.length?'<div class="stat-box" style="border-color:#8B5CF6;background:#EDE9FE"><div class="stat-n" style="color:#5B21B6">'+gestao.length+'</div><div class="stat-l" style="color:#5B21B6">Gestao</div><div style="font-size:9px;color:#7C3AED;margin-top:2px">'+(tmmGestao>0?fmtTMMK(tmmGestao)+'/mes (20%)':'')+'</div></div>':'')
+    +'<div class="stat-box"><div class="stat-n">'+repag.length+'</div><div class="stat-l">Repaginando</div></div>'
     +'<div class="stat-box"><div class="stat-n">'+aguard.length+'</div><div class="stat-l">Aguardando</div></div>'
     +'<div class="stat-box"><div class="stat-n">'+vendidas.length+'</div><div class="stat-l">Vendidas</div></div>'
     +'</div>';
