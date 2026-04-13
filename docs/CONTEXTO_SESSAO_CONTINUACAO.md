@@ -80,20 +80,30 @@ Mobiliado 80d, Vazio 120d) — so falta o * 0.05.
 Exemplo correto: apto vazio R$ 2.200.000
 - VGV = 2.200.000 * 0.05 = 110.000
 - Meses = 120 / 30 = 4
-- TMM = 110.000 / 4 = R$ 27.500/mes (nao R$ 550.000)
+- TMM = 110.000 / 4 = R$ 27.500/mes
 
-Tambem ajustar a formatacao do TMM no card para exibir como dinheiro:
-- Atual: `R$ 0,6 M` (errado — estava usando o preco bruto)
-- Correto: `R$ 27.500/mes` (usando VGV)
+---
 
-Funcao de formatacao para o TMM do card:
+## REGRA DE FORMATACAO DE DINHEIRO — OBRIGATORIO
+
+TODOS os valores de TMM (na barra superior E nos cards) devem ser exibidos
+como numero completo com pontos de milhar, NAO abreviado com M ou K.
+
+ERRADO:  R$ 8,5M  ou  R$ 550K
+CORRETO: R$ 8.500.000  ou  R$ 27.500
+
+Funcao de formatacao a usar para TMM:
 ```javascript
 function fmtTMM(v) {
-  if (v >= 1000000) return 'R$ ' + (v/1000000).toFixed(1).replace('.',',') + 'M/mes';
-  if (v >= 1000) return 'R$ ' + Math.round(v/1000) + 'K/mes';
   return 'R$ ' + Math.round(v).toLocaleString('pt-BR') + '/mes';
 }
+// Exemplos:
+// fmtTMM(27500)    → "R$ 27.500/mes"
+// fmtTMM(8500000)  → "R$ 8.500.000/mes"
 ```
+
+Isso se aplica tanto ao `tmmValor` na barra quanto ao TMM exibido em
+cada card individual.
 
 ---
 
@@ -103,10 +113,15 @@ function fmtTMM(v) {
    estrutura acima. Manter `pipelineAtivas` existente.
 
 2. Na funcao `renderCard`: corrigir o calculo do TMM adicionando `* 0.05`
-   e atualizar a formatacao para usar `fmtTMM()`.
+   e atualizar a formatacao para usar `fmtTMM()` (numero completo, sem M/K).
 
-3. Verificar se a funcao `calcTMM` ja atualiza `tmmValor` e `tmmMeta`
-   corretamente. Se sim, nao mexer na logica — so adicionar os elementos HTML.
+3. Na funcao `calcTMM`: verificar a funcao `fmtValM` interna — se ela usar
+   abreviacoes (M, K), substituir por `toLocaleString` para exibir numero
+   completo com pontos de milhar.
+
+4. Verificar se a funcao `calcTMM` ja atualiza `tmmValor` e `tmmMeta`
+   corretamente. Se sim, nao mexer na logica — so adicionar os elementos HTML
+   e corrigir a formatacao.
 
 ---
 
@@ -131,7 +146,7 @@ tail -3 exclusividades.html                              # </html> nas ultimas 3
 ```
 
 Commits:
-- `fix: TMM correto na barra e nos cards de exclusividades`
+- `fix: TMM correto na barra e nos cards - numero completo sem abreviacao`
 - `fix: pendencias UX vendas.html` (se implementar)
 
 ---
