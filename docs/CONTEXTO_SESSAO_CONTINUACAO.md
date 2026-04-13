@@ -1,4 +1,4 @@
-# Sessao: Correcao TMM na barra + cards de exclusividades
+# Sessao: Grupos de exclusividades + TMM correto
 
 **Data:** 12/04/2026
 **Gerado por:** Claudion
@@ -13,41 +13,83 @@
 
 ---
 
-## CONTEXTO: O QUE JA FOI FEITO NO BANCO (nao repetir)
+## O QUE JA FOI FEITO NO BANCO (nao repetir)
 
-- Constraints de status ja atualizadas no Supabase
-- 'repaginacao' ja renomeado para 'repaginando' nos dados
-- 'gestao' ja e status valido
+O Claudion ja executou as migrations:
+- Status 'encerrada' e 'inativa' convertidos para 'perdida' nas duas tabelas
+- Constraint atualizada para aceitar APENAS: ativa, gestao, repaginando, aguardando, vendida, perdida
+- 'renovada' removida dos valores validos
 
 ---
 
-## PROBLEMA IDENTIFICADO (pelo Claudion via analise do codigo)
+## TAREFA 1 — REDESENHO DOS GRUPOS E CARDS no exclusividades.html
 
-O arquivo exclusividades.html tem DOIS bugs de TMM:
+### Ordem dos grupos (do topo para baixo)
+1. EM CAMPANHA (status = 'ativa')
+2. GESTAO (status = 'gestao')
+3. EM REPAGINANDO (status = 'repaginando')
+4. AGUARDANDO (status = 'aguardando')
+5. VENDIDAS — colapsado por padrao, expande ao clicar (status = 'vendida')
+6. PERDIDAS — colapsado por padrao, expande ao clicar (status = 'perdida')
 
-### BUG 1 — Barra superior nao exibe TMM
+### Card por tipo
 
-A funcao `calcTMM()` calcula o tmm_total corretamente mas tenta atualizar
-elementos HTML que NAO EXISTEM no arquivo:
-- `document.getElementById('tmmValor')` → null
-- `document.getElementById('tmmMeta')` → null
-- `document.getElementById('tmmMeses')` → null
-- `document.getElementById('tmmAtivas')` → null
+#### ATIVA e GESTAO — card completo (igual ao atual renderCard)
+- Exibir funil de barras (Tempo, Leads, Visitas, Propostas)
+- Para GESTAO: adicionar badge roxo "Gestao" no canto superior direito do card
+- Para GESTAO: TMM individual exibido com "(20%)" ao lado
+- Border-left: verde para ativa, roxo (#8B5CF6) para gestao
 
-O `pipelineHeader` so tem:
-```html
-<span>CERTEIRO ONE — PIPELINE</span>
-<span id="pipelineAtivas">- ativas</span>
-```
+#### REPAGINANDO e AGUARDANDO — card resumido com data de inicio
+Card simplificado com:
+- Nome do imovel + proprietario
+- Preco
+- Badge do status (amarelo "Repaginando" ou cinza "Aguardando")
+- Data de inicio do prazo real: para Repaginando = data_repaginacao_concluida
+  (quando a repaginacao termina e o prazo real começa); para Aguardando =
+  data_inicio (quando o imovel foi cadastrado, prazo so vale quando liberar)
+- Barra de progresso do contrato (dias passados / dias totais)
+- Botao "Atualizar" e link "Ver detalhe"
 
-FIX: adicionar os elementos de TMM no pipelineHeader. Resultado esperado:
+Label da data por tipo:
+- Repaginando: "Campanha prevista a partir de" + data_repaginacao_concluida
+  (ou "Repaginacao em andamento" se data nao preenchida)
+- Aguardando: "Cadastrado em" + data_inicio
+
+#### VENDIDA — card historico (igual ao atual renderCardVendida, ja existe)
+
+#### PERDIDA — card minimalista colapsado
+Mesmo padrao visual do grupo VENDIDAS: botao para expandir/colapsar,
+dentro mostra cards com: nome, data_inicio, data_fim (se tiver), observacoes.
+Badge vermelho "Perdida".
+
+### O que REMOVER
+- Grupo "Inativas" — nao existe mais
+- Status 'inativa' e 'encerrada' de todos os selects, filtros e badges
+- O select de status do formulario de edicao deve ter APENAS:
+  Em campanha (ativa), Repaginando, Aguardando, Gestao, Vendida, Perdida
+
+### O que ATUALIZAR nos selects do modal de nova exclusividade
+Opcoes do campo "Status inicial":
+- Em campanha (ativa) → value="ativa"
+- Repaginando → value="repaginando"
+- Aguardando → value="aguardando"
+- Gestao → value="gestao"
+
+---
+
+## TAREFA 2 — TMM: BARRA SUPERIOR + CARDS
+
+### Bug 1: Barra superior nao exibe TMM
+A funcao `calcTMM()` calcula corretamente mas os elementos HTML nao existem.
+Adicionar ao `pipelineHeader`:
 
 ```html
 <div id="pipelineHeader" ...>
-  <span>CERTEIRO ONE — PIPELINE</span>
+  <span style="color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px">CERTEIRO ONE — PIPELINE</span>
   <div style="display:flex;gap:24px;align-items:center">
     <div style="text-align:right">
-      <div style="color:rgba(255,255,255,0.45);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Exclusividades ativas</div>
+      <div style="color:rgba(255,255,255,0.45);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Ativas</div>
       <div id="pipelineAtivas" style="color:#fff;font-size:13px;font-weight:800">-</div>
     </div>
     <div style="text-align:right">
@@ -62,83 +104,39 @@ FIX: adicionar os elementos de TMM no pipelineHeader. Resultado esperado:
 </div>
 ```
 
-### BUG 2 — TMM nos cards individuais usa preco bruto ao inves de VGV
-
-Na funcao `renderCard`, o TMM e calculado assim:
+### Bug 2: TMM nos cards usa preco bruto ao inves de VGV
+Na funcao `renderCard`, corrigir:
 ```javascript
+// ERRADO (atual):
 var tmmVal = parsePrecM(im.preco) / prazoMesesIm(im);
-```
 
-Isso usa o preco bruto. O correto e usar o VGV = preco * 0.05:
-```javascript
+// CORRETO:
 var tmmVal = parsePrecM(im.preco) * 0.05 / prazoMesesIm(im);
 ```
 
-A funcao prazoMesesIm ja usa os dias certos por tipologia (Repaginado 40d,
-Mobiliado 80d, Vazio 120d) — so falta o * 0.05.
-
-Exemplo correto: apto vazio R$ 2.200.000
-- VGV = 2.200.000 * 0.05 = 110.000
-- Meses = 120 / 30 = 4
-- TMM = 110.000 / 4 = R$ 27.500/mes
-
----
-
-## REGRA DE FORMATACAO DE DINHEIRO — OBRIGATORIO
-
-TODOS os valores de TMM (na barra superior E nos cards) devem ser exibidos
-como numero completo com pontos de milhar, NAO abreviado com M ou K.
-
-ERRADO:  R$ 8,5M  ou  R$ 550K
-CORRETO: R$ 8.500.000  ou  R$ 27.500
-
-Funcao de formatacao a usar para TMM:
+### Regra de formatacao TMM — numero completo, SEM abreviacao M ou K
 ```javascript
 function fmtTMM(v) {
   return 'R$ ' + Math.round(v).toLocaleString('pt-BR') + '/mes';
 }
-// Exemplos:
 // fmtTMM(27500)    → "R$ 27.500/mes"
-// fmtTMM(8500000)  → "R$ 8.500.000/mes"
+// fmtTMM(110000)   → "R$ 110.000/mes"
 ```
 
-Isso se aplica tanto ao `tmmValor` na barra quanto ao TMM exibido em
-cada card individual.
+Aplicar em: card individual + barra superior (tmmValor e tmmMeta).
+A funcao interna `fmtValM` dentro de `calcTMM` tambem deve usar
+`toLocaleString('pt-BR')` ao inves de abreviar com M/K.
 
 ---
 
-## TAREFA — CORRIGIR OS DOIS BUGS
+## ORDEM DE EXECUCAO
 
-1. No `pipelineHeader`: adicionar os elementos `tmmValor`, `tmmMeta` conforme
-   estrutura acima. Manter `pipelineAtivas` existente.
-
-2. Na funcao `renderCard`: corrigir o calculo do TMM adicionando `* 0.05`
-   e atualizar a formatacao para usar `fmtTMM()` (numero completo, sem M/K).
-
-3. Na funcao `calcTMM`: verificar a funcao `fmtValM` interna — se ela usar
-   abreviacoes (M, K), substituir por `toLocaleString` para exibir numero
-   completo com pontos de milhar.
-
-4. Verificar se a funcao `calcTMM` ja atualiza `tmmValor` e `tmmMeta`
-   corretamente. Se sim, nao mexer na logica — so adicionar os elementos HTML
-   e corrigir a formatacao.
+1. Tarefa 1 (grupos e cards) — mostrar diff, aguardar aprovacao
+2. Tarefa 2 (TMM) — apos aprovacao da Tarefa 1
 
 ---
 
-## PENDENCIAS ADICIONAIS (apos corrigir TMM)
-
-Se sobrar tempo na sessao, verificar e implementar se ainda nao estiver feito:
-
-### vendas.html
-- Mascara R$ nos campos valor_contrato e valor_honorarios
-- Campo % comissao calculado automaticamente (honorarios / contrato * 100)
-- Select "Tipo da Venda" substituindo is_parceria + tipo_participacao
-- Campo competencia oculto (preenchido automaticamente = data_venda)
-- Filtro "Formato da Venda" substituindo "Parceria: Sim/Nao"
-
----
-
-## VALIDACAO OBRIGATORIA
+## VALIDACAO OBRIGATORIA APOS CADA ARQUIVO
 
 ```bash
 grep -n "[\x80-\xFF]" exclusividades.html | head -20   # zero resultados
@@ -146,10 +144,10 @@ tail -3 exclusividades.html                              # </html> nas ultimas 3
 ```
 
 Commits:
-- `fix: TMM correto na barra e nos cards - numero completo sem abreviacao`
-- `fix: pendencias UX vendas.html` (se implementar)
+- `feat: redesenho grupos exclusividades - nova ordem e cards por tipo`
+- `fix: TMM correto na barra e nos cards com numero completo`
 
 ---
 
 *Gerado por Claudion em 12/04/2026*
-*Analise tecnica direta do codigo — bugs identificados com precisao*
+*Migration de banco ja executada pelo Claudion — nao repetir SQL*
