@@ -1,6 +1,6 @@
 # CONTEXTO COMPLETO — PLATAFORMA CERTEIRO
 > Arquivo para onboarding de nova sessao no Claude Code.
-> Atualizado em: 13/04/2026 — v1.4.0 entregue
+> Atualizado em: 18/04/2026 — v1.5.0 entregue
 
 ---
 
@@ -47,6 +47,7 @@ Campos curtos: cn-grid-3/4 | Campos medios: cn-grid-2 | Longos: cn-full.
 | `index.html` | Dashboard — overview cards e alertas |
 | `exclusividades.html` | Modulo principal: pipeline, grupos, detalhe, edicao |
 | `vendas.html` | Modulo de vendas: listagem, registro, edicao |
+| `repaginacao.html` | Gestao de obras de repaginacao: cards, abas, Gantt, orcamento |
 | `registro.html` | Registro de visitas e propostas |
 | `usuarios.html` | Gestao de usuarios |
 | `vendedor.html` | Relatorio publico para proprietario |
@@ -183,6 +184,10 @@ Dashboard em grupos. Visual estilo Pipedrive.
 Sidebar lateral, modulos separados, hash routing, tabelas vendas/parcelas criadas,
 94 registros historicos, skill frontend-design instalado.
 
+### v1.5.0 — 18/04/2026
+- Reorganizacao do menu do nav.js: nova ordem Pipeline, Exclusividades, Vendas, Repaginacao, Registro, Usuarios. Icones novos 'coin' (dollar-sign Lucide, Vendas) e 'brush' (paintbrush Lucide, Repaginacao). Pipeline assume icone 'chart'. Vendas perde soon:true.
+- Sincronizacao do origin/main: descartados 4 commits de docs estrategicos commitados no repo errado (WhatsApp/CRM/IA) via force-with-lease; push do commit 85a62dc (repaginacao.html) que estava apenas local.
+
 ### v1.4.0 — 13/04/2026
 - CSS global cn-form/cn-grid no nav.js aplicado em todos os formularios
 - Pipeline header redesenhado: contadores + TMM + meta fixa + pipeline futuro
@@ -198,9 +203,10 @@ Sidebar lateral, modulos separados, hash routing, tabelas vendas/parcelas criada
 
 ---
 
-## 9. PENDENCIAS ATIVAS — v1.5.0
+## 9. PENDENCIAS ATIVAS — v1.6.0
 
 ### Alta prioridade
+- [ ] Criar pipeline.html com cards v10 restaurados do commit d9e803a -- sessao dedicada Opus
 - [ ] Redesign tela detalhe/edicao exclusividade: dois paineis (dados + timeline/acoes)
       com edicao por secao inline (nao mais formulario full-page)
 - [ ] Cadastro de usuarios via Edge Function (service_role)
