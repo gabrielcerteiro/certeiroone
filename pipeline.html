@@ -209,8 +209,11 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 <div class="app-wrap">
   <div class="page cn-page" id="mainPage">
     <div id="pipelineHeader"></div>
-    <div id="pipelineContent">
-      <div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando...</div></div>
+    <div class="view on" id="vMain">
+      <div id="pipelineContent">
+        <div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando...</div></div>
+      </div>
+      <div id="pipelineGrupos"></div>
     </div>
     <div class="view" id="vAlertas"></div>
   </div>
@@ -432,6 +435,247 @@ function renderAlertas(){
   document.getElementById('vAlertas').innerHTML=html;
 }
 
+// --- HELPERS CARDS V10 ---
+function calcProporcional(im){
+  var h=new Date();h.setHours(0,0,0,0);
+  var dI=im.data_inicio?new Date(im.data_inicio+'T00:00:00'):null;
+  var dF=im.data_fim?new Date(im.data_fim+'T00:00:00'):null;
+  if(!dI||!dF)return{diasPassados:0,diasTotal:im.prazo_contrato_dias||120,fator:0};
+  var diasTotal=Math.max(Math.round((dF-dI)/86400000),1);
+  var diasPassados=Math.max(0,Math.min(Math.round((h-dI)/86400000),diasTotal));
+  return{diasPassados:diasPassados,diasTotal:diasTotal,fator:diasPassados/diasTotal};
+}
+function semCor(real,esp){
+  if(!esp||esp<=0)return 'green';
+  var p=(real/esp)*100;
+  if(p>=100)return 'green';
+  if(p>=70)return 'yellow';
+  return 'red';
+}
+function piorSem(cores){
+  if(cores.indexOf('red')>=0)return 'red';
+  if(cores.indexOf('yellow')>=0)return 'yellow';
+  return 'green';
+}
+function barRow(label,real,esp,total,isTempo){
+  var cor=isTempo?'navy':semCor(real,esp);
+  var pctReal=total>0?Math.min((real/total)*100,100):0;
+  var pctEsp=total>0?Math.min((esp/total)*100,100):0;
+  var numsNonTempo=isTempo?'':'<span class="num-exp">/ '+esp+'</span>';
+  var numsTotal=isTempo?'<span class="num-tot">/ '+total+'d</span>':'<span class="num-tot">de '+total+'</span>';
+  var behind=!isTempo&&real<esp?' is-behind':'';
+  return '<div class="icard-bar-row">'
+    +'<div class="icard-bar-lbl">'+label+'</div>'
+    +'<div class="icard-bar-wrap">'
+      +(!isTempo?'<div class="icard-bar-bg s-'+cor+'" style="width:'+pctEsp+'%"></div>':'')
+      +'<div class="icard-bar-fill s-'+cor+'" style="width:'+pctReal+'%"></div>'
+      +(!isTempo?'<div class="icard-bar-marker" style="left:'+pctEsp+'%"></div>':'')
+    +'</div>'
+    +'<div class="icard-bar-nums">'
+      +'<span class="num-real'+behind+'">'+real+'</span>'
+      +numsNonTempo
+      +numsTotal
+    +'</div>'
+  +'</div>';
+}
+
+// --- RENDER CARD V10 (ativa / gestao) ---
+function renderCardV10(im){
+  var prop=calcProporcional(im);
+  var dP=prop.diasPassados,dT=prop.diasTotal,f=prop.fator;
+  var mL=im.meta_leads||1,mV=im.meta_visitas||1,mP=im.meta_propostas||1;
+  var rL=im.total_leads||0,rV=im.total_visitas||0,rP=im.total_propostas||0;
+  var espL=Math.round(mL*f),espV=Math.round(mV*f),espP=Math.round(mP*f);
+  var corL=semCor(rL,espL),corV=semCor(rV,espV),corP=semCor(rP,espP);
+  var pior=piorSem([corL,corV,corP]);
+  var tmm=calcTMM(im);
+  var isGestao=im.status_exclusividade==='gestao';
+  var tmmTxt='TMM '+fmtTMMK(tmm)+(isGestao?' <span class="icard-tmm-pct">(20%)</span>':'');
+  var gasto=parseFloat(im.gastos_metaads)||0;
+  var mMidiaTotal=parseFloat(im.midia_total_planejada)||0;
+  var mMidia=mMidiaTotal>0?mMidiaTotal:(parseFloat(im.meta_investimento)||0);
+  var espM=Math.round(mMidia*f);
+  var adsOver=gasto>espM&&espM>0;
+  var cplRef=parseFloat(im.meta_cpl)||300;
+  var cplReal=rL>0?Math.round(gasto/rL):0;
+  var cplOver=cplReal>cplRef&&cplReal>0;
+  var nome=(im.nome||'').toUpperCase();
+  var preco=im.preco||'-';
+  var propNome=im.proprietario||'';
+  var badge=isGestao?'<span class="badge badge-gestao">Gestao</span>':'<span class="badge badge-ativa">Em campanha</span>';
+  var podeEditar=(currentRole==='master'||currentRole==='operacional');
+  var adsStr=gasto>0?'R$ '+gasto.toLocaleString('pt-BR'):'-';
+  var adsExp=espM>0?'<span class="exp">/ '+espM.toLocaleString('pt-BR')+'</span>':'';
+  var adsTot=mMidia>0?'<span class="tot">de '+mMidia.toLocaleString('pt-BR')+'</span>':'';
+  return '<div class="icard b-'+pior+'" onclick="window.location.href=\'exclusividades.html#detalhe/'+im.id+'\'">'
+    +'<div class="icard-head">'
+      +'<div style="flex:1;min-width:0"><div class="icard-nome">'+nome+'</div>'+(propNome?'<div class="icard-sub-prop" style="margin-top:2px">'+propNome+'</div>':'')+'</div>'
+      +'<div style="text-align:right;white-space:nowrap">'
+        +'<div class="icard-preco">'+preco+'</div>'
+        +'<div class="icard-tmm" style="margin-top:2px">'+tmmTxt+'</div>'
+        +'<div style="margin-top:4px">'+badge+'</div>'
+      +'</div>'
+    +'</div>'
+    +barRow('Tempo',dP,dP,dT,true)
+    +barRow('Leads',rL,espL,mL,false)
+    +barRow('Visitas',rV,espV,mV,false)
+    +barRow('Propostas',rP,espP,mP,false)
+    +'<div class="icard-media-row">'
+      +'<div class="icard-ads"><span>Ads</span><strong'+(adsOver?' class="is-behind"':'')+'>'+adsStr+'</strong>'+adsExp+adsTot+'</div>'
+      +'<div class="icard-cpl"><span class="icard-cpl-badge">CPL</span><span class="icard-cpl-valor'+(cplOver?' over':'')+'">'+(cplReal>0?'R$ '+cplReal:'-')+'</span>'+(cplRef?'<span class="icard-cpl-ref">ref. '+cplRef+'</span>':'')+'</div>'
+    +'</div>'
+    +'<div class="icard-actions">'
+      +(podeEditar?'<button class="icard-action-txt navy" onclick="event.stopPropagation();window.location.href=\'exclusividades.html#editar/'+im.id+'\'">Atualizar</button>':'<span></span>')
+      +'<button class="icard-action-txt blue" onclick="event.stopPropagation();window.location.href=\'exclusividades.html#detalhe/'+im.id+'\'">Ver detalhe \u203A</button>'
+    +'</div>'
+  +'</div>';
+}
+
+// --- RENDER CARD RESUMIDO (repaginando / aguardando) ---
+function renderCardResumido(im,tipo){
+  var prop=calcProporcional(im);
+  var pct=Math.min(100,Math.round(prop.fator*100));
+  var tmm=fmtTMMK(calcTMM(im));
+  var propNome=im.proprietario||'';
+  var nome=(im.nome||'').toUpperCase();
+  var preco=im.preco||'-';
+  var bCls=tipo==='repaginando'?'b-yellow':'b-gray';
+  var badge=tipo==='repaginando'?'<span class="badge badge-repaginando">Repaginando</span>':'<span class="badge badge-aguardando">Aguardando</span>';
+  var barCor=tipo==='repaginando'?'var(--yellow)':'#9CA3AF';
+  var ctx;
+  if(tipo==='repaginando'){
+    ctx=im.data_repaginacao_concluida?'Campanha prevista a partir de '+new Date(im.data_repaginacao_concluida+'T00:00:00').toLocaleDateString('pt-BR'):'Repaginacao em andamento';
+  }else{
+    ctx=im.data_inicio?'Cadastrado em '+new Date(im.data_inicio+'T00:00:00').toLocaleDateString('pt-BR'):'';
+  }
+  return '<div class="icard-resumido '+bCls+'" onclick="window.location.href=\'exclusividades.html#detalhe/'+im.id+'\'">'
+    +'<div class="icardr-head">'
+      +'<div style="flex:1;min-width:0"><div class="icardr-nome">'+nome+'</div>'+(propNome?'<div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px">'+propNome+'</div>':'')+'</div>'
+      +'<div style="text-align:right;white-space:nowrap"><div class="icardr-preco">'+preco+'</div><div style="font-size:10px;font-weight:700;color:var(--muted);margin-top:2px">TMM '+tmm+'/mes</div></div>'
+    +'</div>'
+    +'<div class="icardr-meta">'+badge+(ctx?'<span>'+ctx+'</span>':'')+'</div>'
+    +'<div class="icardr-progress"><div class="icardr-progress-fill" style="width:'+pct+'%;background:'+barCor+'"></div></div>'
+    +'<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-weight:700"><span>Prazo do contrato</span><span>'+prop.diasPassados+' / '+prop.diasTotal+' dias</span></div>'
+  +'</div>';
+}
+
+// --- RENDER CARD HISTORICO (vendidas / perdidas) ---
+function renderCardHistorico(im,tipo){
+  var nome=(im.nome||'').toUpperCase();
+  var preco=im.preco||'-';
+  var bCls=tipo==='vendida'?'b-blue':'b-red';
+  var badge=tipo==='vendida'?'<span class="badge badge-vendida">Vendida</span>':'<span class="badge badge-perdida">Perdida</span>';
+  var dF=im.data_fim?new Date(im.data_fim+'T00:00:00').toLocaleDateString('pt-BR'):'-';
+  var dur='-';
+  if(im.data_inicio&&im.data_fim){
+    dur=Math.round((new Date(im.data_fim+'T00:00:00')-new Date(im.data_inicio+'T00:00:00'))/86400000)+'d';
+  }
+  var extra;
+  if(tipo==='vendida'){
+    extra='<span class="hist-sep">|</span><span>'+dur+'</span>'
+      +'<span class="hist-sep">|</span><span>'+(im.total_visitas||0)+' vis.</span>'
+      +'<span class="hist-sep">|</span><span>'+(im.total_propostas||0)+' prop.</span>';
+  }else{
+    extra='<span class="hist-sep">|</span><span>encerr. '+dF+'</span>'
+      +(im.observacoes?'<span class="hist-sep">|</span><span style="flex:1;min-width:140px;color:var(--muted);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+im.observacoes+'</span>':'');
+  }
+  return '<div class="card-historico '+bCls+'" onclick="window.location.href=\'exclusividades.html#detalhe/'+im.id+'\'" style="cursor:pointer">'
+    +badge
+    +'<strong>'+nome+'</strong>'
+    +'<span class="hist-sep">|</span><span>'+preco+'</span>'
+    +extra
+  +'</div>';
+}
+
+// --- RENDER GRUPOS ---
+var grupoExpandido={emCampanha:true,gestao:true,repag:true,aguard:true,vendidas:false,perdidas:false};
+var grupoLazyRender={vendidas:false,perdidas:false};
+
+function grupoHeader(key,titulo,count,collapsible,extraBadge){
+  var arrow=collapsible?'<span class="group-arrow'+(grupoExpandido[key]?' open':'')+'">\u203A</span>':'';
+  var clickAttr=collapsible?' onclick="toggleGrupo(\''+key+'\')"':'';
+  var cls='group-header'+(collapsible?' collapsible':'');
+  return '<div class="'+cls+'"'+clickAttr+'><span class="group-title">'+titulo+'</span><span class="group-count">'+count+'</span>'+(extraBadge||'')+arrow+'</div>';
+}
+
+function renderGrupos(){
+  var grp={ativa:[],gestao:[],repag:[],aguard:[],vendidas:[],perdidas:[]};
+  imoveis.forEach(function(im){
+    var s=im.status_exclusividade;
+    if(s==='ativa')grp.ativa.push(im);
+    else if(s==='gestao')grp.gestao.push(im);
+    else if(s==='repaginando')grp.repag.push(im);
+    else if(s==='aguardando')grp.aguard.push(im);
+    else if(s==='vendida')grp.vendidas.push(im);
+    else if(s==='perdida')grp.perdidas.push(im);
+  });
+  // reset lazy flag em cada reload
+  grupoLazyRender.vendidas=false;
+  grupoLazyRender.perdidas=false;
+  var html='';
+  // EM CAMPANHA
+  html+=grupoHeader('emCampanha','Em campanha',grp.ativa.length,false);
+  html+='<div id="grp-emCampanha" class="group-body cols-3" style="display:'+(grupoExpandido.emCampanha?'grid':'none')+'">';
+  if(grp.ativa.length){grp.ativa.forEach(function(im){html+=renderCardV10(im);});}
+  else{html+='<div class="group-empty">Nenhuma exclusividade em campanha.</div>';}
+  html+='</div>';
+  // GESTAO
+  if(grp.gestao.length){
+    html+=grupoHeader('gestao','Gestao',grp.gestao.length,false,'<span class="group-badge">20%</span>');
+    html+='<div id="grp-gestao" class="group-body cols-3" style="display:'+(grupoExpandido.gestao?'grid':'none')+'">';
+    grp.gestao.forEach(function(im){html+=renderCardV10(im);});
+    html+='</div>';
+  }
+  // EM REPAGINACAO
+  html+=grupoHeader('repag','Em repaginacao',grp.repag.length,false);
+  html+='<div id="grp-repag" class="group-body cols-2" style="display:'+(grupoExpandido.repag?'grid':'none')+'">';
+  if(grp.repag.length){grp.repag.forEach(function(im){html+=renderCardResumido(im,'repaginando');});}
+  else{html+='<div class="group-empty">Nenhuma em repaginacao.</div>';}
+  html+='</div>';
+  // AGUARDANDO
+  html+=grupoHeader('aguard','Aguardando',grp.aguard.length,false);
+  html+='<div id="grp-aguard" class="group-body cols-2" style="display:'+(grupoExpandido.aguard?'grid':'none')+'">';
+  if(grp.aguard.length){grp.aguard.forEach(function(im){html+=renderCardResumido(im,'aguardando');});}
+  else{html+='<div class="group-empty">Nenhuma aguardando.</div>';}
+  html+='</div>';
+  // VENDIDAS (lazy render)
+  html+=grupoHeader('vendidas','Vendidas',grp.vendidas.length,true);
+  html+='<div id="grp-vendidas" class="group-body" style="display:'+(grupoExpandido.vendidas?'grid':'none')+'">';
+  if(grupoExpandido.vendidas&&grp.vendidas.length){
+    grupoLazyRender.vendidas=true;
+    grp.vendidas.forEach(function(im){html+=renderCardHistorico(im,'vendida');});
+  }
+  html+='</div>';
+  // PERDIDAS (lazy render)
+  html+=grupoHeader('perdidas','Perdidas',grp.perdidas.length,true);
+  html+='<div id="grp-perdidas" class="group-body" style="display:'+(grupoExpandido.perdidas?'grid':'none')+'">';
+  if(grupoExpandido.perdidas&&grp.perdidas.length){
+    grupoLazyRender.perdidas=true;
+    grp.perdidas.forEach(function(im){html+=renderCardHistorico(im,'perdida');});
+  }
+  html+='</div>';
+  document.getElementById('pipelineGrupos').innerHTML=html;
+}
+
+function toggleGrupo(key){
+  grupoExpandido[key]=!grupoExpandido[key];
+  var body=document.getElementById('grp-'+key);
+  if(!body)return;
+  // lazy render para vendidas e perdidas
+  if((key==='vendidas'||key==='perdidas')&&grupoExpandido[key]&&!grupoLazyRender[key]){
+    var statusAlvo=key==='vendidas'?'vendida':'perdida';
+    var lista=imoveis.filter(function(im){return im.status_exclusividade===statusAlvo;});
+    var html='';
+    lista.forEach(function(im){html+=renderCardHistorico(im,statusAlvo);});
+    body.innerHTML=html;
+    grupoLazyRender[key]=true;
+  }
+  body.style.display=grupoExpandido[key]?'grid':'none';
+  var header=body.previousElementSibling;
+  if(header){var ar=header.querySelector('.group-arrow');if(ar)ar.classList.toggle('open',grupoExpandido[key]);}
+}
+window.toggleGrupo=toggleGrupo;
+
 // --- HASH ROUTING (redireciona detalhe/editar para exclusividades.html) ---
 function handleHash(){
   var h=window.location.hash||'';
@@ -447,8 +691,8 @@ function handleHash(){
     switchView('vAlertas');
     return;
   }
-  // default: lista (pipeline + dashboard)
-  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('on');});
+  // default: lista (dashboard + grupos)
+  switchView('vMain');
 }
 
 // --- AUTH ---
@@ -513,6 +757,7 @@ async function loadPipeline(){
     renderHeader();
     renderDashboard();
     renderAlertas();
+    renderGrupos();
   }catch(err){
     host.innerHTML='<div class="erro-box"><p>Erro: '+err.message+'</p><button onclick="loadPipeline()">Tentar novamente</button></div>';
   }
