@@ -162,7 +162,7 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 .icard-cpl-valor{font-size:12px;font-weight:800;color:var(--green)}
 .icard-cpl-valor.over{color:var(--red)}
 .icard-cpl-ref{font-size:9px;color:var(--muted)}
-.icard-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid var(--s2)}
+.icard-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid var(--s2)}
 .icard-action-txt{font-size:11px;font-weight:700;cursor:pointer;background:none;border:none;padding:0;font-family:'Nunito Sans',sans-serif}
 .icard-action-txt.navy{color:var(--navy)}
 .icard-action-txt.blue{color:var(--blue)}
@@ -503,7 +503,6 @@ function renderCardV10(im){
   var preco=im.preco||'-';
   var propNome=im.proprietario||'';
   var badge=isGestao?'<span class="badge badge-gestao">Gestao</span>':'<span class="badge badge-ativa">Em campanha</span>';
-  var podeEditar=(currentRole==='master'||currentRole==='operacional');
   var adsStr=gasto>0?'R$ '+gasto.toLocaleString('pt-BR'):'-';
   var adsExp=espM>0?'<span class="exp">/ '+espM.toLocaleString('pt-BR')+'</span>':'';
   var adsTot=mMidia>0?'<span class="tot">de '+mMidia.toLocaleString('pt-BR')+'</span>':'';
@@ -525,8 +524,7 @@ function renderCardV10(im){
       +'<div class="icard-cpl"><span class="icard-cpl-badge">CPL</span><span class="icard-cpl-valor'+(cplOver?' over':'')+'">'+(cplReal>0?'R$ '+cplReal:'-')+'</span>'+(cplRef?'<span class="icard-cpl-ref">ref. '+cplRef+'</span>':'')+'</div>'
     +'</div>'
     +'<div class="icard-actions">'
-      +(podeEditar?'<button class="icard-action-txt navy" onclick="event.stopPropagation();window.location.href=\'exclusividades.html#editar/'+im.id+'\'">Atualizar</button>':'<span></span>')
-      +'<button class="icard-action-txt blue" onclick="event.stopPropagation();window.location.href=\'exclusividades.html#detalhe/'+im.id+'\'">Ver detalhe \u203A</button>'
+      +'<button class="icard-action-txt blue" onclick="event.stopPropagation();window.location.href=\'exclusividades.html#detalhe/'+im.id+'\'">Editar \u203A</button>'
     +'</div>'
   +'</div>';
 }
@@ -746,7 +744,7 @@ async function onLogin(user){
   handleHash();
 }
 
-// --- DATA (esbo\u00e7o vazio na FASE 1) ---
+// --- DATA ---
 async function loadPipeline(){
   var host=document.getElementById('pipelineContent');
   host.innerHTML='<div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando...</div></div>';
