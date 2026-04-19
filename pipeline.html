@@ -196,6 +196,7 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 
 <div class="app-wrap">
   <div class="page cn-page" id="mainPage">
+    <div id="pipelineHeader"></div>
     <div id="pipelineContent">
       <div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando...</div></div>
     </div>
@@ -267,6 +268,71 @@ function dismissAlerta(key){
   if(dismissed.indexOf(key)<0)dismissed.push(key);
   localStorage.setItem('alertas_dismissed',JSON.stringify(dismissed));
   renderAlertas();
+}
+
+// --- TMM / SEMAFORO ---
+var TMM_META=5800000;
+function diasTipo(im){
+  var tipo=(im.tipo_imovel||'').toLowerCase();
+  if(tipo.indexOf('repag')>=0)return 40;
+  if(tipo.indexOf('mob')>=0)return 80;
+  return 120;
+}
+function calcTMM(im){
+  var pr=parsePrecM(im.preco)*1000000;
+  var d=diasTipo(im);
+  var tmm=pr/(d/30);
+  if(im.status_exclusividade==='gestao')tmm=tmm/5;
+  return tmm;
+}
+function sem(real,esperado){
+  if(!esperado||esperado<=0)return 999;
+  return (real/esperado)*100;
+}
+function semColor(pct){
+  if(pct>=100)return 'green';
+  if(pct>=80)return 'yellow';
+  return 'red';
+}
+
+// --- RENDER BLOCO B: PIPELINE HEADER (contadores + TMM + meta + futuro + nova) ---
+function renderHeader(){
+  var ativas=imoveis.filter(function(x){return x.status_exclusividade==='ativa';});
+  var gestao=imoveis.filter(function(x){return x.status_exclusividade==='gestao';});
+  var repag=imoveis.filter(function(x){return x.status_exclusividade==='repaginando';});
+  var aguard=imoveis.filter(function(x){return x.status_exclusividade==='aguardando';});
+  var tmmAtivo=0;
+  ativas.forEach(function(im){tmmAtivo+=calcTMM(im);});
+  gestao.forEach(function(im){tmmAtivo+=calcTMM(im);});
+  var tmmFuturo=0;
+  repag.forEach(function(im){tmmFuturo+=calcTMM(im);});
+  aguard.forEach(function(im){tmmFuturo+=calcTMM(im);});
+  var pct=Math.round(tmmAtivo/TMM_META*100);
+  var pctBarra=Math.min(100,Math.max(0,pct));
+  var corBar=pct>=100?'c-green':(pct>=70?'c-yellow':'c-red');
+  var corPct=pct>=100?'var(--green)':(pct>=70?'var(--yellow)':'var(--red)');
+  var html='<div class="pipeline-header">'
+    +'<div class="ph-counters">'
+      +'<span class="ph-count-ativa">'+ativas.length+' ativas</span>'
+      +'<span class="ph-counter-sep">-</span>'
+      +'<span class="ph-count-repag">'+repag.length+' repag.</span>'
+      +'<span class="ph-counter-sep">-</span>'
+      +'<span class="ph-count-aguard">'+aguard.length+' aguar.</span>'
+    +'</div>'
+    +'<div class="ph-tmm">'
+      +'<div class="ph-tmm-top">'
+        +'<span><span class="ph-tmm-lbl">TMM</span> <span class="ph-tmm-val">'+fmtM(Math.round(tmmAtivo))+'</span></span>'
+        +'<span class="ph-tmm-pct" style="color:'+corPct+'">'+pct+'%</span>'
+      +'</div>'
+      +'<div class="ph-bar"><div class="ph-bar-fill '+corBar+'" style="width:'+pctBarra+'%"></div></div>'
+    +'</div>'
+    +'<div class="ph-future">'
+      +'<span class="ph-future-lbl">Pipeline futuro</span>'
+      +'<span class="ph-future-val">+'+fmtM(Math.round(tmmFuturo))+'/mes</span>'
+    +'</div>'
+    +'<button class="ph-nova" onclick="window.location.href=\'exclusividades.html\'">+ Nova exclusividade</button>'
+  +'</div>';
+  document.getElementById('pipelineHeader').innerHTML=html;
 }
 
 // --- RENDER BLOCO A: DASHBOARD EXECUTIVO (VGV + stats + banner) ---
@@ -432,6 +498,7 @@ async function loadPipeline(){
     var res=await sb.from('dashboard_imoveis').select('*').order('dias_restantes',{ascending:true});
     if(res.error)throw res.error;
     imoveis=res.data||[];
+    renderHeader();
     renderDashboard();
     renderAlertas();
   }catch(err){
