@@ -62,8 +62,8 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 .pill-yellow{color:var(--yellow);background:var(--yellow-bg)}
 .pill-blue{color:var(--blue);background:var(--blue-bg)}
 .pill-purple{color:var(--purple);background:var(--purple-bg)}
-.stats-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.stat-box{flex:1;min-width:80px;text-align:center;background:var(--white);border-radius:12px;padding:12px 6px;border:1px solid var(--s2)}
+.stats-row{display:flex;gap:8px;margin-bottom:14px}
+.stat-box{flex:1;text-align:center;background:var(--white);border-radius:12px;padding:12px 6px;border:1px solid var(--s2)}
 .stat-n{font-size:22px;font-weight:900;line-height:1}
 .stat-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px}
 .view{display:none}
@@ -224,6 +224,136 @@ function switchView(id){
   if(el){el.classList.add('on');window.scrollTo({top:0});}
 }
 
+// --- HELPERS DE CALCULO (reusados do index.html) ---
+function parsePrecM(preco){
+  var s=(preco||'').trim();
+  if(s.toUpperCase().indexOf('M')>=0){return parseFloat(s.replace(/[^\d,]/g,'').replace(',','.'))||0;}
+  var clean=s.replace(/[R$\s]/g,'');
+  var raw;
+  if(clean.indexOf(',')>=0){raw=parseFloat(clean.replace(/\./g,'').replace(',','.'))||0;}
+  else{
+    var dots=(clean.match(/\./g)||[]).length;
+    if(dots>1){raw=parseFloat(clean.replace(/\./g,''))||0;}
+    else if(dots===1){var pts=clean.split('.');raw=pts[1]&&pts[1].length===3?parseFloat(clean.replace(/\./g,''))||0:parseFloat(clean)||0;}
+    else{raw=parseFloat(clean)||0;}
+  }
+  return raw>=1000?raw/1000000:raw;
+}
+function diffDias(d1,d2){if(!d1||!d2)return null;return Math.round((new Date(d2+'T00:00:00')-new Date(d1+'T00:00:00'))/86400000);}
+function calcMetaInterna(im){
+  if(!im.data_midia_entregue||!im.prazo_interno_dias)return null;
+  var d=new Date(im.data_midia_entregue+'T00:00:00');
+  d.setDate(d.getDate()+parseInt(im.prazo_interno_dias));
+  return d.toISOString().split('T')[0];
+}
+function fmtM(v){
+  if(v>=1000000)return 'R$ '+(v/1000000).toFixed(1).replace('.',',')+'M';
+  if(v>=1000)return 'R$ '+(v/1000).toFixed(0)+'K';
+  return 'R$ '+v.toLocaleString('pt-BR');
+}
+function fmtTMMK(v){
+  if(v>=1000000)return 'R$'+(v/1000000).toFixed(1).replace('.',',')+'M';
+  if(v>=1000)return 'R$'+(v/1000).toFixed(0)+'K';
+  return 'R$'+Math.round(v);
+}
+function toggleSecao(listId,btn){
+  var list=document.getElementById(listId);
+  var arrow=btn?btn.querySelector('span:last-child'):null;
+  if(list.style.display==='none'){list.style.display='block';if(arrow)arrow.textContent='\u2039';}
+  else{list.style.display='none';if(arrow)arrow.textContent='\u203A';}
+}
+function dismissAlerta(key){
+  var dismissed=JSON.parse(localStorage.getItem('alertas_dismissed')||'[]');
+  if(dismissed.indexOf(key)<0)dismissed.push(key);
+  localStorage.setItem('alertas_dismissed',JSON.stringify(dismissed));
+  renderAlertas();
+}
+
+// --- RENDER BLOCO A: DASHBOARD EXECUTIVO (VGV + stats + banner) ---
+function renderDashboard(){
+  var ativas=imoveis.filter(function(x){return x.status_exclusividade==='ativa';});
+  var gestao=imoveis.filter(function(x){return x.status_exclusividade==='gestao';});
+  var repag=imoveis.filter(function(x){return x.status_exclusividade==='repaginando';});
+  var aguard=imoveis.filter(function(x){return x.status_exclusividade==='aguardando';});
+  var vendidas=imoveis.filter(function(x){return x.status_exclusividade==='vendida';});
+  var vgv=ativas.concat(gestao).reduce(function(s,x){return s+(parsePrecM(x.preco)||0);},0);
+  var alertasCnt=0;
+  var hj=new Date();hj.setHours(0,0,0,0);
+  imoveis.forEach(function(im){
+    if(im.status_exclusividade!=='ativa')return;
+    if(!im.data_fim)return;
+    var fim=new Date(im.data_fim+'T00:00:00');
+    var diff=Math.round((fim-hj)/86400000);
+    if(diff>=0&&diff<=30)alertasCnt++;
+  });
+  var diasPT={'Repaginado':40,'Mobiliado':80,'Vazio':120};
+  var tmmGestao=gestao.reduce(function(s,im){var pr=parsePrecM(im.preco)*1000000;var d=diasPT[im.tipo_imovel]||120;return s+(pr/(d/30)/5);},0);
+  var html='<div class="card-navy" style="margin-bottom:14px">'
+    +'<div class="lbl">VGV em carteira</div>'
+    +'<div style="font-size:32px;font-weight:900;color:#fff;line-height:1">'+fmtM(Math.round(vgv*1000000))+'</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px">'+ativas.length+' exclusividade'+(ativas.length===1?'':'s')+' ativa'+(ativas.length===1?'':'s')+'</div>'
+    +'</div>';
+  html+='<div class="stats-row" style="margin-bottom:14px">'
+    +'<div class="stat-box"><div class="stat-n">'+ativas.length+'</div><div class="stat-l">Em Campanha</div></div>'
+    +(gestao.length?'<div class="stat-box" style="border-color:#8B5CF6;background:#EDE9FE"><div class="stat-n" style="color:#5B21B6">'+gestao.length+'</div><div class="stat-l" style="color:#5B21B6">Gestao</div>'+(tmmGestao>0?'<div style="font-size:9px;color:#7C3AED;margin-top:2px">'+fmtTMMK(tmmGestao)+'/mes</div>':'')+'</div>':'')
+    +'<div class="stat-box"><div class="stat-n">'+repag.length+'</div><div class="stat-l">Repaginando</div></div>'
+    +'<div class="stat-box"><div class="stat-n">'+aguard.length+'</div><div class="stat-l">Aguardando</div></div>'
+    +'<div class="stat-box"><div class="stat-n">'+vendidas.length+'</div><div class="stat-l">Vendidas</div></div>'
+    +'</div>';
+  if(alertasCnt>0){
+    html+='<div class="card" style="border-left:3px solid var(--red);margin-bottom:12px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center">'
+      +'<div><div style="font-size:13px;font-weight:800;color:var(--red)">'+alertasCnt+' alerta'+(alertasCnt===1?'':'s')+' de prazo</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-top:2px">Exclusividades vencendo em 30 dias</div></div>'
+      +'<button onclick="switchView(\'vAlertas\')" style="background:var(--red-bg);color:var(--red);border:none;border-radius:8px;padding:7px 12px;font-size:11px;font-weight:800;font-family:\'Nunito Sans\',sans-serif;cursor:pointer">Ver</button>'
+      +'</div>'
+      +'</div>';
+  }
+  document.getElementById('pipelineContent').innerHTML=html;
+}
+
+// --- RENDER ALERTAS (guard de ativa aplicado) ---
+function renderAlertas(){
+  var hj=new Date();hj.setHours(0,0,0,0);
+  var dismissed=JSON.parse(localStorage.getItem('alertas_dismissed')||'[]');
+  var groups=[];
+  imoveis.forEach(function(im){
+    if(im.status_exclusividade!=='ativa')return;
+    var nome=(im.nome||'').toUpperCase();
+    var alerts=[];
+    function addAlert(nivel,msg,key){if(dismissed.indexOf(key)>=0)return;alerts.push({nivel:nivel,msg:msg,key:key});}
+    var dataFimD=im.data_fim?new Date(im.data_fim+'T00:00:00'):null;
+    var diasRest=dataFimD?Math.round((dataFimD-hj)/86400000):999;
+    var metaInt=calcMetaInterna(im);
+    if(diasRest<=30&&diasRest>0)addAlert('critico',diasRest+'d restantes de contrato','fim_'+im.id);
+    if(diasRest<=0)addAlert('critico','contrato vencido ha '+Math.abs(diasRest)+'d','venc_'+im.id);
+    if(metaInt&&Math.round((new Date(metaInt+'T00:00:00')-hj)/86400000)<=0)addAlert('critico','meta interna ultrapassada','metaint_'+im.id);
+    if((im.total_visitas||0)===0&&im.data_midia_entregue)addAlert('atencao','campanha no ar sem visita','semvisita_'+im.id);
+    if((im.total_propostas||0)===0&&(im.total_visitas||0)>=3)addAlert('atencao',(im.total_visitas)+'visitas sem proposta','semproposta_'+im.id);
+    if(!im.data_gravacao_conteudo&&im.data_inicio){
+      var diasSemGrav=diffDias(im.data_inicio,hj.toISOString().split('T')[0]);
+      if(diasSemGrav>30)addAlert('atencao',diasSemGrav+'d sem gravacao de conteudo','semgrav_'+im.id);
+    }
+    if(alerts.length)groups.push({nome:nome,alerts:alerts,id:im.id});
+  });
+  var nc=0,na=0;
+  groups.forEach(function(g){g.alerts.forEach(function(a){if(a.nivel==='critico')nc++;else na++;});});
+  var html='<div class="stats-row"><div class="stat-box" style="'+(nc>0?'background:var(--red-bg);border-color:var(--red-l)':'')+'"><div class="stat-n" style="color:'+(nc>0?'var(--red)':'var(--green)')+'">'+nc+'</div><div class="stat-l">Critico</div></div><div class="stat-box" style="'+(na>0?'background:var(--yellow-bg);border-color:var(--yellow-l)':'')+'"><div class="stat-n" style="color:'+(na>0?'var(--yellow)':'var(--green)')+'">'+na+'</div><div class="stat-l">Atencao</div></div></div>';
+  groups.forEach(function(g){
+    var gnc=g.alerts.filter(function(a){return a.nivel==='critico';}).length;
+    var gna=g.alerts.filter(function(a){return a.nivel==='atencao';}).length;
+    var gid='alertGrp_'+g.id;
+    html+='<div class="card" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding-bottom:10px" onclick="toggleSecao(\''+gid+'\',this)"><div><div style="font-size:13px;font-weight:800;color:var(--navy)">'+g.nome+'</div><div style="display:flex;gap:6px;margin-top:4px">'+(gnc?'<span class="pill pill-red">'+gnc+' critico</span>':'')+(gna?'<span class="pill pill-yellow">'+gna+' atencao</span>':'')+'</div></div><span style="color:var(--muted);font-size:18px">\u203A</span></div><div id="'+gid+'" style="display:none;border-top:1px solid var(--s2);padding-top:10px">';
+    g.alerts.forEach(function(a){
+      var cor=a.nivel==='critico'?'var(--red)':'var(--yellow)';
+      html+='<div id="alertrow_'+a.key+'" style="display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--s2)"><div style="display:flex;align-items:flex-start;gap:8px;flex:1"><div style="width:8px;height:8px;border-radius:50%;background:'+cor+';flex-shrink:0;margin-top:4px"></div><div style="font-size:12px;font-weight:600;color:var(--text);line-height:1.4">'+a.msg+'</div></div><button onclick="dismissAlerta(\''+a.key+'\')" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 0 0 10px;line-height:1;flex-shrink:0">\u00d7</button></div>';
+    });
+    html+='</div></div>';
+  });
+  if(!groups.length)html+='<div class="card" style="text-align:center;padding:40px"><div style="font-size:32px;margin-bottom:8px;color:var(--green)">\u2713</div><div style="font-size:14px;font-weight:800;color:var(--green)">Tudo dentro da meta</div></div>';
+  document.getElementById('vAlertas').innerHTML=html;
+}
+
 // --- HASH ROUTING (redireciona detalhe/editar para exclusividades.html) ---
 function handleHash(){
   var h=window.location.hash||'';
@@ -302,8 +432,8 @@ async function loadPipeline(){
     var res=await sb.from('dashboard_imoveis').select('*').order('dias_restantes',{ascending:true});
     if(res.error)throw res.error;
     imoveis=res.data||[];
-    // FASE 1: render ser\u00e1 implementado nas fases seguintes
-    host.innerHTML='';
+    renderDashboard();
+    renderAlertas();
   }catch(err){
     host.innerHTML='<div class="erro-box"><p>Erro: '+err.message+'</p><button onclick="loadPipeline()">Tentar novamente</button></div>';
   }
