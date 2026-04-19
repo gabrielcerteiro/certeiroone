@@ -335,6 +335,29 @@ var TIPO_LABEL={
 // --- UTILS ---
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2600);}
 
+// parsePrecM: converte string formatada de preco (ex: "R$ 2,2M", "R$ 650 mil",
+// "2200000", "2.200.000") em valor numerico em milhoes.
+// Retorna 0 se nao conseguir parsear.
+function parsePrecM(preco){
+  var s=(preco||'').toString().trim();
+  if(!s)return 0;
+  if(s.toUpperCase().indexOf('M')>=0){return parseFloat(s.replace(/[^\d,]/g,'').replace(',','.'))||0;}
+  if(s.toLowerCase().indexOf('mil')>=0){
+    var milVal=parseFloat(s.replace(/[^\d,]/g,'').replace(',','.'))||0;
+    return milVal/1000;
+  }
+  var clean=s.replace(/[R$\s]/g,'');
+  var raw;
+  if(clean.indexOf(',')>=0){raw=parseFloat(clean.replace(/\./g,'').replace(',','.'))||0;}
+  else{
+    var dots=(clean.match(/\./g)||[]).length;
+    if(dots>1){raw=parseFloat(clean.replace(/\./g,''))||0;}
+    else if(dots===1){var pts=clean.split('.');raw=pts[1]&&pts[1].length===3?parseFloat(clean.replace(/\./g,''))||0:parseFloat(clean)||0;}
+    else{raw=parseFloat(clean)||0;}
+  }
+  return raw>=1000?raw/1000000:raw;
+}
+
 function fmtDate(s){
   if(!s||s===PLACEHOLDER_DATE)return '\u2014';
   var d=new Date(s+'T00:00:00');
@@ -662,10 +685,13 @@ function abrirEdit(id){
 
 function renderEditBody(r){
   var dataInicioVal=(r.data_inicio&&r.data_inicio!==PLACEHOLDER_DATE)?r.data_inicio:'';
-  var precoVal=r.preco_tabela?'R$ '+Number(r.preco_tabela).toLocaleString('pt-BR'):'';
+  // FIX R$ NaN: preco_tabela vem como string formatada (ex: "R$ 2,2M", "R$ 650 mil")
+  // Antes: Number(r.preco_tabela) -> NaN. Agora usa parsePrecM para converter.
+  var precoNumM=parsePrecM(r.preco_tabela);
+  var precoVal=precoNumM>0?'R$ '+Math.round(precoNumM*1000000).toLocaleString('pt-BR'):'';
   var valorVendaVal=r.valor_venda?'R$ '+Number(r.valor_venda).toLocaleString('pt-BR'):'';
   document.getElementById('editBody').innerHTML=
-    // Bloco 1 — Dados do imovel
+    // Bloco 1 -- Dados do imovel
     '<div>'
     +'<div class="modal-section-title">Dados do im\u00f3vel</div>'
     +'<div class="modal-grid">'
@@ -681,7 +707,7 @@ function renderEditBody(r){
     +'<div class="mf"><label class="mf-lbl">Pre\u00e7o de tabela</label>'
     +'<input class="mf-input" id="ef-preco" type="text" placeholder="R$ 0" value="'+escHtml(precoVal)+'" oninput="maskMoeda(this)"></div>'
     +'</div></div>'
-    // Bloco 2 — Dados da exclusividade
+    // Bloco 2 -- Dados da exclusividade
     +'<div>'
     +'<div class="modal-section-title">Dados da exclusividade</div>'
     +'<div class="modal-grid">'
