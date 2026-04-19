@@ -434,28 +434,33 @@ function canaisVisitasHtml(vis){
   return html;
 }
 
-// --- BLOCO: PROPOSTAS POR FONTE ---
-function propostasFonteHtml(im){
-  var base=parseInt(im.propostas_base)||0;
-  var parc=parseInt(im.propostas_parceiros)||0;
-  return '<div class="fonte-grid">'
-    +'<div class="fonte-box"><div class="fonte-lbl">Via base</div><div class="fonte-val">'+base+'</div></div>'
-    +'<div class="fonte-box"><div class="fonte-lbl">Via parceiros</div><div class="fonte-val">'+parc+'</div></div>'
-  +'</div>'
-  +'<div class="fonte-hint">Detalhamento por canal em breve (v1.5.3)</div>';
+// --- BLOCO: DISPAROS (funil Base|Parceiros) ---
+function dispFunilCard(lbl,alcance,nDisp,nVis,nProp,dataUlt){
+  function fmtN(n){return n!==null&&!isNaN(n)?n:0;}
+  function convStr(a,b){if(!a)return '-';return Math.round((b/a)*100)+'%';}
+  var rowStyle='display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--s2)';
+  var numStyle='font-size:16px;font-weight:900;color:var(--navy)';
+  var lblStyle='font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px';
+  var convStyle='font-size:10px;font-weight:700;color:var(--muted)';
+  var nA=fmtN(alcance),nD=fmtN(nDisp),nV=fmtN(nVis),nP=fmtN(nProp);
+  var html='<div style="background:var(--bg);border-radius:10px;padding:14px 12px">';
+  html+='<div style="font-size:11px;font-weight:800;color:var(--navy);margin-bottom:10px;letter-spacing:0.3px">'+lbl+'</div>';
+  html+='<div style="'+rowStyle+'"><span style="'+lblStyle+'">Alcance</span><span style="'+numStyle+'">'+nA.toLocaleString('pt-BR')+'</span></div>';
+  html+='<div style="'+rowStyle+'"><span style="'+lblStyle+'">Disparos</span><span style="'+numStyle+'">'+nD+'</span></div>';
+  html+='<div style="'+rowStyle+'"><span style="'+lblStyle+'">Visitas geradas</span><span><span style="'+numStyle+'">'+nV+'</span><span style="'+convStyle+';margin-left:6px">'+convStr(nD,nV)+'</span></span></div>';
+  html+='<div style="'+rowStyle.replace('border-bottom:1px solid var(--s2)','')+'"><span style="'+lblStyle+'">Propostas geradas</span><span><span style="'+numStyle+'">'+nP+'</span><span style="'+convStyle+';margin-left:6px">'+convStr(nV,nP)+'</span></span></div>';
+  if(dataUlt)html+='<div style="font-size:10px;color:var(--muted);font-weight:600;margin-top:8px">\u00daltimo disparo: '+fmtD(dataUlt)+'</div>';
+  html+='</div>';
+  return html;
 }
-
-// --- BLOCO: DISPAROS ---
-function disparosHtml(im){
-  var db=parseInt(im.disparos_base)||0;
-  var dp=parseInt(im.disparos_parceiros)||0;
-  var dtb=im.data_disparo_base?fmtD(im.data_disparo_base):null;
-  var dtp=im.data_disparo_parceiros?fmtD(im.data_disparo_parceiros):null;
-  var boxBase=db>0?('<div class="disp-val">'+db+'</div>'+(dtb?'<div class="disp-date">\u00faltimo em '+dtb+'</div>':'')):'<div class="disp-empty">Sem disparos registrados</div>';
-  var boxParc=dp>0?('<div class="disp-val">'+dp+'</div>'+(dtp?'<div class="disp-date">\u00faltimo em '+dtp+'</div>':'')):'<div class="disp-empty">Sem disparos registrados</div>';
+function disparosHtml(im,vis,negs){
+  var visBase=(vis||[]).filter(function(v){return v.origem==='Disparo de base';}).length;
+  var visParc=(vis||[]).filter(function(v){return v.origem==='Disparo de parceiros';}).length;
+  var propBase=(negs||[]).filter(function(n){return n.origem==='Disparo de base';}).length;
+  var propParc=(negs||[]).filter(function(n){return n.origem==='Disparo de parceiros';}).length;
   return '<div class="disp-grid">'
-    +'<div class="disp-box"><div class="disp-lbl">Base</div>'+boxBase+'</div>'
-    +'<div class="disp-box"><div class="disp-lbl">Parceiros</div>'+boxParc+'</div>'
+    +dispFunilCard('Base',im.alcance_base,im.disparos_base,visBase,propBase,im.data_disparo_base)
+    +dispFunilCard('Parceiros',im.alcance_parceiros,im.disparos_parceiros,visParc,propParc,im.data_disparo_parceiros)
   +'</div>';
 }
 
@@ -595,7 +600,7 @@ function renderPage(im,vis,negs){
   // 4. Canais de leads (alto)
   html+='<div class="scard fade-in fd5"><div class="scard-title">Canais de Aquisi\u00e7\u00e3o de Leads</div>'+canaisLeadsHtml(im)+'</div>';
   // 5. Disparos (baixo)
-  html+='<div class="scard fade-in fd6"><div class="scard-title">Disparos</div>'+disparosHtml(im)+'</div>';
+  html+='<div class="scard fade-in fd6"><div class="scard-title">Disparos</div>'+disparosHtml(im,vis,negs)+'</div>';
   // 6. Propostas drill-down (variavel)
   html+='<div class="scard fade-in fd7"><div class="scard-title">Propostas ('+negs.length+')</div>'+negHtml(negs)+'</div>';
   // 7. Intencao (medio)
@@ -604,8 +609,7 @@ function renderPage(im,vis,negs){
   html+='<div class="scard fade-in fd9"><div class="scard-title">Visitas por Origem</div>'+canaisVisitasHtml(vis)+'</div>';
   // 9. Objecoes (condicional)
   if(obsHtml)html+='<div class="scard fade-in fd10"><div class="scard-title">Principais Obje\u00e7\u00f5es</div>'+obsHtml+'</div>';
-  // 10. Propostas por fonte (baixo)
-  html+='<div class="scard fade-in fd11"><div class="scard-title">Propostas por Fonte</div>'+propostasFonteHtml(im)+'</div>';
+  // 10. (slot freed — Propostas por Fonte integrado no bloco Disparos)
   // 11. Timeline (medio)
   html+='<div class="scard fade-in fd12"><div class="scard-title">Timeline Operacional</div>'+timelineHtml(im)+'</div>';
   // 12. Relatorio visitas (alto)

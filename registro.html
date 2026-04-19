@@ -302,22 +302,25 @@ var sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 var _logUser=null;
 function logReg(action,entityNome,detalhes){if(!_logUser)return;sb.from('activity_log').insert({user_id:_logUser.id,user_nome:_logUser._nome||_logUser.email,action:action,entity_type:action==='visita_cadastrada'?'visita':'proposta',entity_nome:entityNome||null,detalhes:detalhes||null}).then(function(){});}
 
-var S={tipo:null,imovel:null,corretor:null,parceiro:null,nome:'',data:'',origem:'',objections:[],observacoes:'',intencao:null,qualif:null,pagto:[],pagto_detalhes:'',prop_valor:'',prop_pagto:null,prop_status:'em_andamento',prop_obs:''};
+var S={tipo:null,imovel:null,corretor:null,parceiro:null,nome:'',data:'',origem:'',objections:[],observacoes:'',intencao:null,qualif:null,pagto:[],pagto_detalhes:'',prop_valor:'',prop_pagto:null,prop_status:'em_andamento',prop_obs:'',prop_origem:'',disp_excl_id:null,disp_excl_nome:'',disp_tipo:'base',disp_data:'',disp_alcance:'',disp_cadastrado_por_id:null,disp_cadastrado_por_nome:'',disp_obs:''};
 var imoveis=[];
+var exclusividades=[];
 var corretores=[];
 var visitasRecentes=[];
 var propostasRecentes=[];
+var disparosRecentes=[];
 var _confirmCb=null;
 var passo=0;
 var PASSOS_VISITA=['tipo','imovel','corretor','interessado','feedback','resultado','pagamento','revisao'];
 var PASSOS_PROPOSTA=['tipo','imovel','corretor','proposta_form','revisao_prop'];
+var PASSOS_DISPARO=['tipo','disparo_form','revisao_disp'];
 
-function passos(){return S.tipo==='proposta'?PASSOS_PROPOSTA:PASSOS_VISITA;}
+function passos(){if(S.tipo==='proposta')return PASSOS_PROPOSTA;if(S.tipo==='disparo')return PASSOS_DISPARO;return PASSOS_VISITA;}
 
 async function init(){
   initHeader();
   try{
-    await Promise.all([loadImoveis(),loadCorretores()]);
+    await Promise.all([loadImoveis(),loadCorretores(),loadExclusividades()]);
     renderPasso();
   }catch(e){
     document.getElementById('mainPage').innerHTML=
@@ -340,11 +343,19 @@ async function loadCorretores(){
   corretores=res.data||[];
 }
 
+async function loadExclusividades(){
+  var res=await sb.from('dashboard_imoveis').select('id,imovel_nome,status_exclusividade').in('status_exclusividade',['ativa','gestao','repaginando','aguardando']).order('imovel_nome');
+  if(res.error)return;
+  exclusividades=res.data||[];
+}
+
 async function loadRecentes(){
   var vr=await sb.from('visitas').select('*').order('created_at',{ascending:false}).limit(20);
   visitasRecentes=vr.data||[];
   var pr=await sb.from('propostas').select('*').order('created_at',{ascending:false}).limit(20);
   propostasRecentes=pr.data||[];
+  var dr=await sb.from('disparos').select('*').order('created_at',{ascending:false}).limit(20);
+  disparosRecentes=dr.data||[];
 }
 
 async function buscarRegistros(){
@@ -356,8 +367,16 @@ async function buscarRegistros(){
   var res=document.getElementById('buscaResultados');
   res.innerHTML='<div class="loading"><div class="loading-spin"></div><div class="loading-txt">Buscando...</div></div>';
   try{
-    var vis=[];var props=[];
-    if(tipo==='visitas'||(tipo==='todos'&&corretorNome)){
+    var vis=[];var props=[];var disps=[];
+    if(tipo==='disparos'){
+      var qd=sb.from('disparos').select('*');
+      if(de)qd=qd.gte('data',de);
+      if(ate)qd=qd.lte('data',ate);
+      qd=qd.order('data',{ascending:false}).limit(50);
+      var rd=await qd;
+      if(rd.error)throw rd.error;
+      disps=rd.data||[];
+    }else if(tipo==='visitas'||(tipo==='todos'&&corretorNome)){
       var qv=sb.from('visitas').select('*');
       if(imovelId)qv=qv.eq('imovel_id',imovelId);
       if(corretorNome)qv=qv.eq('corretor',corretorNome);
@@ -387,43 +406,54 @@ async function buscarRegistros(){
       if(de)qp2=qp2.gte('data',de);
       if(ate)qp2=qp2.lte('data',ate);
       qp2=qp2.order('data',{ascending:false}).limit(50);
-      var all=await Promise.all([qv2,qp2]);
+      var qd2=sb.from('disparos').select('*');
+      if(de)qd2=qd2.gte('data',de);
+      if(ate)qd2=qd2.lte('data',ate);
+      qd2=qd2.order('data',{ascending:false}).limit(50);
+      var all=await Promise.all([qv2,qp2,qd2]);
       if(all[0].error)throw all[0].error;
       if(all[1].error)throw all[1].error;
       vis=all[0].data||[];
       props=all[1].data||[];
+      disps=all[2].data||[];
     }
     visitasRecentes=vis;
     propostasRecentes=props;
-    renderResultadoBusca(vis,props,tipo);
+    disparosRecentes=disps;
+    renderResultadoBusca(vis,props,disps,tipo);
   }catch(e){
     res.innerHTML='<div class="recentes-empty">Erro na busca: '+escHtml(e.message)+'</div>';
   }
 }
 
-function renderResultadoBusca(vis,props,tipo){
+function renderResultadoBusca(vis,props,disps,tipo){
   var res=document.getElementById('buscaResultados');
-  if(!vis.length&&!props.length){
+  if(!vis.length&&!props.length&&!disps.length){
     res.innerHTML='<div class="recentes-empty">Nenhum registro encontrado para esses filtros.</div>';
     return;
   }
   var partes=[];
   if(vis.length)partes.push(vis.length+' visita'+(vis.length!==1?'s':''));
   if(props.length)partes.push(props.length+' proposta'+(props.length!==1?'s':''));
-  var total=vis.length+props.length;
+  if(disps.length)partes.push(disps.length+' disparo'+(disps.length!==1?'s':''));
+  var total=vis.length+props.length+disps.length;
   var html='<div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:12px">'+partes.join(' e ')+' encontrada'+(total!==1?'s':'')+'</div>';
   if(tipo==='visitas'){
     for(var i=0;i<vis.length;i++)html+=renderVisitaCard(vis[i]);
   }else if(tipo==='propostas'){
     for(var j=0;j<props.length;j++)html+=renderPropostaCard(props[j]);
+  }else if(tipo==='disparos'){
+    for(var k=0;k<disps.length;k++)html+=renderDisparoCard(disps[k]);
   }else{
     var merged=[];
     for(var a=0;a<vis.length;a++)merged.push({_tp:'v',_dt:vis[a].data_visita||'',obj:vis[a]});
     for(var b=0;b<props.length;b++)merged.push({_tp:'p',_dt:props[b].data||'',obj:props[b]});
+    for(var d=0;d<disps.length;d++)merged.push({_tp:'d',_dt:disps[d].data||'',obj:disps[d]});
     merged.sort(function(x,y){return x._dt<y._dt?1:x._dt>y._dt?-1:0;});
     for(var c=0;c<merged.length;c++){
       if(merged[c]._tp==='v')html+=renderVisitaCard(merged[c].obj);
-      else html+=renderPropostaCard(merged[c].obj);
+      else if(merged[c]._tp==='p')html+=renderPropostaCard(merged[c].obj);
+      else html+=renderDisparoCard(merged[c].obj);
     }
   }
   res.innerHTML=html;
@@ -431,6 +461,11 @@ function renderResultadoBusca(vis,props,tipo){
 
 function nomeImovel(imovelId){
   for(var i=0;i<imoveis.length;i++){if(imoveis[i].id===imovelId)return imoveis[i].nome;}
+  return '';
+}
+
+function nomeExcl(exclId){
+  for(var i=0;i<exclusividades.length;i++){if(exclusividades[i].id===exclId)return exclusividades[i].imovel_nome;}
   return '';
 }
 
@@ -470,7 +505,7 @@ function renderStepBar(){
   var wrap=document.getElementById('stepBarWrap');
   if(ps.length<=1||passo===0){wrap.classList.add('hidden');return;}
   wrap.classList.remove('hidden');
-  var labels={tipo:'Tipo',imovel:'Imovel',corretor:'Corretor',interessado:'Interessado',feedback:'Feedback',resultado:'Resultado',pagamento:'Pagamento',revisao:'Revisao',proposta_form:'Proposta',revisao_prop:'Revisao'};
+  var labels={tipo:'Tipo',imovel:'Imovel',corretor:'Corretor',interessado:'Interessado',feedback:'Feedback',resultado:'Resultado',pagamento:'Pagamento',revisao:'Revisao',proposta_form:'Proposta',revisao_prop:'Revisao',disparo_form:'Disparo',revisao_disp:'Revisao'};
   var html='';
   for(var i=1;i<ps.length;i++){
     var cls=i<passo?'done':i===passo?'active':'pending';
@@ -484,7 +519,7 @@ function renderPasso(){
   var ps=passos();
   var current=ps[passo];
   renderStepBar();
-  var temFooter=current!=='tipo'&&current!=='revisao'&&current!=='revisao_prop';
+  var temFooter=current!=='tipo'&&current!=='revisao'&&current!=='revisao_prop'&&current!=='revisao_disp';
   document.getElementById('footerAcao').classList.toggle('hidden',!temFooter);
   document.getElementById('btnBack').classList.toggle('hidden',passo===0);
   var page=document.getElementById('mainPage');
@@ -500,6 +535,8 @@ function renderPasso(){
     case 'revisao':      page.innerHTML=renderRevisao();break;
     case 'proposta_form':page.innerHTML=renderPropostaForm();break;
     case 'revisao_prop': page.innerHTML=renderRevisaoProp();break;
+    case 'disparo_form': page.innerHTML=renderDisparoForm();break;
+    case 'revisao_disp': page.innerHTML=renderRevisaoDisp();break;
   }
   window.scrollTo({top:0});
   atualizarBtnNext();
@@ -522,6 +559,7 @@ function renderTipo(){
   '<div class="tipo-wrap">'+
     '<div class="tipo-btn" style="padding:18px 8px" onclick="selTipo(\'visita\')"><div class="tipo-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 012-2h8a2 2 0 012 2v18"/><path d="M6 12H4a2 2 0 00-2 2v6a2 2 0 002 2h2"/><path d="M18 9h2a2 2 0 012 2v9a2 2 0 01-2 2h-2"/><line x1="10" y1="6" x2="10" y2="6"/><line x1="14" y1="6" x2="14" y2="6"/><line x1="10" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="14" y2="14"/></svg></div><div class="tipo-label">Visita</div><div class="tipo-sub">Registre uma visita</div></div>'+
     '<div class="tipo-btn" style="padding:18px 8px" onclick="selTipo(\'proposta\')"><div class="tipo-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/></svg></div><div class="tipo-label">Proposta</div><div class="tipo-sub">Registre uma proposta</div></div>'+
+    '<div class="tipo-btn" style="padding:18px 8px" onclick="selTipo(\'disparo\')"><div class="tipo-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg></div><div class="tipo-label">Disparo</div><div class="tipo-sub">Registre um disparo</div></div>'+
   '</div>';
   var imOpts='<option value="">Todas as exclusividades</option>';
   for(var k=0;k<imoveis.length;k++){imOpts+='<option value="'+escHtml(imoveis[k].id)+'">'+escHtml(imoveis[k].nome)+'</option>';}
@@ -530,7 +568,7 @@ function renderTipo(){
   html+='<div style="margin-top:24px">'+
   '<div class="section-title">Buscar registros</div>'+
   '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">'+
-  '<div><div class="field-lbl">Tipo</div><select class="finput" id="fBuscaTipo"><option value="todos">Todos</option><option value="visitas">Visitas</option><option value="propostas">Propostas</option></select></div>'+
+  '<div><div class="field-lbl">Tipo</div><select class="finput" id="fBuscaTipo"><option value="todos">Todos</option><option value="visitas">Visitas</option><option value="propostas">Propostas</option><option value="disparos">Disparos</option></select></div>'+
   '<div><div class="field-lbl">Exclusividade</div><select class="finput" id="fBuscaImovel">'+imOpts+'</select></div>'+
   '<div><div class="field-lbl">Corretor</div><select class="finput" id="fBuscaCorretor">'+crOpts+'</select></div>'+
   '<div><div class="field-lbl">Periodo</div><div style="display:flex;gap:6px">'+
@@ -589,7 +627,7 @@ function selCorretor(el,id,nome,creci){
 }
 
 function renderInteressado(){
-  var origens=['Meta Ads','Google Ads','Instagram Organico','Indicacao','Disparo de base','Corretor parceiro','Site / Organico','YouTube','TikTok','Relacionamento','Outro'];
+  var origens=['Meta Ads','Google Ads','Instagram Organico','Indicacao','Disparo de base','Disparo de parceiros','Corretor parceiro','Site / Organico','YouTube','TikTok','Relacionamento','Outro'];
   var html='<div class="section-title">Dados do interessado</div>'+
   '<div class="cn-grid-2">'+
   '<div class="field"><div class="field-lbl">Nome do interessado <span class="req">*</span></div>'+
@@ -754,8 +792,12 @@ function renderPropostaForm(){
   '<div class="field"><div class="field-lbl">Data <span class="req">*</span></div>'+
   '<input type="date" class="finput" id="fPropData" value="'+(S.data||hoje())+'" onchange="S.data=this.value"></div>'+
   '<div class="field"><div class="field-lbl">Valor proposto</div>'+
-  '<div class="valor-wrap"><span class="valor-prefix">R$</span><input type="text" inputmode="numeric" class="valor-input" id="fPropValor" placeholder="0" value="'+escHtml(S.prop_valor)+'" oninput="mascaraValor(this)"></div></div>'+
-  '<div class="field"><div class="field-lbl">Forma de pagamento</div><div class="chips" id="propPagtoWrap">';
+  '<div class="valor-wrap"><span class="valor-prefix">R$</span><input type="text" inputmode="numeric" class="valor-input" id="fPropValor" placeholder="0" value="'+escHtml(S.prop_valor)+'" oninput="mascaraValor(this)"></div></div>';
+  var propOrgs=['Meta Ads','Google Ads','TikTok Ads','Instagram','Youtube','Facebook','Site','Whatsapp','TikTok Organico','Indicacao','Corretor parceiro','Relacionamento','Oferta ativa','Outdoor','Disparo de base','Disparo de parceiros'];
+  html+='<div class="field"><div class="field-lbl">Origem do lead</div><div class="chips" id="propOrigemWrap">';
+  for(var oi=0;oi<propOrgs.length;oi++){var po2=propOrgs[oi];var os2=S.prop_origem===po2;html+='<div class="chip'+(os2?' sel':'')+'" onclick="selPropOrigem(this,\''+escHtml(po2)+'\')">'+escHtml(po2)+'</div>';}
+  html+='</div></div>';
+  html+='<div class="field"><div class="field-lbl">Forma de pagamento</div><div class="chips" id="propPagtoWrap">';
   for(var i=0;i<pts.length;i++){var p=pts[i];var sel=S.prop_pagto===p.v;html+='<div class="chip'+(sel?' sel':'')+'" onclick="selPropPagto(this,\''+p.v+'\')">'+escHtml(p.l)+'</div>';}
   html+='</div></div><div class="field"><div class="field-lbl">Status</div><div class="chips" id="propStatusWrap">';
   for(var j=0;j<sts.length;j++){var s=sts[j];var ss=S.prop_status===s.v;html+='<div class="chip'+(ss?' '+s.c:'')+'" onclick="selPropStatus(this,\''+s.v+'\',\''+s.c+'\')">'+escHtml(s.l)+'</div>';}
@@ -766,6 +808,7 @@ function renderPropostaForm(){
 
 function selPropPagto(el,val){S.prop_pagto=val;document.querySelectorAll('#propPagtoWrap .chip').forEach(function(c){c.classList.remove('sel');});el.classList.add('sel');}
 function selPropStatus(el,val,cls){S.prop_status=val;document.querySelectorAll('#propStatusWrap .chip').forEach(function(c){c.classList.remove('sel-yellow','sel-green','sel-red','sel-muted');});el.classList.add(cls);}
+function selPropOrigem(el,val){S.prop_origem=val;document.querySelectorAll('#propOrigemWrap .chip').forEach(function(c){c.classList.remove('sel');});el.classList.add('sel');}
 function mascaraValor(el){var n=el.value.replace(/\D/g,'');el.value=n?parseInt(n,10).toLocaleString('pt-BR'):'';S.prop_valor=el.value;}
 
 function renderRevisaoProp(){
@@ -775,7 +818,7 @@ function renderRevisaoProp(){
   '<div class="card">'+
     '<div class="rev-section"><div class="rev-lbl">Imovel</div><div class="rev-val big">'+(S.imovel?escHtml(S.imovel.nome):'-')+'</div></div>'+
     '<div class="rev-section"><div class="rev-lbl">Corretor</div><div class="rev-val">'+(S.corretor?escHtml(S.corretor.nome)+' &mdash; CRECI '+escHtml(S.corretor.creci):'-')+'</div></div>'+
-    '<div class="rev-section"><div class="rev-lbl">Interessado</div><div class="rev-val">'+escHtml(S.nome||'-')+'</div><div class="rev-val" style="font-size:11px;color:var(--muted);margin-top:2px">'+escHtml(S.data||'-')+'</div></div>'+
+    '<div class="rev-section"><div class="rev-lbl">Interessado</div><div class="rev-val">'+escHtml(S.nome||'-')+'</div><div class="rev-val" style="font-size:11px;color:var(--muted);margin-top:2px">'+escHtml(S.data||'-')+(S.prop_origem?' \u00b7 '+escHtml(S.prop_origem):'')+'</div></div>'+
     (S.prop_valor?'<div class="rev-section"><div class="rev-lbl">Valor proposto</div><div class="rev-val big">R$ '+escHtml(S.prop_valor)+'</div></div>':'')+
     (S.prop_pagto?'<div class="rev-section"><div class="rev-lbl">Pagamento</div><div class="rev-val">'+escHtml(pL[S.prop_pagto]||S.prop_pagto)+'</div></div>':'')+
     '<div class="rev-section"><div class="rev-lbl">Status</div><div class="rev-val">'+escHtml(sL[S.prop_status]||S.prop_status)+'</div></div>'+
@@ -805,6 +848,7 @@ function validarPasso(){
   if(current==='interessado'){var el=document.getElementById('fNome');if(!el||!el.value.trim()){showToast('Informe o nome do interessado');return false;}}
   if(current==='proposta_form'){var el2=document.getElementById('fPropNome');if(!el2||!el2.value.trim()){showToast('Informe o nome do interessado');return false;}}
   if(current==='resultado'&&!S.intencao){showToast('Selecione a intencao do interessado');return false;}
+  if(current==='disparo_form'){var exclEl=document.getElementById('df_excl');if(!exclEl||!exclEl.value){showToast('Selecione a exclusividade');return false;}var dataEl=document.getElementById('df_data');if(!dataEl||!dataEl.value){showToast('Informe a data');return false;}}
   return true;
 }
 
@@ -814,6 +858,7 @@ function coletarPasso(){
   if(current==='feedback'){S.observacoes=((document.getElementById('fObs')||{}).value||'').trim();}
   if(current==='pagamento'){S.pagto_detalhes=((document.getElementById('fPagtoObs')||{}).value||'').trim();}
   if(current==='proposta_form'){S.nome=((document.getElementById('fPropNome')||{}).value||'').trim();S.data=(document.getElementById('fPropData')||{}).value||'';S.prop_obs=((document.getElementById('fPropObs')||{}).value||'').trim();}
+  if(current==='disparo_form'){var dfExcl=document.getElementById('df_excl');if(dfExcl){S.disp_excl_id=dfExcl.value;S.disp_excl_nome=dfExcl.selectedIndex>0?dfExcl.options[dfExcl.selectedIndex].text:'';}S.disp_data=(document.getElementById('df_data')||{}).value||'';S.disp_alcance=(document.getElementById('df_alcance')||{}).value||'';S.disp_obs=((document.getElementById('df_obs')||{}).value||'').trim();var dfCast=document.getElementById('df_cast');if(dfCast){S.disp_cadastrado_por_id=dfCast.value||null;S.disp_cadastrado_por_nome=dfCast.value&&dfCast.selectedIndex>0?dfCast.options[dfCast.selectedIndex].text:'';}}
 }
 
 // ---- SALVAR ----
@@ -856,7 +901,7 @@ async function salvarProposta(){
   if(btn){btn.disabled=true;btn.textContent='Salvando...';}
   try{
     var vRaw=S.prop_valor?parseFloat(S.prop_valor.replace(/\./g,'').replace(',','.'))||null:null;
-    var payload={imovel_id:S.imovel.id,nome_interessado:S.nome,data:S.data||null,valor_proposto:vRaw,forma_pagamento:S.prop_pagto||null,status:S.prop_status||'em_andamento',observacao:S.prop_obs||null,corretor:S.corretor?S.corretor.nome:null};
+    var payload={imovel_id:S.imovel.id,nome_interessado:S.nome,data:S.data||null,valor_proposto:vRaw,forma_pagamento:S.prop_pagto||null,status:S.prop_status||'em_andamento',observacao:S.prop_obs||null,corretor:S.corretor?S.corretor.nome:null,origem:S.prop_origem||null};
     var res=await sb.from('propostas').insert(payload);
     if(res.error)throw res.error;
     logReg('proposta_cadastrada',S.imovel.nome,{interessado:S.nome});
@@ -866,6 +911,68 @@ async function salvarProposta(){
   }catch(e){showToast('Erro ao salvar: '+e.message);if(btn){btn.disabled=false;btn.textContent='&#10003; Salvar proposta';}}
 }
 
+// ---- DISPARO ----
+
+function renderDisparoForm(){
+  var exclOpts='<option value="">Selecione...</option>';
+  for(var i=0;i<exclusividades.length;i++){var e=exclusividades[i];exclOpts+='<option value="'+e.id+'"'+(S.disp_excl_id===e.id?' selected':'')+'>'+escHtml(e.imovel_nome)+'</option>';}
+  var castOpts='<option value="">Selecione...</option>';
+  for(var j=0;j<corretores.length;j++){var c=corretores[j];castOpts+='<option value="'+c.id+'"'+(S.disp_cadastrado_por_id===c.id?' selected':'')+'>'+escHtml(c.nome)+'</option>';}
+  return '<div class="section-title">Dados do disparo</div>'+
+  '<div class="field"><div class="field-lbl">Exclusividade <span class="req">*</span></div>'+
+  '<select class="finput" id="df_excl">'+exclOpts+'</select></div>'+
+  '<div class="field"><div class="field-lbl">Tipo de disparo</div>'+
+  '<div class="parceiro-toggle">'+
+  '<div class="parceiro-btn'+(S.disp_tipo==='base'?' sel':'')+'" id="dfTipoBase" onclick="S.disp_tipo=\'base\';dfSelTipo(\'base\')">Base</div>'+
+  '<div class="parceiro-btn'+(S.disp_tipo==='parceiros'?' sel':'')+'" id="dfTipoParceiros" onclick="S.disp_tipo=\'parceiros\';dfSelTipo(\'parceiros\')">Parceiros</div>'+
+  '</div></div>'+
+  '<div class="cn-grid-2">'+
+  '<div class="field"><div class="field-lbl">Data <span class="req">*</span></div>'+
+  '<input type="date" class="finput" id="df_data" value="'+(S.disp_data||hoje())+'" onchange="S.disp_data=this.value"></div>'+
+  '<div class="field"><div class="field-lbl">Alcance</div>'+
+  '<input type="number" class="finput" id="df_alcance" placeholder="0" value="'+escHtml(S.disp_alcance||'')+'" oninput="S.disp_alcance=this.value"></div>'+
+  '</div>'+
+  '<div class="field"><div class="field-lbl">Cadastrado por</div>'+
+  '<select class="finput" id="df_cast">'+castOpts+'</select></div>'+
+  '<div class="field"><div class="field-lbl">Observacao</div>'+
+  '<textarea class="finput" id="df_obs" placeholder="Detalhes do disparo...">'+escHtml(S.disp_obs)+'</textarea></div>';
+}
+
+function dfSelTipo(t){
+  var base=document.getElementById('dfTipoBase');
+  var parc=document.getElementById('dfTipoParceiros');
+  if(base)base.classList.toggle('sel',t==='base');
+  if(parc)parc.classList.toggle('sel',t==='parceiros');
+}
+
+function renderRevisaoDisp(){
+  var tipoL=S.disp_tipo==='parceiros'?'Parceiros':'Base';
+  return '<div class="section-title">Revisar antes de salvar</div>'+
+  '<div class="card">'+
+    '<div class="rev-section"><div class="rev-lbl">Exclusividade</div><div class="rev-val big">'+escHtml(S.disp_excl_nome||'-')+'</div></div>'+
+    '<div class="rev-section"><div class="rev-lbl">Tipo</div><div class="rev-val">'+tipoL+'</div></div>'+
+    '<div class="rev-section"><div class="rev-lbl">Data</div><div class="rev-val">'+escHtml(S.disp_data||'-')+'</div></div>'+
+    (S.disp_alcance?'<div class="rev-section"><div class="rev-lbl">Alcance</div><div class="rev-val">'+escHtml(S.disp_alcance)+'</div></div>':'')+
+    (S.disp_cadastrado_por_nome?'<div class="rev-section"><div class="rev-lbl">Cadastrado por</div><div class="rev-val">'+escHtml(S.disp_cadastrado_por_nome)+'</div></div>':'')+
+    (S.disp_obs?'<div class="rev-section"><div class="rev-lbl">Observacao</div><div class="rev-val" style="font-size:12px;font-weight:600">'+escHtml(S.disp_obs)+'</div></div>':'')+
+  '</div>'+
+  '<button class="btn-next green" id="btnSalvarDisparo" style="width:100%;padding:16px;font-size:15px;border-radius:12px;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px" onclick="salvarDisparo()">&#10003; Salvar disparo</button>'+
+  '<button class="btn-back" style="width:100%;padding:14px;text-align:center;border-radius:12px" onclick="voltarPasso()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg> Corrigir</button>';
+}
+
+async function salvarDisparo(){
+  var btn=document.getElementById('btnSalvarDisparo');
+  if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+  try{
+    var payload={exclusividade_id:S.disp_excl_id,tipo:S.disp_tipo,data:S.disp_data||null,alcance:S.disp_alcance?parseInt(S.disp_alcance,10):null,observacao:S.disp_obs||null,criado_por_id:S.disp_cadastrado_por_id||null};
+    var res=await sb.from('disparos').insert(payload);
+    if(res.error)throw res.error;
+    document.getElementById('stepBarWrap').classList.add('hidden');
+    document.getElementById('footerAcao').classList.add('hidden');
+    document.getElementById('mainPage').innerHTML=renderSucesso('Disparo registrado!','Disparo em '+escHtml(S.disp_excl_nome)+' salvo com sucesso.');
+  }catch(e){showToast('Erro ao salvar: '+e.message);if(btn){btn.disabled=false;btn.textContent='&#10003; Salvar disparo';}}
+}
+
 function renderSucesso(titulo,sub){
   return '<div class="success-wrap"><div class="success-icon">&#10003;</div><div class="success-title">'+escHtml(titulo)+'</div><div class="success-sub">'+escHtml(sub)+'</div>'+
   '<button class="novo-btn" onclick="resetar()">&#43; Novo registro</button> &nbsp; '+
@@ -873,7 +980,7 @@ function renderSucesso(titulo,sub){
 }
 
 function resetar(){
-  S={tipo:null,imovel:null,corretor:null,parceiro:null,nome:'',data:'',origem:'',objections:[],observacoes:'',intencao:null,qualif:null,pagto:[],pagto_detalhes:'',prop_valor:'',prop_pagto:null,prop_status:'em_andamento',prop_obs:''};
+  S={tipo:null,imovel:null,corretor:null,parceiro:null,nome:'',data:'',origem:'',objections:[],observacoes:'',intencao:null,qualif:null,pagto:[],pagto_detalhes:'',prop_valor:'',prop_pagto:null,prop_status:'em_andamento',prop_obs:'',prop_origem:'',disp_excl_id:null,disp_excl_nome:'',disp_tipo:'base',disp_data:'',disp_alcance:'',disp_cadastrado_por_id:null,disp_cadastrado_por_nome:'',disp_obs:''};
   passo=0;
   document.getElementById('stepBarWrap').classList.add('hidden');
   document.getElementById('footerAcao').classList.add('hidden');
@@ -893,7 +1000,7 @@ function showToast(msg){var t=document.getElementById('toast');t.textContent=msg
 // ---- CONFIRMAR / EXCLUIR ----
 
 function confirmarExcluir(tipo,id){
-  _confirmCb=function(){if(tipo==='visita')excluirVisita(id);else excluirProposta(id);};
+  _confirmCb=function(){if(tipo==='visita')excluirVisita(id);else if(tipo==='proposta')excluirProposta(id);else excluirDisparo(id);};
   var el=document.getElementById('confirmModal');
   el.innerHTML='<div class="confirm-sheet"><div class="confirm-title">Confirmar exclusao</div>'+
     '<div class="confirm-sub">Tem certeza? Esta acao nao pode ser desfeita.</div>'+
@@ -922,6 +1029,98 @@ async function excluirProposta(id){
   showToast('Proposta excluida.');
 }
 
+// ---- DISPAROS CRUD ----
+
+function renderDisparoCard(d){
+  var tipoCls=d.tipo==='parceiros'?'blue':'green';
+  var tipoL=d.tipo==='parceiros'?'Parceiros':'Base';
+  var badge='<span class="rcard-badge '+tipoCls+'">'+tipoL+'</span>';
+  var exNome=nomeExcl(d.exclusividade_id)||'-';
+  var sub=(d.data||'-')+(d.alcance?' \u00b7 Alcance: '+d.alcance:'');
+  return '<div class="rcard" id="rcard-d-'+d.id+'">'+
+    '<div class="rcard-top"><div>'+
+    '<div class="rcard-nome">'+escHtml(exNome)+'</div>'+
+    '<div class="rcard-sub">'+escHtml(sub)+'</div>'+
+    '</div>'+badge+'</div>'+
+    '<div class="card-actions">'+
+    '<button class="btn-edit" onclick="editarDisparo(\''+d.id+'\')">Editar</button>'+
+    '<button class="btn-del" onclick="confirmarExcluir(\'disparo\',\''+d.id+'\')">Excluir</button>'+
+    '</div></div>';
+}
+
+function editarDisparo(id){
+  var d=null;
+  for(var i=0;i<disparosRecentes.length;i++){if(disparosRecentes[i].id===id){d=disparosRecentes[i];break;}}
+  if(!d){showToast('Disparo nao encontrado');return;}
+  var exclOpts='<option value="">Selecione...</option>';
+  for(var ei=0;ei<exclusividades.length;ei++){var e=exclusividades[ei];exclOpts+='<option value="'+e.id+'"'+(d.exclusividade_id===e.id?' selected':'')+'>'+escHtml(e.imovel_nome)+'</option>';}
+  var castOpts='<option value="">Selecione...</option>';
+  for(var ci=0;ci<corretores.length;ci++){var c=corretores[ci];castOpts+='<option value="'+c.id+'"'+(d.criado_por_id===c.id?' selected':'')+'>'+escHtml(c.nome)+'</option>';}
+  var html='<div class="edit-modal-hdr">'+
+    '<button class="edit-modal-close" onclick="fecharEditModal()">'+SVG_BACK+'</button>'+
+    '<div class="edit-modal-title">Editar disparo</div></div>'+
+    '<div class="edit-modal-body">'+
+    '<div class="field"><div class="field-lbl">Exclusividade</div>'+
+    '<select class="finput" id="ed_excl">'+exclOpts+'</select></div>'+
+    '<div class="field"><div class="field-lbl">Tipo</div>'+
+    '<div class="parceiro-toggle">'+
+    '<div class="parceiro-btn'+(d.tipo==='base'?' sel':'')+'" id="edTipoBase" onclick="edSelTipo(\'base\')">Base</div>'+
+    '<div class="parceiro-btn'+(d.tipo==='parceiros'?' sel':'')+'" id="edTipoParceiros" onclick="edSelTipo(\'parceiros\')">Parceiros</div>'+
+    '</div></div>'+
+    '<div class="cn-grid-2">'+
+    '<div class="field"><div class="field-lbl">Data</div>'+
+    '<input type="date" class="finput" id="ed_data" value="'+(d.data||'')+'"></div>'+
+    '<div class="field"><div class="field-lbl">Alcance</div>'+
+    '<input type="number" class="finput" id="ed_alcance" value="'+(d.alcance||'')+'"></div>'+
+    '</div>'+
+    '<div class="field"><div class="field-lbl">Cadastrado por</div>'+
+    '<select class="finput" id="ed_cast">'+castOpts+'</select></div>'+
+    '<div class="field"><div class="field-lbl">Observacao</div>'+
+    '<textarea class="finput" id="ed_obs">'+escHtml(d.observacao||'')+'</textarea></div>'+
+    '<button class="edit-save-btn" id="btnSalvarEditDisparo" onclick="salvarEditDisparo(\''+id+'\')">Salvar alteracoes</button>'+
+    '</div>';
+  var modal=document.getElementById('editModal');
+  modal.innerHTML=html;modal.style.display='block';modal.scrollTop=0;
+}
+
+function edSelTipo(t){
+  var base=document.getElementById('edTipoBase');
+  var parc=document.getElementById('edTipoParceiros');
+  if(base)base.classList.toggle('sel',t==='base');
+  if(parc)parc.classList.toggle('sel',t==='parceiros');
+}
+
+async function salvarEditDisparo(id){
+  var btn=document.getElementById('btnSalvarEditDisparo');
+  if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+  try{
+    var exclEl=document.getElementById('ed_excl');
+    var exclId=exclEl?exclEl.value||null:null;
+    var tipoSel=document.getElementById('edTipoBase').classList.contains('sel')?'base':'parceiros';
+    var data=document.getElementById('ed_data').value||null;
+    var alcanceVal=document.getElementById('ed_alcance').value;
+    var alcance=alcanceVal?parseInt(alcanceVal,10):null;
+    var castEl=document.getElementById('ed_cast');
+    var castId=castEl?castEl.value||null:null;
+    var obs=(document.getElementById('ed_obs').value||'').trim()||null;
+    var payload={exclusividade_id:exclId,tipo:tipoSel,data:data,alcance:alcance,observacao:obs,criado_por_id:castId};
+    var res=await sb.from('disparos').update(payload).eq('id',id);
+    if(res.error)throw res.error;
+    for(var i=0;i<disparosRecentes.length;i++){if(disparosRecentes[i].id===id){Object.assign(disparosRecentes[i],payload);break;}}
+    var card=document.getElementById('rcard-d-'+id);
+    if(card){var dObj=null;for(var j=0;j<disparosRecentes.length;j++){if(disparosRecentes[j].id===id){dObj=disparosRecentes[j];break;}}if(dObj){var tmp=document.createElement('div');tmp.innerHTML=renderDisparoCard(dObj);card.replaceWith(tmp.firstChild);}}
+    fecharEditModal();showToast('Disparo atualizado!');
+  }catch(e){showToast('Erro: '+e.message);if(btn){btn.disabled=false;btn.textContent='Salvar alteracoes';}}
+}
+
+async function excluirDisparo(id){
+  var res=await sb.from('disparos').delete().eq('id',id);
+  if(res.error){showToast('Erro ao excluir: '+res.error.message);return;}
+  disparosRecentes=disparosRecentes.filter(function(d){return d.id!==id;});
+  var card=document.getElementById('rcard-d-'+id);if(card)card.remove();
+  showToast('Disparo excluido.');
+}
+
 // ---- EDITAR VISITA ----
 
 var SVG_BACK='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>';
@@ -932,7 +1131,7 @@ function editarVisita(id){
   var v=null;
   for(var i=0;i<visitasRecentes.length;i++){if(visitasRecentes[i].id===id){v=visitasRecentes[i];break;}}
   if(!v){showToast('Visita nao encontrada');return;}
-  var origens=['Meta Ads','Google Ads','Instagram Organico','Indicacao','Disparo de base','Corretor parceiro','Site / Organico','YouTube','TikTok','Relacionamento','Outro'];
+  var origens=['Meta Ads','Google Ads','Instagram Organico','Indicacao','Disparo de base','Disparo de parceiros','Corretor parceiro','Site / Organico','YouTube','TikTok','Relacionamento','Outro'];
   var pts=[{v:'a_vista',l:'A vista'},{v:'financiamento',l:'Financiamento'},{v:'parcelamento_direto',l:'Parcelamento direto'},{v:'dacao_a_vista',l:'Dacao + a vista'},{v:'dacao_financiamento',l:'Dacao + financiamento'},{v:'dacao_parcelamento_direto',l:'Dacao + parcelamento'},{v:'parcelamento_direto_financiamento',l:'Parcelamento + financiamento'}];
   var its=[{v:'Quer comprar'},{v:'Esta pensando'},{v:'Quer segunda visita'},{v:'Nao gostou'}];
   var presets=['Preco alto','Localizacao','Tamanho','Condominio caro','Precisa reformar','Sem vaga','Sem area de lazer','Documentacao','Nao gostou do imovel','Nao qualificado financeiramente'];
@@ -1052,7 +1251,11 @@ function editarProposta(id){
     '<div class="field"><div class="field-lbl">Valor proposto</div>'+
     '<div class="valor-wrap"><span class="valor-prefix">R$</span><input type="text" inputmode="numeric" class="valor-input" id="ep_valor" placeholder="0" value="'+escHtml(valorFmt)+'" oninput="mascaraValor(this)"></div></div>'+
     '</div>'+
-    '<div class="field"><div class="field-lbl">Forma de pagamento</div><div class="chips" id="ep_pagto">';
+  var porgs=['Meta Ads','Google Ads','TikTok Ads','Instagram','Youtube','Facebook','Site','Whatsapp','TikTok Organico','Indicacao','Corretor parceiro','Relacionamento','Oferta ativa','Outdoor','Disparo de base','Disparo de parceiros'];
+  html+='<div class="field"><div class="field-lbl">Origem do lead</div><div class="chips" id="ep_origem">';
+  for(var ki=0;ki<porgs.length;ki++){var po=porgs[ki];var osel=p.origem===po;html+='<div class="chip'+(osel?' sel':'')+'" onclick="epSelOrigem(this)">'+escHtml(po)+'</div>';}
+  html+='</div></div>';
+  html+='<div class="field"><div class="field-lbl">Forma de pagamento</div><div class="chips" id="ep_pagto">';
   for(var pi=0;pi<pts.length;pi++){var psel=p.forma_pagamento===pts[pi].v;html+='<div class="chip'+(psel?' sel sel-active':'')+'" data-val="'+pts[pi].v+'" onclick="epSelPagto(this)">'+escHtml(pts[pi].l)+'</div>';}
   html+='</div></div><div class="field"><div class="field-lbl">Status</div><div class="chips" id="ep_status">';
   for(var si=0;si<sts.length;si++){var ssel=p.status===sts[si].v;html+='<div class="chip'+(ssel?' '+sts[si].c+' sel-active':'')+'" data-val="'+sts[si].v+'" data-cls="'+sts[si].c+'" onclick="epSelStatus(this)">'+escHtml(sts[si].l)+'</div>';}
@@ -1066,6 +1269,7 @@ function editarProposta(id){
 }
 
 function epSelPagto(el){document.querySelectorAll('#ep_pagto .chip').forEach(function(c){c.classList.remove('sel','sel-active');});el.classList.add('sel','sel-active');}
+function epSelOrigem(el){document.querySelectorAll('#ep_origem .chip').forEach(function(c){c.classList.remove('sel');});el.classList.add('sel');}
 function epSelStatus(el){
   var allC=['sel-yellow','sel-green','sel-red','sel-muted','sel-active'];
   document.querySelectorAll('#ep_status .chip').forEach(function(c){allC.forEach(function(cls){c.classList.remove(cls);});});
@@ -1084,8 +1288,10 @@ async function salvarEditProposta(id){
     var pagto=pagtoEl?pagtoEl.getAttribute('data-val'):null;
     var statusEl=document.querySelector('#ep_status .chip.sel-active');
     var status=statusEl?statusEl.getAttribute('data-val'):'em_andamento';
+    var origemEl=document.querySelector('#ep_origem .chip.sel');
+    var origem=origemEl?origemEl.textContent.trim():null;
     var obs=(document.getElementById('ep_obs').value||'').trim()||null;
-    var payload={nome_interessado:nome,data:data,valor_proposto:vRaw,forma_pagamento:pagto,status:status,observacao:obs};
+    var payload={nome_interessado:nome,data:data,valor_proposto:vRaw,forma_pagamento:pagto,status:status,observacao:obs,origem:origem};
     var res=await sb.from('propostas').update(payload).eq('id',id);
     if(res.error)throw res.error;
     for(var i=0;i<propostasRecentes.length;i++){if(propostasRecentes[i].id===id){Object.assign(propostasRecentes[i],payload);break;}}
