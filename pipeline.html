@@ -506,7 +506,7 @@ function renderCardV10(im){
   var adsStr=gasto>0?'R$ '+gasto.toLocaleString('pt-BR'):'-';
   var adsExp=espM>0?'<span class="exp">/ '+espM.toLocaleString('pt-BR')+'</span>':'';
   var adsTot=mMidia>0?'<span class="tot">de '+mMidia.toLocaleString('pt-BR')+'</span>':'';
-  return '<div class="icard b-'+pior+'" onclick="window.location.href=\'exclusividades.html#detalhe/'+im.id+'\'">'
+  return '<div class="icard b-'+pior+'" onclick="window.location.href=\'detalhe.html?id='+im.id+'\'">'
     +'<div class="icard-head">'
       +'<div style="flex:1;min-width:0"><div class="icard-nome">'+nome+'</div>'+(propNome?'<div class="icard-sub-prop" style="margin-top:2px">'+propNome+'</div>':'')+'</div>'
       +'<div style="text-align:right;white-space:nowrap">'
@@ -524,7 +524,7 @@ function renderCardV10(im){
       +'<div class="icard-cpl"><span class="icard-cpl-badge">CPL</span><span class="icard-cpl-valor'+(cplOver?' over':'')+'">'+(cplReal>0?'R$ '+cplReal:'-')+'</span>'+(cplRef?'<span class="icard-cpl-ref">ref. '+cplRef+'</span>':'')+'</div>'
     +'</div>'
     +'<div class="icard-actions">'
-      +'<button class="icard-action-txt blue" onclick="event.stopPropagation();window.location.href=\'exclusividades.html#detalhe/'+im.id+'\'">Editar \u203A</button>'
+      +'<button class="icard-action-txt blue" onclick="event.stopPropagation();window.location.href=\'detalhe.html?id='+im.id+'\'">Detalhe \u203A</button>'
     +'</div>'
   +'</div>';
 }
@@ -546,7 +546,7 @@ function renderCardResumido(im,tipo){
   }else{
     ctx=im.data_inicio?'Cadastrado em '+new Date(im.data_inicio+'T00:00:00').toLocaleDateString('pt-BR'):'';
   }
-  return '<div class="icard-resumido '+bCls+'" onclick="window.location.href=\'exclusividades.html#detalhe/'+im.id+'\'">'
+  return '<div class="icard-resumido '+bCls+'" onclick="window.location.href=\'detalhe.html?id='+im.id+'\'">'
     +'<div class="icardr-head">'
       +'<div style="flex:1;min-width:0"><div class="icardr-nome">'+nome+'</div>'+(propNome?'<div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px">'+propNome+'</div>':'')+'</div>'
       +'<div style="text-align:right;white-space:nowrap"><div class="icardr-preco">'+preco+'</div><div style="font-size:10px;font-weight:700;color:var(--muted);margin-top:2px">TMM '+tmm+'/mes</div></div>'
@@ -577,7 +577,7 @@ function renderCardHistorico(im,tipo){
     extra='<span class="hist-sep">|</span><span>encerr. '+dF+'</span>'
       +(im.observacoes?'<span class="hist-sep">|</span><span style="flex:1;min-width:140px;color:var(--muted);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+im.observacoes+'</span>':'');
   }
-  return '<div class="card-historico '+bCls+'" onclick="window.location.href=\'exclusividades.html#detalhe/'+im.id+'\'" style="cursor:pointer">'
+  return '<div class="card-historico '+bCls+'" onclick="window.location.href=\'detalhe.html?id='+im.id+'\'" style="cursor:pointer">'
     +badge
     +'<strong>'+nome+'</strong>'
     +'<span class="hist-sep">|</span><span>'+preco+'</span>'
