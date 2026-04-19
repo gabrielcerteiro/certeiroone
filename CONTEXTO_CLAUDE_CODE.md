@@ -207,6 +207,12 @@ Sidebar via nav.js. Hash routing interno:
 - registro.html: propostas ganham campo origem (16 canais) em criacao e edicao
 - detalhe.html: disparosHtml substituido por funil Base|Parceiros com Alcance→Disparos→Visitas→Propostas + conv rates
 - detalhe.html: bloco Propostas por Fonte removido (integrado no funil de disparos)
+- detalhe.html: fix filtros disparosHtml para 'Offline - Disparo de base/parceiros' (era sem prefixo)
+- detalhe.html: prazoHtml/funilHtml/midiaHtml/canaisLeadsHtml/canaisVisitasHtml removidos (12 → 8 blocos)
+- detalhe.html: andamentoHtml unificado (span 2 cols) — barra Tempo + Leads/Visitas/Propostas + Ads/CPL/Alcance/Freq + conv
+- detalhe.html: tabelaCanaisHtml (grid-column:1/-1) — Canal|Midia|Leads|Visitas|Propostas|R$/Lead|R$/Visita|R$/Proposta + TOTAL
+- exclusividades.html: bloco Metas e Investimento no modal de edicao (meta_leads/visitas/propostas/cpl/investimento)
+- exclusividades.html: abrirEdit async com fetch de funil_snapshot; salvarEdicao faz UPSERT funil_snapshot
 
 ### v1.5.2.1 — 19/04/2026
 - detalhe.html: grid 3-col dense (grid-auto-flow: row dense) para preencher lacunas
