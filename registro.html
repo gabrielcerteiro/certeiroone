@@ -1250,7 +1250,7 @@ function editarProposta(id){
     '<input type="date" class="finput" id="ep_data" value="'+(p.data||'')+'"></div>'+
     '<div class="field"><div class="field-lbl">Valor proposto</div>'+
     '<div class="valor-wrap"><span class="valor-prefix">R$</span><input type="text" inputmode="numeric" class="valor-input" id="ep_valor" placeholder="0" value="'+escHtml(valorFmt)+'" oninput="mascaraValor(this)"></div></div>'+
-    '</div>'+
+    '</div>';
   var porgs=['Meta Ads','Google Ads','TikTok Ads','Instagram','Youtube','Facebook','Site','Whatsapp','TikTok Organico','Indicacao','Corretor parceiro','Relacionamento','Oferta ativa','Outdoor','Disparo de base','Disparo de parceiros'];
   html+='<div class="field"><div class="field-lbl">Origem do lead</div><div class="chips" id="ep_origem">';
   for(var ki=0;ki<porgs.length;ki++){var po=porgs[ki];var osel=p.origem===po;html+='<div class="chip'+(osel?' sel':'')+'" onclick="epSelOrigem(this)">'+escHtml(po)+'</div>';}
