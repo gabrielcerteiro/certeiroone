@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pipeline | Certeiro One</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#191949">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Certeiro One">
+<link rel="apple-touch-icon" href="./icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="nav.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--navy:#191949;--white:#FFFFFF;--bg:#F5F5F8;--text:#191949;--muted:#8E8EA0;--s2:#ECECF1;--s3:#D9D9E3;
+  --green:#10B981;--green-bg:rgba(16,185,129,0.08);--green-l:#D1FAE5;
+  --red:#EF4444;--red-bg:rgba(239,68,68,0.08);--red-l:#FEE2E2;
+  --yellow:#F59E0B;--yellow-bg:rgba(245,158,11,0.08);--yellow-l:#FEF3C7;
+  --blue:#3B82F6;--blue-bg:rgba(59,130,246,0.08);--blue-l:#DBEAFE;
+  --purple:#8B5CF6;--purple-bg:rgba(139,92,246,0.08);--purple-l:#EDE9FE;
+  --gray-bg:#F3F4F6;--gray-text:#374151;
+  --navy-l:rgba(25,25,73,0.08);--card-shadow:0 1px 3px rgba(25,25,73,0.06),0 1px 2px rgba(25,25,73,0.04);--card-radius:14px}
+html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+/* AUTH */
+.auth-overlay{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px}
+.auth-box{background:#fff;border-radius:20px;padding:32px 24px;width:100%;max-width:340px;text-align:center}
+.auth-logo{font-size:13px;font-weight:900;letter-spacing:2.2px;text-transform:uppercase;color:var(--navy);margin-bottom:4px}
+.auth-sub{font-size:9px;color:#8E8EA0;letter-spacing:1.4px;text-transform:uppercase;margin-bottom:28px}
+.auth-lbl{font-size:11px;font-weight:700;color:var(--navy);text-align:left;margin-bottom:4px;display:block}
+.auth-input{width:100%;border:1.5px solid #ECECF1;border-radius:12px;padding:14px 16px;font-size:14px;font-family:'Nunito Sans',sans-serif;color:var(--navy);outline:none;text-align:left;margin-bottom:10px;-webkit-appearance:none;background:#fff}
+.auth-input:focus{border-color:var(--navy)}
+.auth-btn{width:100%;background:var(--navy);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;font-family:'Nunito Sans',sans-serif;cursor:pointer;margin-top:2px}
+.auth-btn:disabled{opacity:0.6;cursor:not-allowed}
+.auth-err{font-size:12px;color:#EF4444;font-weight:700;margin-top:10px;min-height:18px}
+.auth-link{font-size:11px;color:#8E8EA0;cursor:pointer;margin-top:14px;display:block;font-weight:700}
+.auth-link:hover{color:var(--navy)}
+/* APP */
+.app-wrap{display:block}
+.page{padding:14px 16px 60px;max-width:480px;margin:0 auto}
+@media(min-width:900px){
+  .page{flex:1;max-width:none;min-width:0;padding:20px 0 40px 28px}
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading{text-align:center;padding:50px 20px}
+.loading-spin{width:28px;height:28px;border:3px solid var(--s2);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+.loading-txt{font-size:12px;color:var(--muted)}
+.erro-box{background:var(--red-bg);border-radius:12px;padding:18px;margin:20px 0;text-align:center}
+.erro-box p{font-size:12px;color:var(--red)}
+.erro-box button{margin-top:10px;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;font-family:'Nunito Sans',sans-serif;cursor:pointer}
+/* CARDS E BASE */
+.card{background:var(--white);border-radius:var(--card-radius);padding:16px 18px;border:1px solid var(--s2);box-shadow:var(--card-shadow);margin-bottom:12px}
+.card-navy{background:var(--navy);border-radius:var(--card-radius);padding:18px 20px;border:none;margin-bottom:14px;color:#fff}
+.lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px}
+.pill{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.pill-green{color:var(--green);background:var(--green-bg)}
+.pill-red{color:var(--red);background:var(--red-bg)}
+.pill-yellow{color:var(--yellow);background:var(--yellow-bg)}
+.pill-blue{color:var(--blue);background:var(--blue-bg)}
+.pill-purple{color:var(--purple);background:var(--purple-bg)}
+.stats-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.stat-box{flex:1;min-width:80px;text-align:center;background:var(--white);border-radius:12px;padding:12px 6px;border:1px solid var(--s2)}
+.stat-n{font-size:22px;font-weight:900;line-height:1}
+.stat-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px}
+.view{display:none}
+.view.on{display:block}
+/* BADGES */
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.badge-ativa{background:var(--green-l);color:#065F46}
+.badge-vendida{background:var(--blue-l);color:#1E40AF}
+.badge-perdida{background:var(--red-l);color:#991B1B}
+.badge-gestao{background:var(--purple-l);color:#5B21B6}
+.badge-repaginando{background:var(--yellow-l);color:#92400E}
+.badge-aguardando{background:var(--gray-bg);color:#374151}
+/* PIPELINE HEADER */
+.pipeline-header{background:var(--navy);color:#fff;border-radius:var(--card-radius);padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.ph-counters{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;flex-wrap:wrap}
+.ph-counter-sep{color:rgba(255,255,255,0.3);font-weight:400}
+.ph-count-ativa{color:#fff}
+.ph-count-repag{color:var(--yellow)}
+.ph-count-aguard{color:rgba(255,255,255,0.7)}
+.ph-tmm{flex:1;min-width:220px;display:flex;flex-direction:column;gap:6px}
+.ph-tmm-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.ph-tmm-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:0.08em}
+.ph-tmm-val{font-size:20px;font-weight:900;color:#fff;line-height:1}
+.ph-tmm-pct{font-size:18px;font-weight:900}
+.ph-bar{height:7px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden}
+.ph-bar-fill{height:100%;border-radius:4px;transition:width .4s ease}
+.ph-bar-fill.c-green{background:var(--green)}
+.ph-bar-fill.c-yellow{background:var(--yellow)}
+.ph-bar-fill.c-red{background:var(--red)}
+.ph-future{display:flex;flex-direction:column;gap:4px}
+.ph-future-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:0.08em}
+.ph-future-val{font-size:15px;font-weight:800;color:var(--yellow)}
+.ph-nova{background:#fff;color:var(--navy);border:none;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:800;font-family:'Nunito Sans',sans-serif;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+.ph-nova:hover{opacity:0.92}
+@media(max-width:899px){
+  .pipeline-header{gap:12px}
+  .ph-tmm{flex-basis:100%;order:2}
+  .ph-future{order:3}
+  .ph-nova{order:4;margin-left:auto}
+}
+/* GRUPOS */
+.group-header{display:flex;align-items:center;gap:10px;margin:22px 0 10px;padding:0 2px;cursor:default}
+.group-header.collapsible{cursor:pointer}
+.group-title{font-size:11px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:1.2px}
+.group-count{font-size:11px;font-weight:700;color:var(--muted)}
+.group-arrow{margin-left:auto;color:var(--muted);font-size:16px;transition:transform .2s}
+.group-arrow.open{transform:rotate(90deg)}
+.group-badge{font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px;background:var(--purple-l);color:#5B21B6;text-transform:uppercase;letter-spacing:0.08em}
+.group-body{display:grid;gap:12px;grid-template-columns:1fr}
+.group-body.cols-3{grid-template-columns:1fr}
+.group-body.cols-2{grid-template-columns:1fr}
+@media(min-width:900px){
+  .group-body.cols-3{grid-template-columns:repeat(3,1fr)}
+  .group-body.cols-2{grid-template-columns:repeat(2,1fr)}
+}
+.group-empty{font-size:12px;color:var(--muted);font-weight:600;padding:16px;background:var(--white);border:1px dashed var(--s2);border-radius:var(--card-radius);text-align:center}
+/* ICARD (v10) */
+.icard{background:var(--white);border-radius:var(--card-radius);padding:14px 16px 12px;border:1px solid var(--s2);border-left:4px solid var(--s3);box-shadow:var(--card-shadow);cursor:pointer;transition:box-shadow .15s,transform .15s;animation:fadeUp .25s ease both}
+.icard:hover{box-shadow:0 4px 14px rgba(25,25,73,0.08);transform:translateY(-1px)}
+.icard.b-green{border-left-color:var(--green)}
+.icard.b-yellow{border-left-color:var(--yellow)}
+.icard.b-red{border-left-color:var(--red)}
+.icard-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.icard-nome{font-size:13px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:0.3px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icard-preco{font-size:13px;font-weight:800;color:var(--navy);white-space:nowrap}
+.icard-sub{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.icard-sub-prop{font-size:11px;color:var(--muted);font-weight:700}
+.icard-tmm{font-size:11px;color:var(--navy);font-weight:700}
+.icard-tmm-pct{font-size:10px;color:var(--muted);font-weight:600;margin-left:4px}
+.icard-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.icard-bar-lbl{width:58px;flex-shrink:0;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em}
+.icard-bar-wrap{flex:1;height:7px;background:var(--s2);border-radius:4px;position:relative;overflow:hidden}
+.icard-bar-bg{position:absolute;top:0;left:0;height:100%;border-radius:4px}
+.icard-bar-fill{position:absolute;top:0;left:0;height:100%;border-radius:4px;transition:width .3s ease}
+.icard-bar-marker{position:absolute;top:-1px;bottom:-1px;width:2px;background:var(--navy);border-radius:1px}
+.icard-bar-nums{width:62px;flex-shrink:0;text-align:right;font-size:10px;font-weight:700;color:var(--navy)}
+.icard-bar-nums .num-exp{color:var(--muted);font-weight:600}
+.icard-bar-fill.s-green{background:var(--green)}
+.icard-bar-fill.s-yellow{background:var(--yellow)}
+.icard-bar-fill.s-red{background:var(--red)}
+.icard-bar-fill.s-navy{background:rgba(25,25,73,0.35)}
+.icard-bar-bg.s-green{background:rgba(16,185,129,0.18)}
+.icard-bar-bg.s-yellow{background:rgba(245,158,11,0.18)}
+.icard-bar-bg.s-red{background:rgba(239,68,68,0.18)}
+.icard-media-row{margin-top:10px;padding-top:10px;border-top:1px solid var(--s2);font-size:11px;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.icard-media-row strong{color:var(--navy);font-weight:800}
+.icard-actions{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid var(--s2)}
+.icard-actions-spacer{flex:1}
+.btn-mini{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;font-family:'Nunito Sans',sans-serif;cursor:pointer}
+.btn-mini.blue{background:var(--blue)}
+.btn-mini:hover{opacity:0.92}
+/* CARDS RESUMIDOS (repaginando / aguardando) */
+.icard-resumido{background:var(--white);border-radius:var(--card-radius);padding:12px 14px;border:1px solid var(--s2);border-left:4px solid var(--s3);box-shadow:var(--card-shadow);cursor:pointer;transition:box-shadow .15s}
+.icard-resumido.b-yellow{border-left-color:var(--yellow)}
+.icard-resumido.b-gray{border-left-color:#9CA3AF}
+.icard-resumido:hover{box-shadow:0 4px 14px rgba(25,25,73,0.08)}
+.icardr-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px}
+.icardr-nome{font-size:12px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:0.3px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icardr-preco{font-size:12px;font-weight:800;color:var(--navy);white-space:nowrap}
+.icardr-meta{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.icardr-progress{height:5px;background:var(--s2);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.icardr-progress-fill{height:100%;background:var(--yellow);border-radius:3px}
+/* CARDS HISTORICOS (vendidas / perdidas) */
+.card-historico{background:var(--white);border-radius:12px;padding:10px 12px;border:1px solid var(--s2);border-left:3px solid var(--s3);display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--text);font-weight:600}
+.card-historico.b-blue{border-left-color:var(--blue)}
+.card-historico.b-red{border-left-color:var(--red)}
+.card-historico strong{color:var(--navy);font-weight:800}
+.card-historico .hist-sep{color:var(--s3)}
+/* TOAST */
+.save-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:13px;font-weight:700;padding:12px 24px;border-radius:12px;z-index:800;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px rgba(25,25,73,0.25)}
+.save-toast.show{opacity:1}
+::-webkit-scrollbar{width:0;height:0}
+</style>
+</head>
+<body>
+
+<div class="auth-overlay" id="authOverlay" style="display:none">
+  <div class="auth-box">
+    <div class="auth-logo">Certeiro One</div>
+    <div class="auth-sub">Plataforma operacional</div>
+    <label class="auth-lbl">Email</label>
+    <input type="email" class="auth-input" id="authEmail" placeholder="seu@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('authSenha').focus()">
+    <label class="auth-lbl">Senha</label>
+    <input type="password" class="auth-input" id="authSenha" placeholder="senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')loginUser()">
+    <button class="auth-btn" id="authBtn" onclick="loginUser()">Entrar</button>
+    <div class="auth-err" id="authErr"></div>
+    <span class="auth-link" onclick="recuperarSenha()">Esqueci minha senha</span>
+  </div>
+</div>
+
+<div class="app-wrap">
+  <div class="page cn-page" id="mainPage">
+    <div id="pipelineContent">
+      <div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando...</div></div>
+    </div>
+    <div class="view" id="vAlertas"></div>
+  </div>
+</div>
+
+<div class="save-toast" id="toast"></div>
+
+<script>
+var SUPA_URL='https://vtykzralkxlbqqkleofl.supabase.co';
+var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0eWt6cmFsa3hsYnFxa2xlb2ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjMyNjAsImV4cCI6MjA4OTkzOTI2MH0.rYBifw2NXqVDGrKbDWKJgrFAIdoruxxsIPc9RXibgy0';
+var sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+var imoveis=[],currentUser=null,currentRole='padrao',currentNome='',currentUsuarioId=null;
+
+// --- UTILS BASICOS ---
+function showToast(msg){
+  var t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';t.className='save-toast';document.body.appendChild(t);}
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2600);
+}
+function switchView(id){
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('on');});
+  var el=document.getElementById(id);
+  if(el){el.classList.add('on');window.scrollTo({top:0});}
+}
+
+// --- HASH ROUTING (redireciona detalhe/editar para exclusividades.html) ---
+function handleHash(){
+  var h=window.location.hash||'';
+  if(h.indexOf('#detalhe/')===0){
+    window.location.href='exclusividades.html'+h;
+    return;
+  }
+  if(h.indexOf('#editar/')===0){
+    window.location.href='exclusividades.html'+h;
+    return;
+  }
+  if(h==='#alertas'){
+    switchView('vAlertas');
+    return;
+  }
+  // default: lista (pipeline + dashboard)
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('on');});
+}
+
+// --- AUTH ---
+async function loginUser(){
+  var email=document.getElementById('authEmail').value.trim();
+  var senha=document.getElementById('authSenha').value;
+  var btn=document.getElementById('authBtn');
+  var err=document.getElementById('authErr');
+  err.textContent='';
+  if(!email||!senha){err.textContent='Preencha email e senha.';return;}
+  btn.disabled=true;btn.textContent='Entrando...';
+  try{
+    var res=await sb.auth.signInWithPassword({email:email,password:senha});
+    if(res.error)throw res.error;
+  }catch(e){
+    err.textContent=e.message||'Erro ao entrar.';
+    btn.disabled=false;btn.textContent='Entrar';
+  }
+}
+async function recuperarSenha(){
+  var email=document.getElementById('authEmail').value.trim();
+  if(!email){document.getElementById('authErr').textContent='Digite seu email acima primeiro.';return;}
+  var res=await sb.auth.resetPasswordForEmail(email);
+  if(res.error){document.getElementById('authErr').textContent=res.error.message;}
+  else{
+    document.getElementById('authErr').style.color='#10B981';
+    document.getElementById('authErr').textContent='Email de recupera\u00e7\u00e3o enviado!';
+  }
+}
+async function logoutUser(){
+  await sb.auth.signOut();
+  currentUser=null;currentRole='padrao';currentNome='';currentUsuarioId=null;
+  document.getElementById('authOverlay').style.display='flex';
+  document.getElementById('authBtn').disabled=false;
+  document.getElementById('authBtn').textContent='Entrar';
+  document.getElementById('authEmail').value='';
+  document.getElementById('authSenha').value='';
+  document.getElementById('authErr').textContent='';
+}
+window.logoutUser=logoutUser;
+
+async function onLogin(user){
+  currentUser=user;
+  var pr=await sb.from('usuarios').select('*').eq('auth_id',user.id).single();
+  if(pr.data){currentRole=pr.data.role||'padrao';currentNome=pr.data.nome||user.email;currentUsuarioId=pr.data.id;}
+  else{currentRole='padrao';currentNome=user.email;}
+  CertNav.init('pipeline');
+  CertNav.setUser(currentNome,currentRole);
+  document.getElementById('authOverlay').style.display='none';
+  loadPipeline();
+  handleHash();
+}
+
+// --- DATA (esbo\u00e7o vazio na FASE 1) ---
+async function loadPipeline(){
+  var host=document.getElementById('pipelineContent');
+  host.innerHTML='<div class="loading"><div class="loading-spin"></div><div class="loading-txt">Carregando...</div></div>';
+  try{
+    var res=await sb.from('dashboard_imoveis').select('*').order('dias_restantes',{ascending:true});
+    if(res.error)throw res.error;
+    imoveis=res.data||[];
+    // FASE 1: render ser\u00e1 implementado nas fases seguintes
+    host.innerHTML='';
+  }catch(err){
+    host.innerHTML='<div class="erro-box"><p>Erro: '+err.message+'</p><button onclick="loadPipeline()">Tentar novamente</button></div>';
+  }
+}
+
+// --- INIT ---
+sb.auth.onAuthStateChange(function(event,session){
+  if((event==='SIGNED_IN'||event==='INITIAL_SESSION')&&session&&session.user){
+    onLogin(session.user);
+  }else if(event==='SIGNED_OUT'){
+    document.getElementById('authOverlay').style.display='flex';
+  }
+});
+(function(){
+  sb.auth.getSession().then(function(r){
+    if(!r.data.session){document.getElementById('authOverlay').style.display='flex';}
+  });
+})();
+window.addEventListener('hashchange',handleHash);
+</script>
+</body>
+</html>
