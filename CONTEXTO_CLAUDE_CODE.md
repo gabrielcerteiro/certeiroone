@@ -1,6 +1,6 @@
 # CONTEXTO COMPLETO — PLATAFORMA CERTEIRO
 > Arquivo para onboarding de nova sessao no Claude Code.
-> Atualizado em: 19/04/2026 — v1.5.1 entregue
+> Atualizado em: 19/04/2026 — v1.5.3 entregue
 
 ---
 
@@ -51,6 +51,7 @@ Campos curtos: cn-grid-3/4 | Campos medios: cn-grid-2 | Longos: cn-full.
 | `repaginacao.html` | Gestao de obras de repaginacao: cards, abas, Gantt, orcamento |
 | `registro.html` | Registro de visitas e propostas |
 | `usuarios.html` | Gestao de usuarios |
+| `detalhe.html` | Detalhe operacional por exclusividade (14 blocos) — acesso via detalhe.html?id=UUID |
 | `vendedor.html` | Relatorio publico para proprietario |
 | `nav.js` | Sidebar + CSS global (cn-form, cn-grid-*) — importado por todas as paginas |
 | `CONTEXTO_CLAUDE_CODE.md` | Este arquivo — SEMPRE atualizar ao final de cada sessao |
@@ -198,6 +199,23 @@ Sidebar via nav.js. Hash routing interno:
 
 ## 8. HISTORICO DE VERSOES
 
+### v1.5.3 — 19/04/2026
+- registro.html: nova secao Disparos com wizard de 2 passos (disparo_form → revisao_disp)
+- registro.html: CRUD completo de disparos (list cards com tipo badge, alcance, data, edit/delete)
+- registro.html: busca ampliada para incluir tipo 'disparos'
+- registro.html: origens de visitas recebe 'Disparo de parceiros'
+- registro.html: propostas ganham campo origem (16 canais) em criacao e edicao
+- detalhe.html: disparosHtml substituido por funil Base|Parceiros com Alcance→Disparos→Visitas→Propostas + conv rates
+- detalhe.html: bloco Propostas por Fonte removido (integrado no funil de disparos)
+
+### v1.5.2.1 — 19/04/2026
+- detalhe.html: grid 3-col dense (grid-auto-flow: row dense) para preencher lacunas
+- detalhe.html: timeline redesenhada como stepper vertical com CSS ::before pseudo-elements
+
+### v1.5.2 — 19/04/2026
+- detalhe.html criado: pagina operacional completa (14 blocos) acessada via detalhe.html?id=UUID
+- pipeline.html: todos os card clicks e botao Detalhe apontam para detalhe.html?id=
+
 ### v1.5.1 — 19/04/2026
 - Migration dashboard_imoveis: INNER JOIN -> LEFT JOIN, agora retorna todas as 57 exclusividades
 - Trigger auto-snapshot: toda nova exclusividade nasce com funil_snapshot automaticamente
@@ -237,8 +255,6 @@ Sidebar lateral, modulos separados, hash routing, tabelas vendas/parcelas criada
 ## 9. PENDENCIAS ATIVAS — v1.6.0
 
 ### Alta prioridade
-- [ ] Redesign tela detalhe/edicao exclusividade: dois paineis (dados + timeline/acoes)
-      com edicao por secao inline (nao mais formulario full-page)
 - [ ] Cadastro de usuarios via Edge Function (service_role)
 - [ ] Anon Key — mover para variavel de ambiente no Vercel
 
@@ -256,14 +272,6 @@ Sidebar lateral, modulos separados, hash routing, tabelas vendas/parcelas criada
 - [ ] URLs limpas via vercel.json
 
 ---
-
-## Backlog — v1.5.2
-
-- [ ] Tela de detalhe operacional completo por exclusividade (substituir o modal
-      atual que abre via hash routing). Deve incluir: funil detalhado, lista de
-      visitas com intencoes/objecoes, lista de propostas, timeline operacional,
-      gastos midia + CPL, link para relatorio do vendedor, botao de editar.
-      A URL permanece exclusividades.html#detalhe/UUID — apenas o que se abre muda.
 
 ---
 
