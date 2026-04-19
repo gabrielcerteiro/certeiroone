@@ -1,6 +1,6 @@
 # CONTEXTO COMPLETO — PLATAFORMA CERTEIRO
 > Arquivo para onboarding de nova sessao no Claude Code.
-> Atualizado em: 18/04/2026 — v1.5.0 entregue
+> Atualizado em: 19/04/2026 — v1.5.1 entregue
 
 ---
 
@@ -44,8 +44,9 @@ Campos curtos: cn-grid-3/4 | Campos medios: cn-grid-2 | Longos: cn-full.
 
 | Arquivo | Descricao |
 |---------|-----------|
-| `index.html` | Dashboard — overview cards e alertas |
-| `exclusividades.html` | Modulo principal: pipeline, grupos, detalhe, edicao |
+| `pipeline.html` | Porta de entrada: dashboard executivo + TMM header + 6 grupos de cards (v10, resumido, historico) |
+| `index.html` | Redirect minimo para pipeline.html (meta refresh + location.replace) |
+| `exclusividades.html` | Modulo principal: pipeline, grupos, detalhe, edicao. Hash routing #detalhe/UUID e #editar/UUID abrem modal automaticamente |
 | `vendas.html` | Modulo de vendas: listagem, registro, edicao |
 | `repaginacao.html` | Gestao de obras de repaginacao: cards, abas, Gantt, orcamento |
 | `registro.html` | Registro de visitas e propostas |
@@ -134,6 +135,26 @@ var r = await sb.from('vendas').select('numero_controle')
   .order('numero_controle', { ascending: false }).limit(1);
 ```
 
+### Arquitetura de leads (v1.5.1+)
+
+A tabela public.leads e espelho do Pipedrive via n8n.
+Nao manipular diretamente neste projeto — apenas consultar via dashboard_imoveis.
+
+Campos relevantes de public.leads:
+- id-pipedrive: unique, chave de ligacao com Pipedrive
+- exclusividade_id: FK para exclusividades
+- nome, origem (15 canais), etapa, data_entrada
+
+A view dashboard_imoveis agrega leads via LATERAL JOIN:
+- total_leads: COUNT(*)
+- leads_abertos: etapa != 'Fechamento'
+- leads_perdidos: etapa == 'Fechamento'
+- Breakdown por canal: leads_meta_ads, leads_google_ads, leads_instagram, leads_youtube, leads_tiktok_ads, leads_tiktok_org, leads_site, leads_facebook, leads_whatsapp, leads_indicacao, leads_corretor_parc, leads_relacionamento, leads_disparo_base, leads_oferta_ativa, leads_outdoor
+
+IMPORTANTE:
+- total_leads e calculado, NUNCA editar em form
+- meta_leads, meta_visitas, meta_propostas continuam editaveis manualmente em funil_snapshot
+
 ---
 
 ## 6. ARQUITETURA DO FRONTEND
@@ -177,6 +198,16 @@ Sidebar via nav.js. Hash routing interno:
 
 ## 8. HISTORICO DE VERSOES
 
+### v1.5.1 — 19/04/2026
+- Migration dashboard_imoveis: INNER JOIN -> LEFT JOIN, agora retorna todas as 57 exclusividades
+- Trigger auto-snapshot: toda nova exclusividade nasce com funil_snapshot automaticamente
+- Backfill de 47 snapshots para exclusividades historicas (fonte='backfill_v1_5_1')
+- pipeline.html criado: dashboard executivo + TMM header + 6 grupos de cards (v10, resumido, historico)
+- index.html vira redirect para pipeline.html
+- exclusividades.html: hash routing para URLs compartilhaveis por exclusividade
+- index.html fix: alertas operacionais so para status 'ativa' (guard adicionado)
+- Arquitetura de leads documentada: tabela public.leads (196 rows, espelha Pipedrive via n8n, chave id-pipedrive) agregada via LATERAL JOIN na view dashboard_imoveis
+
 ### v1.3.0 — 08/04/2026
 Dashboard em grupos. Visual estilo Pipedrive.
 
@@ -206,7 +237,6 @@ Sidebar lateral, modulos separados, hash routing, tabelas vendas/parcelas criada
 ## 9. PENDENCIAS ATIVAS — v1.6.0
 
 ### Alta prioridade
-- [ ] Criar pipeline.html com cards v10 restaurados do commit d9e803a -- sessao dedicada Opus
 - [ ] Redesign tela detalhe/edicao exclusividade: dois paineis (dados + timeline/acoes)
       com edicao por secao inline (nao mais formulario full-page)
 - [ ] Cadastro de usuarios via Edge Function (service_role)
@@ -224,6 +254,16 @@ Sidebar lateral, modulos separados, hash routing, tabelas vendas/parcelas criada
 - [ ] Aba Analise para Rafaela
 - [ ] Modulo Financeiro
 - [ ] URLs limpas via vercel.json
+
+---
+
+## Backlog — v1.5.2
+
+- [ ] Tela de detalhe operacional completo por exclusividade (substituir o modal
+      atual que abre via hash routing). Deve incluir: funil detalhado, lista de
+      visitas com intencoes/objecoes, lista de propostas, timeline operacional,
+      gastos midia + CPL, link para relatorio do vendedor, botao de editar.
+      A URL permanece exclusividades.html#detalhe/UUID — apenas o que se abre muda.
 
 ---
 
