@@ -311,7 +311,7 @@ var SUPA_URL='https://vtykzralkxlbqqkleofl.supabase.co';
 var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0eWt6cmFsa3hsYnFxa2xlb2ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjMyNjAsImV4cCI6MjA4OTkzOTI2MH0.rYBifw2NXqVDGrKbDWKJgrFAIdoruxxsIPc9RXibgy0';
 var sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 var currentUser=null,currentRole='padrao',currentNome='';
-var allData=[],filteredData=[],currentRec=null;
+var allData=[],filteredData=[],currentRec=null,currentSnap=null;
 var sortCol='codigo',sortDir='desc';
 var filterStatus=[];
 var PLACEHOLDER_DATE='2020-01-01';
@@ -674,11 +674,17 @@ function fecharModal(id){
 function abrirModal(id){document.getElementById(id).classList.add('open');}
 
 // --- EDIT MODAL ---
-function abrirEdit(id){
+async function abrirEdit(id){
   var r=allData.find(function(x){return x.id===id;});
   if(!r)return;
   currentRec=r;
+  currentSnap=null;
   document.getElementById('editTitle').textContent='E'+r.codigo+' \u2014 '+(r.imovel_nome||'');
+  // Busca funil_snapshot para metas
+  try{
+    var sr=await sb.from('funil_snapshot').select('meta_leads,meta_visitas,meta_propostas,meta_cpl,meta_investimento').eq('exclusividade_id',r.id).maybeSingle();
+    if(!sr.error&&sr.data)currentSnap=sr.data;
+  }catch(e){/* silencioso */}
   renderEditBody(r);
   abrirModal('modalEdit');
 }
@@ -743,6 +749,16 @@ function renderEditBody(r){
     +'<label class="mf-lbl">Parceiro</label><input class="mf-input" id="ef-parceiro" type="text" value="'+escHtml(r.parceiro_nome||'')+'"></div>'
     +'<div class="mf modal-full"><label class="mf-lbl">Link Drive</label><input class="mf-input" id="ef-drive" type="text" value="'+escHtml(r.link_pasta_drive||'')+'"></div>'
     +'<div class="mf modal-full"><label class="mf-lbl">Observa\u00e7\u00f5es</label><textarea class="mf-input mf-textarea" id="ef-obs">'+escHtml(r.observacoes||'')+'</textarea></div>'
+    +'</div></div>'
+    // Bloco 3 -- Metas e Investimento
+    +'<div>'
+    +'<div class="modal-section-title">Metas e Investimento</div>'
+    +'<div class="modal-grid">'
+    +'<div class="mf"><label class="mf-lbl">Meta Leads</label><input class="mf-input" id="ef-meta-leads" type="number" min="0" value="'+(currentSnap&&currentSnap.meta_leads!=null?currentSnap.meta_leads:'')+'"></div>'
+    +'<div class="mf"><label class="mf-lbl">Meta Visitas</label><input class="mf-input" id="ef-meta-visitas" type="number" min="0" value="'+(currentSnap&&currentSnap.meta_visitas!=null?currentSnap.meta_visitas:'')+'"></div>'
+    +'<div class="mf"><label class="mf-lbl">Meta Propostas</label><input class="mf-input" id="ef-meta-propostas" type="number" min="0" value="'+(currentSnap&&currentSnap.meta_propostas!=null?currentSnap.meta_propostas:'')+'"></div>'
+    +'<div class="mf"><label class="mf-lbl">Meta CPL (R$)</label><input class="mf-input" id="ef-meta-cpl" type="number" min="0" step="0.01" value="'+(currentSnap&&currentSnap.meta_cpl!=null?currentSnap.meta_cpl:'')+'"></div>'
+    +'<div class="mf modal-full"><label class="mf-lbl">Meta Investimento</label><input class="mf-input" id="ef-meta-inv" type="text" placeholder="R$ 0" value="'+(currentSnap&&currentSnap.meta_investimento?'R$ '+Number(currentSnap.meta_investimento).toLocaleString('pt-BR'):'')+'" oninput="maskMoeda(this)"></div>'
     +'</div></div>';
 }
 
@@ -782,6 +798,24 @@ async function salvarEdicao(){
     if(r1.error)throw r1.error;
     var r2=await sb.from('exclusividades').update(excData).eq('id',currentRec.id);
     if(r2.error)throw r2.error;
+    // UPSERT funil_snapshot (metas)
+    var metaLeadsEl=document.getElementById('ef-meta-leads');
+    var metaVisitasEl=document.getElementById('ef-meta-visitas');
+    var metaPropostasEl=document.getElementById('ef-meta-propostas');
+    var metaCplEl=document.getElementById('ef-meta-cpl');
+    var metaInvEl=document.getElementById('ef-meta-inv');
+    if(metaLeadsEl){
+      var snapData={
+        exclusividade_id:currentRec.id,
+        meta_leads:metaLeadsEl.value!==''?parseInt(metaLeadsEl.value):null,
+        meta_visitas:metaVisitasEl.value!==''?parseInt(metaVisitasEl.value):null,
+        meta_propostas:metaPropostasEl.value!==''?parseInt(metaPropostasEl.value):null,
+        meta_cpl:metaCplEl.value!==''?parseFloat(metaCplEl.value):null,
+        meta_investimento:parseMoeda(metaInvEl?metaInvEl.value:'')
+      };
+      var r3=await sb.from('funil_snapshot').upsert(snapData,{onConflict:'exclusividade_id',ignoreDuplicates:false});
+      if(r3.error)throw r3.error;
+    }
     fecharModal('modalEdit');
     showToast('Salvo com sucesso');
     await loadData();
