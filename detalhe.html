@@ -115,13 +115,14 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 .disp-date{font-size:10px;color:var(--muted);font-weight:600;margin-top:6px}
 .disp-empty{font-size:10px;color:var(--muted);font-style:italic}
 /* TIMELINE */
-.tl-list{position:relative;padding-left:22px}
-.tl-list::before{content:'';position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:var(--s2)}
-.tl-item{position:relative;padding:6px 0;display:flex;align-items:baseline;gap:10px}
-.tl-dot{position:absolute;left:-22px;top:10px;width:12px;height:12px;border-radius:50%;background:var(--navy);border:2px solid #fff;box-shadow:0 0 0 1px var(--s2)}
-.tl-date{font-size:11px;font-weight:800;color:var(--navy);min-width:80px}
-.tl-lbl{font-size:12px;color:var(--text);font-weight:600}
-.tl-empty{font-size:12px;color:var(--muted);text-align:center;padding:10px 0}
+.tl-wrap{position:relative;padding-left:4px}
+.tl-wrap::before{content:'';position:absolute;left:13px;top:10px;bottom:10px;width:2px;background:var(--s2)}
+.tl-item{position:relative;padding:8px 0 8px 32px}
+.tl-item::before{content:'';position:absolute;left:8px;top:12px;width:12px;height:12px;border-radius:50%;background:var(--navy);border:2px solid var(--white);box-shadow:0 0 0 2px var(--navy)}
+.tl-item.future::before{background:var(--white);box-shadow:0 0 0 2px var(--s3)}
+.tl-item.venda::before{background:var(--green);box-shadow:0 0 0 2px var(--green)}
+.tl-date{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+.tl-label{font-size:12px;font-weight:700;color:var(--text);margin-top:2px}
 /* PROPOSTAS (negocios) */
 .neg-summary{display:flex;gap:8px;margin-bottom:14px}
 .neg-sum-box{flex:1;border-radius:10px;padding:12px 10px;text-align:center}
@@ -188,9 +189,8 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 @media(min-width:900px){
   .page{flex:1;max-width:none;min-width:0;padding:20px 28px 40px 28px}
   .page-inner{max-width:1100px;margin:0 auto}
-  .det-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-  .det-full{grid-column:1/-1}
-  .det-grid .scard{margin-bottom:0}
+  .det-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-flow:row dense;gap:16px;align-items:start}
+  .det-grid .scard{margin-bottom:0;align-self:start}
 }
 .loading{text-align:center;padding:60px 20px}
 .loading-spin{width:28px;height:28px;border:3px solid var(--s2);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
@@ -460,28 +460,32 @@ function disparosHtml(im){
 }
 
 // --- BLOCO: TIMELINE ---
-var TL_MARCOS=[
-  {f:'data_inicio',l:'In\u00edcio da exclusividade'},
-  {f:'data_gravacao_conteudo',l:'Grava\u00e7\u00e3o de conte\u00fado'},
-  {f:'data_midia_entregue',l:'M\u00eddia entregue'},
-  {f:'data_repaginacao_concluida',l:'Repagina\u00e7\u00e3o conclu\u00edda'},
-  {f:'data_disparo_base',l:'Primeiro disparo para base'},
-  {f:'data_disparo_parceiros',l:'Disparo para parceiros'},
-  {f:'data_venda',l:'Venda fechada'},
-  {f:'data_fim',l:'Fim do contrato (planejado)'}
-];
 function timelineHtml(im){
-  var items=[];
-  for(var i=0;i<TL_MARCOS.length;i++){
-    var m=TL_MARCOS[i];
-    if(im[m.f])items.push({d:im[m.f],l:m.l});
-  }
-  if(!items.length)return '<div class="tl-empty">Sem marcos registrados ainda.</div>';
-  items.sort(function(a,b){return a.d<b.d?-1:(a.d>b.d?1:0);});
-  var html='<div class="tl-list">';
-  for(var j=0;j<items.length;j++){
-    var it=items[j];
-    html+='<div class="tl-item"><div class="tl-dot"></div><div class="tl-date">'+fmtD(it.d)+'</div><div class="tl-lbl">'+it.l+'</div></div>';
+  var hoje=new Date();hoje.setHours(0,0,0,0);
+  var marcos=[
+    {data:im.data_inicio,label:'In\u00edcio da exclusividade'},
+    {data:im.data_gravacao_conteudo,label:'Grava\u00e7\u00e3o de conte\u00fado'},
+    {data:im.data_midia_entregue,label:'M\u00eddia entregue'},
+    {data:im.data_repaginacao_concluida,label:'Repagina\u00e7\u00e3o conclu\u00edda'},
+    {data:im.data_disparo_base,label:'Primeiro disparo para base'},
+    {data:im.data_disparo_parceiros,label:'Disparo para parceiros'},
+    {data:im.data_venda,label:'Venda fechada',tipo:'venda'},
+    {data:im.data_fim,label:'Fim do contrato'}
+  ];
+  var validos=marcos.filter(function(m){return m.data;});
+  if(!validos.length)return '<div class="vis-empty">Sem marcos registrados.</div>';
+  validos.sort(function(a,b){return new Date(a.data)-new Date(b.data);});
+  var html='<div class="tl-wrap">';
+  for(var i=0;i<validos.length;i++){
+    var m=validos[i];
+    var d=new Date(m.data+'T00:00:00');
+    var cls='tl-item';
+    if(m.tipo==='venda')cls+=' venda';
+    else if(d>hoje)cls+=' future';
+    html+='<div class="'+cls+'">'
+      +'<div class="tl-date">'+fmtD(m.data)+'</div>'
+      +'<div class="tl-label">'+m.label+'</div>'
+    +'</div>';
   }
   html+='</div>';
   return html;
@@ -580,32 +584,32 @@ function renderPage(im,vis,negs){
   +'</div>';
   // 2. Updated at
   if(atualizado)html+='<div class="updated-at fade-in fd1">\u00daltima atualiza\u00e7\u00e3o: '+atualizado+'</div>';
-  // grid
+  // grid (3 colunas dense, sem det-full)
   html+='<div class="det-grid">';
-  // 3. Prazo
+  // 1. Prazo (medio)
   html+='<div class="scard fade-in fd2"><div class="scard-title">Prazo da Exclusividade</div>'+prazoHtml(im)+'</div>';
-  // 4. Funil
+  // 2. Funil (medio)
   html+='<div class="scard fade-in fd3"><div class="scard-title">Funil - Metas vs Realizado</div>'+funilHtml(im)+'</div>';
-  // 5. Investimento
+  // 3. Investimento (baixo)
   html+='<div class="scard fade-in fd4"><div class="scard-title">Investimento em M\u00eddia</div>'+midiaHtml(im)+'</div>';
-  // 6. Canais de leads
+  // 4. Canais de leads (alto)
   html+='<div class="scard fade-in fd5"><div class="scard-title">Canais de Aquisi\u00e7\u00e3o de Leads</div>'+canaisLeadsHtml(im)+'</div>';
-  // 7. Visitas por origem
-  html+='<div class="scard fade-in fd6"><div class="scard-title">Visitas por Origem</div>'+canaisVisitasHtml(vis)+'</div>';
-  // 8. Propostas por fonte
-  html+='<div class="scard fade-in fd7"><div class="scard-title">Propostas por Fonte</div>'+propostasFonteHtml(im)+'</div>';
-  // 9. Disparos
-  html+='<div class="scard fade-in fd8"><div class="scard-title">Disparos</div>'+disparosHtml(im)+'</div>';
-  // 10. Propostas (full)
-  html+='<div class="scard det-full fade-in fd9"><div class="scard-title">Propostas ('+negs.length+')</div>'+negHtml(negs)+'</div>';
-  // 11. Intencao
-  html+='<div class="scard fade-in fd10"><div class="scard-title">Inten\u00e7\u00e3o P\u00f3s-Visita</div>'+intencaoHtml(vis)+'</div>';
-  // 12. Objecoes (condicional)
-  if(obsHtml)html+='<div class="scard fade-in fd11"><div class="scard-title">Principais Obje\u00e7\u00f5es</div>'+obsHtml+'</div>';
-  // 13. Relatorio visitas (full)
-  html+='<div class="scard det-full fade-in fd12"><div class="scard-title">Relat\u00f3rio de Visitas ('+vis.length+')</div>'+visitasHtml(vis)+'</div>';
-  // 14. Timeline (full)
-  html+='<div class="scard det-full fade-in fd13"><div class="scard-title">Timeline Operacional</div>'+timelineHtml(im)+'</div>';
+  // 5. Disparos (baixo)
+  html+='<div class="scard fade-in fd6"><div class="scard-title">Disparos</div>'+disparosHtml(im)+'</div>';
+  // 6. Propostas drill-down (variavel)
+  html+='<div class="scard fade-in fd7"><div class="scard-title">Propostas ('+negs.length+')</div>'+negHtml(negs)+'</div>';
+  // 7. Intencao (medio)
+  html+='<div class="scard fade-in fd8"><div class="scard-title">Inten\u00e7\u00e3o P\u00f3s-Visita</div>'+intencaoHtml(vis)+'</div>';
+  // 8. Visitas por origem (baixo-medio)
+  html+='<div class="scard fade-in fd9"><div class="scard-title">Visitas por Origem</div>'+canaisVisitasHtml(vis)+'</div>';
+  // 9. Objecoes (condicional)
+  if(obsHtml)html+='<div class="scard fade-in fd10"><div class="scard-title">Principais Obje\u00e7\u00f5es</div>'+obsHtml+'</div>';
+  // 10. Propostas por fonte (baixo)
+  html+='<div class="scard fade-in fd11"><div class="scard-title">Propostas por Fonte</div>'+propostasFonteHtml(im)+'</div>';
+  // 11. Timeline (medio)
+  html+='<div class="scard fade-in fd12"><div class="scard-title">Timeline Operacional</div>'+timelineHtml(im)+'</div>';
+  // 12. Relatorio visitas (alto)
+  html+='<div class="scard fade-in fd13"><div class="scard-title">Relat\u00f3rio de Visitas ('+vis.length+')</div>'+visitasHtml(vis)+'</div>';
   html+='</div></div>';
   document.getElementById('main').innerHTML=html;
   document.title=nome+' | Detalhe | Certeiro One';
