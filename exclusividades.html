@@ -454,6 +454,7 @@ async function loadData(){
     if(r.error)throw r.error;
     allData=r.data||[];
     applyFilters();
+    processHash();
   }catch(e){
     document.getElementById('excBody').innerHTML='<tr><td colspan="10"><div class="erro-box" style="margin:16px"><p>Erro: '+e.message+'</p><button onclick="loadData()">Tentar novamente</button></div></td></tr>';
   }
@@ -641,7 +642,12 @@ document.addEventListener('click',function(e){
 });
 
 // --- MODAL HELPERS ---
-function fecharModal(id){document.getElementById(id).classList.remove('open');}
+function fecharModal(id){
+  document.getElementById(id).classList.remove('open');
+  if(id==='modalEdit'&&window.location.hash){
+    history.replaceState(null,'',window.location.pathname);
+  }
+}
 function abrirModal(id){document.getElementById(id).classList.add('open');}
 
 // --- EDIT MODAL ---
@@ -857,6 +863,25 @@ async function salvarNova(){
   }catch(e){showToast('Erro: '+(e.message||'falha'));}
   btn.disabled=false;btn.textContent='Salvar';
 }
+
+// --- HASH ROUTING ---
+function processHash(){
+  var h=window.location.hash||'';
+  var match=h.match(/^#(detalhe|editar)\/([a-f0-9\-]+)$/i);
+  if(!match)return;
+  var id=match[2];
+  if(!allData||!allData.length){
+    setTimeout(processHash,200);
+    return;
+  }
+  var r=allData.find(function(x){return x.id===id;});
+  if(r){
+    abrirEdit(id);
+  }else{
+    history.replaceState(null,'',window.location.pathname);
+  }
+}
+window.addEventListener('hashchange',processHash);
 
 // --- INIT ---
 sb.auth.onAuthStateChange(function(event,session){
