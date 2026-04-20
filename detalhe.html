@@ -291,6 +291,8 @@ function funilConvBox(lbl,real,meta){
 }
 
 // --- BLOCO: PRAZOS (3 fases) ---
+// v1.6.1: removidas as 2 datas redundantes embaixo. Datas calculadas ficam apenas
+// dentro de cada box (Repaginacao, Venda-Contrato, Meta). Gabriel trabalha com meta interna.
 function prazosHtml(im){
   var dI=im.data_inicio?new Date(im.data_inicio+'T00:00:00'):null;
   var repag=im.dias_repaginacao||0;
@@ -300,7 +302,7 @@ function prazosHtml(im){
   function fmtDt(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
   var dtFimContrato=dI?addDias(dI,repag+vc):null;
   var dtFimMeta=dI?addDias(dI,repag+mv):null;
-  var html='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">';
+  var html='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">';
   html+='<div class="prazo-box"><div class="prazo-box-lbl">Repagina\u00e7\u00e3o</div>';
   html+='<div style="font-size:22px;font-weight:800;color:var(--navy)">'+repag+'<span class="prazo-box-unit">d</span></div>';
   if(repag>0&&dI){html+='<div style="font-size:10px;color:var(--muted);margin-top:4px">fim '+fmtDt(addDias(dI,repag))+'</div>';}
@@ -314,10 +316,6 @@ function prazosHtml(im){
   html+='<div style="font-size:22px;font-weight:800;color:var(--navy)">'+mv+'<span class="prazo-box-unit">d</span></div>';
   if(dtFimMeta){html+='<div style="font-size:10px;color:var(--muted);margin-top:4px">fim '+fmtDt(dtFimMeta)+'</div>';}
   html+='</div>';
-  html+='</div>';
-  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">';
-  html+='<div style="background:var(--bg);border-radius:8px;padding:8px 12px"><span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);display:block;margin-bottom:3px">Data fim do contrato (vis\u00e3o cliente)</span>'+(dtFimContrato?'<strong>'+fmtDt(dtFimContrato)+'</strong>':'\u2014')+'</div>';
-  html+='<div style="background:var(--bg);border-radius:8px;padding:8px 12px"><span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);display:block;margin-bottom:3px">Data fim da meta interna (pipeline)</span>'+(dtFimMeta?'<strong>'+fmtDt(dtFimMeta)+'</strong>':'\u2014')+'</div>';
   html+='</div>';
   return html;
 }
