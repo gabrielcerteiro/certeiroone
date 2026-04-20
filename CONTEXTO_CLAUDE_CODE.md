@@ -1,6 +1,8 @@
 # CONTEXTO COMPLETO — PLATAFORMA CERTEIRO
 > Arquivo para onboarding de nova sessao no Claude Code.
-> Atualizado em: 19/04/2026 — v1.5.3 entregue
+> Atualizado em: 19/04/2026 — v1.5.4 entregue
+>
+> REGRA DE VERSIONAMENTO: git tag e Google Doc usam SEMPRE o mesmo numero. Sem consolidacao, sem granularidade desalinhada.
 
 ---
 
@@ -77,6 +79,13 @@ exclusividades.status:
 REMOVIDOS: encerrada, inativa, renovada
 
 ### 4.2 Tabelas principais
+
+**Codigos sequenciais (v1.5.4):**
+- `visitas.codigo` — integer UNIQUE, sequence `visitas_codigo_seq`, exibido como VS0001, VS0002...
+- `propostas.codigo` — integer UNIQUE, sequence `propostas_codigo_seq`, exibido como P0001, P0002...
+- `disparos.codigo` — integer UNIQUE, sequence `disparos_codigo_seq`, exibido como DS0001, DS0002...
+- Padding de 4 digitos padrao do projeto (igual a numero_controle de vendas V0349)
+- Helper global: `window.fmtCodigo(prefix, num)` e `window.parseCodigoBusca(termo)` em nav.js
 
 #### `funil_snapshot` — campos relevantes
 - `status_exclusividade` — ver constraint acima
@@ -198,6 +207,17 @@ Sidebar via nav.js. Hash routing interno:
 ---
 
 ## 8. HISTORICO DE VERSOES
+
+### v1.5.4 — 19/04/2026
+- Adicionada coluna `codigo` sequencial (sequence Postgres + UNIQUE) em visitas, propostas, disparos
+- Padding de 4 digitos padronizado com numero_controle de vendas (V0349): VS0001, P0001, DS0001
+- Backfill ordenado por created_at: 19 visitas, 1 proposta backfillados; disparos vazia (sequence ativa)
+- Helper global `window.fmtCodigo(prefix, num)` e `window.parseCodigoBusca(termo)` adicionados em nav.js
+- registro.html: VS#### exibido nos cards de visitas, P#### nas propostas, DS#### nos disparos
+- registro.html: campo readonly Codigo no topo dos modais de edicao (visita, proposta, disparo)
+- registro.html: campo "Nome ou codigo" na busca; busca por VS/P/DS extrai inteiro via parseCodigoBusca
+- detalhe.html: VS#### exibido no card de cada visita no drill-down; P#### nos cards de propostas
+- Nova regra de versionamento: git tag e Google Doc usam sempre o mesmo numero
 
 ### v1.5.3 — 19/04/2026
 - registro.html: nova secao Disparos com wizard de 2 passos (disparo_form → revisao_disp)

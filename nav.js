@@ -210,3 +210,17 @@ function setUser(nome,role){
 
 window.CertNav={init:init,setUser:setUser};
 })();
+
+// Helpers de codigo amigavel — v1.5.4
+// fmtCodigo("VS", 17) => "VS0017"
+window.fmtCodigo = function(prefix, num) {
+  if (num === null || num === undefined || num === '') return '\u2014';
+  return prefix + String(num).padStart(4, '0');
+};
+
+// parseCodigoBusca("VS0017") => 17  |  parseCodigoBusca("vs17") => 17  |  parseCodigoBusca("joao") => null
+window.parseCodigoBusca = function(termo) {
+  if (!termo) return null;
+  var m = String(termo).match(/(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+};

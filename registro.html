@@ -364,12 +364,24 @@ async function buscarRegistros(){
   var corretorNome=document.getElementById('fBuscaCorretor').value;
   var de=document.getElementById('fBuscaDe').value;
   var ate=document.getElementById('fBuscaAte').value;
+  var nomeRaw=(document.getElementById('fBuscaNome')||{}).value||'';
+  var nomeRawTrim=nomeRaw.trim();
+  // Detecta se o termo e um codigo formatado (ex: VS0017, P0003, DS0001, vs17)
+  var codigoNum=null;
+  var termoUpper=nomeRawTrim.toUpperCase();
+  var isCodigoVisita=termoUpper.indexOf('VS')===0&&parseCodigoBusca(nomeRawTrim)!==null;
+  var isCodigoProposta=!isCodigoVisita&&termoUpper.indexOf('DS')<0&&termoUpper.indexOf('P')===0&&parseCodigoBusca(nomeRawTrim)!==null;
+  var isCodigoDisparo=termoUpper.indexOf('DS')===0&&parseCodigoBusca(nomeRawTrim)!==null;
+  if(isCodigoVisita&&tipo==='todos')tipo='visitas';
+  if(isCodigoProposta&&tipo==='todos')tipo='propostas';
+  if(isCodigoDisparo&&tipo==='todos')tipo='disparos';
   var res=document.getElementById('buscaResultados');
   res.innerHTML='<div class="loading"><div class="loading-spin"></div><div class="loading-txt">Buscando...</div></div>';
   try{
     var vis=[];var props=[];var disps=[];
     if(tipo==='disparos'){
       var qd=sb.from('disparos').select('*');
+      if(isCodigoDisparo){qd=qd.eq('codigo',parseCodigoBusca(nomeRawTrim));}
       if(de)qd=qd.gte('data',de);
       if(ate)qd=qd.lte('data',ate);
       qd=qd.order('data',{ascending:false}).limit(50);
@@ -380,6 +392,8 @@ async function buscarRegistros(){
       var qv=sb.from('visitas').select('*');
       if(imovelId)qv=qv.eq('imovel_id',imovelId);
       if(corretorNome)qv=qv.eq('corretor',corretorNome);
+      if(isCodigoVisita){qv=qv.eq('codigo',parseCodigoBusca(nomeRawTrim));}
+      else if(nomeRawTrim)qv=qv.ilike('nome_interessado','%'+nomeRawTrim+'%');
       if(de)qv=qv.gte('data_visita',de);
       if(ate)qv=qv.lte('data_visita',ate);
       qv=qv.order('data_visita',{ascending:false}).limit(50);
@@ -389,6 +403,8 @@ async function buscarRegistros(){
     }else if(tipo==='propostas'){
       var qp=sb.from('propostas').select('*');
       if(imovelId)qp=qp.eq('imovel_id',imovelId);
+      if(isCodigoProposta){qp=qp.eq('codigo',parseCodigoBusca(nomeRawTrim));}
+      else if(nomeRawTrim)qp=qp.ilike('nome_interessado','%'+nomeRawTrim+'%');
       if(de)qp=qp.gte('data',de);
       if(ate)qp=qp.lte('data',ate);
       qp=qp.order('data',{ascending:false}).limit(50);
@@ -398,11 +414,13 @@ async function buscarRegistros(){
     }else{
       var qv2=sb.from('visitas').select('*');
       if(imovelId)qv2=qv2.eq('imovel_id',imovelId);
+      if(nomeRawTrim)qv2=qv2.ilike('nome_interessado','%'+nomeRawTrim+'%');
       if(de)qv2=qv2.gte('data_visita',de);
       if(ate)qv2=qv2.lte('data_visita',ate);
       qv2=qv2.order('data_visita',{ascending:false}).limit(50);
       var qp2=sb.from('propostas').select('*');
       if(imovelId)qp2=qp2.eq('imovel_id',imovelId);
+      if(nomeRawTrim)qp2=qp2.ilike('nome_interessado','%'+nomeRawTrim+'%');
       if(de)qp2=qp2.gte('data',de);
       if(ate)qp2=qp2.lte('data',ate);
       qp2=qp2.order('data',{ascending:false}).limit(50);
@@ -474,7 +492,7 @@ function renderVisitaCard(v){
   var badge=v.intencao?'<span class="rcard-badge '+(intCls[v.intencao]||'muted')+'">'+escHtml(v.intencao)+'</span>':'';
   return '<div class="rcard" id="rcard-v-'+v.id+'">'+
     '<div class="rcard-top"><div>'+
-    '<div class="rcard-nome">'+escHtml(v.nome_interessado||'-')+'</div>'+
+    '<div class="rcard-nome"><span style="font-size:10px;font-weight:700;color:var(--muted);margin-right:6px;letter-spacing:0.5px">'+fmtCodigo('VS',v.codigo)+'</span>'+escHtml(v.nome_interessado||'-')+'</div>'+
     '<div class="rcard-sub">'+escHtml(v.imovel_nome||nomeImovel(v.imovel_id)||'-')+' &middot; '+(v.data_visita||'-')+'</div>'+
     '</div>'+badge+'</div>'+
     '<div class="card-actions">'+
@@ -491,7 +509,7 @@ function renderPropostaCard(p){
   var valStr=p.valor_proposto?'R$ '+parseFloat(p.valor_proposto).toLocaleString('pt-BR'):'';
   return '<div class="rcard" id="rcard-p-'+p.id+'">'+
     '<div class="rcard-top"><div>'+
-    '<div class="rcard-nome">'+escHtml(p.nome_interessado||'-')+'</div>'+
+    '<div class="rcard-nome"><span style="font-size:10px;font-weight:700;color:var(--muted);margin-right:6px;letter-spacing:0.5px">'+fmtCodigo('P',p.codigo)+'</span>'+escHtml(p.nome_interessado||'-')+'</div>'+
     '<div class="rcard-sub">'+(imNome?escHtml(imNome)+' &middot; ':'')+( p.data||'-')+(valStr?' &middot; '+valStr:'')+'</div>'+
     '</div>'+badge+'</div>'+
     '<div class="card-actions">'+
@@ -567,6 +585,8 @@ function renderTipo(){
   for(var m=0;m<corretores.length;m++){crOpts+='<option value="'+escHtml(corretores[m].nome)+'">'+escHtml(corretores[m].nome)+'</option>';}
   html+='<div style="margin-top:24px">'+
   '<div class="section-title">Buscar registros</div>'+
+  '<div style="margin-bottom:10px"><div class="field-lbl">Nome ou codigo (ex: VS0017)</div>'+
+  '<input type="text" class="finput" id="fBuscaNome" placeholder="Nome do interessado ou VS0017, P0001, DS0003..."></div>'+
   '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">'+
   '<div><div class="field-lbl">Tipo</div><select class="finput" id="fBuscaTipo"><option value="todos">Todos</option><option value="visitas">Visitas</option><option value="propostas">Propostas</option><option value="disparos">Disparos</option></select></div>'+
   '<div><div class="field-lbl">Exclusividade</div><select class="finput" id="fBuscaImovel">'+imOpts+'</select></div>'+
@@ -1039,7 +1059,7 @@ function renderDisparoCard(d){
   var sub=(d.data||'-')+(d.alcance?' \u00b7 Alcance: '+d.alcance:'');
   return '<div class="rcard" id="rcard-d-'+d.id+'">'+
     '<div class="rcard-top"><div>'+
-    '<div class="rcard-nome">'+escHtml(exNome)+'</div>'+
+    '<div class="rcard-nome"><span style="font-size:10px;font-weight:700;color:var(--muted);margin-right:6px;letter-spacing:0.5px">'+fmtCodigo('DS',d.codigo)+'</span>'+escHtml(exNome)+'</div>'+
     '<div class="rcard-sub">'+escHtml(sub)+'</div>'+
     '</div>'+badge+'</div>'+
     '<div class="card-actions">'+
@@ -1060,6 +1080,8 @@ function editarDisparo(id){
     '<button class="edit-modal-close" onclick="fecharEditModal()">'+SVG_BACK+'</button>'+
     '<div class="edit-modal-title">Editar disparo</div></div>'+
     '<div class="edit-modal-body">'+
+    '<div class="field"><div class="field-lbl">Codigo</div>'+
+    '<input type="text" class="finput" value="'+fmtCodigo('DS',d.codigo)+'" readonly style="background:var(--s2);color:var(--muted);cursor:default"></div>'+
     '<div class="field"><div class="field-lbl">Exclusividade</div>'+
     '<select class="finput" id="ed_excl">'+exclOpts+'</select></div>'+
     '<div class="field"><div class="field-lbl">Tipo</div>'+
@@ -1141,6 +1163,8 @@ function editarVisita(id){
     '<button class="edit-modal-close" onclick="fecharEditModal()">'+SVG_BACK+'</button>'+
     '<div class="edit-modal-title">Editar visita</div></div>'+
     '<div class="edit-modal-body">'+
+    '<div class="field"><div class="field-lbl">Codigo</div>'+
+    '<input type="text" class="finput" value="'+fmtCodigo('VS',v.codigo)+'" readonly style="background:var(--s2);color:var(--muted);cursor:default"></div>'+
     '<div class="field"><div class="field-lbl">Nome do interessado</div>'+
     '<input type="text" class="finput" id="ev_nome" value="'+escHtml(v.nome_interessado||'')+'"></div>'+
     '<div class="cn-grid-2">'+
@@ -1243,6 +1267,8 @@ function editarProposta(id){
     '<button class="edit-modal-close" onclick="fecharEditModal()">'+SVG_BACK+'</button>'+
     '<div class="edit-modal-title">Editar proposta</div></div>'+
     '<div class="edit-modal-body">'+
+    '<div class="field"><div class="field-lbl">Codigo</div>'+
+    '<input type="text" class="finput" value="'+fmtCodigo('P',p.codigo)+'" readonly style="background:var(--s2);color:var(--muted);cursor:default"></div>'+
     '<div class="field"><div class="field-lbl">Nome do interessado</div>'+
     '<input type="text" class="finput" id="ep_nome" value="'+escHtml(p.nome_interessado||'')+'"></div>'+
     '<div class="cn-grid-2">'+
