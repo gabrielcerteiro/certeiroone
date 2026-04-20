@@ -619,9 +619,7 @@ function renderPage(im,vis,negs){
   if(atualizado)html+='<div class="updated-at fade-in fd1">\u00daltima atualiza\u00e7\u00e3o: '+atualizado+'</div>';
   // grid (3 colunas dense)
   html+='<div class="det-grid">';
-  // 1. Prazos (largura total)
-  html+='<div class="scard fade-in fd1" style="grid-column:1/-1"><div class="scard-title">Prazos</div>'+prazosHtml(im)+'</div>';
-  // 2. Andamento unificado (span 2 colunas): Tempo + Funil + Ads + Conv
+  // 1. Andamento unificado (span 2 colunas): Tempo + Funil + Ads + Conv
   html+='<div class="scard fade-in fd2" style="grid-column:span 2"><div class="scard-title">Andamento</div>'+andamentoHtml(im)+'</div>';
   // 3. Disparos (1 coluna)
   html+='<div class="scard fade-in fd3"><div class="scard-title">Disparos</div>'+disparosHtml(im,vis,negs)+'</div>';
