@@ -168,17 +168,24 @@ function prazoHtml(im){
   var hoje=new Date();hoje.setHours(0,0,0,0);
   var dataInicio=im.data_inicio?new Date(im.data_inicio+'T00:00:00'):null;
   var dataFim=im.data_fim?new Date(im.data_fim+'T00:00:00'):null;
-  var diasContrato=im.prazo_contrato_dias||120;
-  var diasRep=im.prazo_repaginacao_dias?parseInt(im.prazo_repaginacao_dias):0;
-  var diasVenda=diasContrato-diasRep;
+  var diasRep=parseInt(im.dias_repaginacao)||0;
+  var diasVendaContrato=parseInt(im.dias_venda_contrato)||parseInt(im.dias_contrato)||120;
+  var diasTotal=diasRep+diasVendaContrato;
   var diasRest=dataFim?Math.round((dataFim-hoje)/86400000):null;
   var restColor=diasRest===null?'var(--muted)':diasRest>60?'#10B981':diasRest>30?'#F59E0B':'#EF4444';
   var progPct=0;
-  if(dataInicio&&dataFim){var total=Math.max(Math.round((dataFim-dataInicio)/86400000),1);var passados=Math.max(0,Math.min(Math.round((hoje-dataInicio)/86400000),total));progPct=Math.round((passados/total)*100);}
+  if(dataInicio&&dataFim){
+    var total=Math.max(Math.round((dataFim-dataInicio)/86400000),1);
+    var passados=Math.max(0,Math.min(Math.round((hoje-dataInicio)/86400000),total));
+    progPct=Math.round((passados/total)*100);
+  }
   var boxesHtml='';
-  if(diasRep>0){boxesHtml+='<div class="prazo-box"><div class="prazo-box-lbl">Repaginacao</div><div class="prazo-box-num">'+diasRep+'<span class="prazo-box-unit">dias</span></div></div>';}
-  boxesHtml+='<div class="prazo-box"><div class="prazo-box-lbl">Venda</div><div class="prazo-box-num">'+diasVenda+'<span class="prazo-box-unit">dias</span></div></div>';
-  boxesHtml+='<div class="prazo-box"><div class="prazo-box-lbl">Total</div><div class="prazo-box-num">'+diasContrato+'<span class="prazo-box-unit">dias</span></div></div>';
+  if(diasRep>0){
+    boxesHtml+='<div class="prazo-box"><div class="prazo-box-lbl">Repaginacao</div><div class="prazo-box-num">'+diasRep+'<span class="prazo-box-unit">dias</span></div></div>';
+    boxesHtml+='<div class="prazo-box"><div class="prazo-box-lbl">Venda</div><div class="prazo-box-num">'+diasVendaContrato+'<span class="prazo-box-unit">dias</span></div></div>';
+  }else{
+    boxesHtml+='<div class="prazo-box"><div class="prazo-box-lbl">Prazo do contrato</div><div class="prazo-box-num">'+diasVendaContrato+'<span class="prazo-box-unit">dias</span></div></div>';
+  }
   var restLabel=diasRest===null?'-':diasRest>=0?diasRest+' dias restantes':Math.abs(diasRest)+' dias alem do prazo';
   return '<div class="prazo-boxes">'+boxesHtml+'</div><div class="prazo-prog-row"><span class="prazo-prog-lbl">Progresso</span><span class="prazo-rest" style="color:'+restColor+'">'+restLabel+'</span></div><div class="prazo-bar-wrap"><div class="prazo-bar-fill" style="width:'+progPct+'%;background:'+restColor+'"></div></div><div class="prazo-dates"><span class="prazo-date-lbl">'+fmtD(im.data_inicio)+'</span><span class="prazo-date-lbl">'+fmtD(im.data_fim)+'</span></div>';
 }
@@ -187,12 +194,6 @@ function atividadeHtml(im){
   return '<div class="ativ-boxes"><div class="ativ-box"><div class="ativ-box-lbl">Interessados</div><div class="ativ-box-num" style="color:var(--navy)">'+(im.total_leads||0)+'</div></div><div class="ativ-box"><div class="ativ-box-lbl">Visitas</div><div class="ativ-box-num" style="color:var(--blue)">'+(im.total_visitas||0)+'</div></div><div class="ativ-box"><div class="ativ-box-lbl">Propostas</div><div class="ativ-box-num" style="color:var(--green)">'+(im.total_propostas||0)+'</div></div></div>';
 }
 
-function midiaHtml(im){
-  var gasto=im.gastos_metaads?'R$ '+parseFloat(im.gastos_metaads).toLocaleString('pt-BR'):'-';
-  var alcance=im.alcance_metaads?parseInt(im.alcance_metaads).toLocaleString('pt-BR'):'-';
-  var freq=im.frequencia_metaads?parseFloat(im.frequencia_metaads).toFixed(2).replace('.',','):'-';
-  return '<div class="midia-boxes"><div class="midia-box"><div class="midia-box-lbl">Investido</div><div class="midia-box-val">'+gasto+'</div></div><div class="midia-box"><div class="midia-box-lbl">Alcance</div><div class="midia-box-val">'+alcance+'</div></div><div class="midia-box"><div class="midia-box-lbl">Frequencia</div><div class="midia-box-val">'+freq+'</div></div></div>';
-}
 
 function negListaHtml(negs,filtro){
   var lista=filtro==='andamento'?negs.filter(function(n){return n.status==='em_andamento';}):negs;
@@ -218,7 +219,7 @@ function negHtml(negs){
 
 function intencaoHtml(vis){
   if(!vis.length)return '<div class="vis-empty">Sem dados de visita.</div>';
-  var cats=[{key:'Quer comprar',cor:'#10B981',bg:'rgba(16,185,129,0.75)'},{key:'Esta pensando',cor:'#F59E0B',bg:'rgba(245,158,11,0.75)'},{key:'Quer segunda visita',cor:'#3B82F6',bg:'rgba(59,130,246,0.75)'},{key:'Nao gostou',cor:'#EF4444',bg:'rgba(239,68,68,0.75)'}];
+  var cats=[{key:'Tem interesse no im\u00f3vel',cor:'#10B981',bg:'rgba(16,185,129,0.75)'},{key:'Ainda n\u00e3o se posicionou',cor:'#F59E0B',bg:'rgba(245,158,11,0.75)'},{key:'Descartou o im\u00f3vel',cor:'#EF4444',bg:'rgba(239,68,68,0.75)'}];
   var counts={};
   for(var c=0;c<cats.length;c++)counts[cats[c].key]=0;
   for(var j=0;j<vis.length;j++){var it=vis[j].intencao;if(it&&counts[it]!==undefined)counts[it]++;}
@@ -241,8 +242,8 @@ function objecoesHtml(vis){
   return html;
 }
 
-var INTENT_CLS={'Quer comprar':'quer_comprar','Esta pensando':'esta_pensando','Nao gostou':'nao_gostou','Quer segunda visita':'segunda_visita'};
-var INTENT_LBL={'Quer comprar':'Quer comprar','Esta pensando':'Esta pensando','Nao gostou':'Nao gostou','Quer segunda visita':'Segunda visita'};
+var INTENT_CLS={'Tem interesse no im\u00f3vel':'quer_comprar','Ainda n\u00e3o se posicionou':'esta_pensando','Descartou o im\u00f3vel':'nao_gostou'};
+var INTENT_LBL={'Tem interesse no im\u00f3vel':'Tem interesse','Ainda n\u00e3o se posicionou':'N\u00e3o se posicionou','Descartou o im\u00f3vel':'Descartou'};
 
 function visitasHtml(vis){
   if(!vis.length)return '<div class="vis-empty">Nenhuma visita registrada.</div>';
@@ -279,7 +280,6 @@ function renderPage(im,vis,negs){
   _negs=negs;
   var nome=im.nome||'Imovel';
   var atualizado=im.atualizado_em?new Date(im.atualizado_em).toLocaleString('pt-BR'):null;
-  var temMidia=(im.gastos_metaads&&parseFloat(im.gastos_metaads)>0)||(im.alcance_metaads&&parseInt(im.alcance_metaads)>0);
   var obsHtml=objecoesHtml(vis);
   var html='';
   html+='<div class="hero-card fade-in"><div class="hero-nome">'+nome.toUpperCase()+'</div><div class="hero-row2"><span class="hero-prop">'+(im.proprietario||'')+'</span><span class="hero-preco">'+(im.preco||'')+'</span></div></div>';
@@ -287,7 +287,6 @@ function renderPage(im,vis,negs){
   html+='<div class="vend-grid">';
   html+='<div class="scard fade-in fd2"><div class="scard-title">Prazo da Exclusividade</div>'+prazoHtml(im)+'</div>';
   html+='<div class="scard fade-in fd3"><div class="scard-title">Atividade Comercial</div>'+atividadeHtml(im)+'</div>';
-  if(temMidia)html+='<div class="scard fade-in fd4"><div class="scard-title">Investimento em Midia</div>'+midiaHtml(im)+'</div>';
   html+='<div class="scard vend-full fade-in fd5"><div class="scard-title">Propostas ('+negs.length+')</div>'+negHtml(negs)+'</div>';
   html+='<div class="scard fade-in fd6">'+intencaoHtml(vis)+'</div>';
   if(obsHtml)html+='<div class="scard fade-in fd7"><div class="scard-title">Principais Objecoes</div>'+obsHtml+'</div>';
