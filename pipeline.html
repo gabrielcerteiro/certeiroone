@@ -83,6 +83,8 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 .ph-count-ativa{color:#fff}
 .ph-count-repag{color:var(--yellow)}
 .ph-count-aguard{color:rgba(255,255,255,0.7)}
+.ph-vgv-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-right:2px}
+.ph-vgv-val{font-size:13px;font-weight:900;color:#fff}
 .ph-tmm{flex:1;min-width:220px;display:flex;flex-direction:column;gap:6px}
 .ph-tmm-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 .ph-tmm-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:0.08em}
@@ -263,14 +265,10 @@ function calcMetaInterna(im){
   return d.toISOString().split('T')[0];
 }
 function fmtM(v){
-  if(v>=1000000)return 'R$ '+(v/1000000).toFixed(1).replace('.',',')+'M';
-  if(v>=1000)return 'R$ '+(v/1000).toFixed(0)+'K';
-  return 'R$ '+v.toLocaleString('pt-BR');
+  return 'R$ '+Math.round(v).toLocaleString('pt-BR');
 }
 function fmtTMMK(v){
-  if(v>=1000000)return 'R$'+(v/1000000).toFixed(1).replace('.',',')+'M';
-  if(v>=1000)return 'R$'+(v/1000).toFixed(0)+'K';
-  return 'R$'+Math.round(v);
+  return 'R$ '+Math.round(v).toLocaleString('pt-BR');
 }
 function toggleSecao(listId,btn){
   var list=document.getElementById(listId);
@@ -310,12 +308,13 @@ function semColor(pct){
   return 'red';
 }
 
-// --- RENDER BLOCO B: PIPELINE HEADER (contadores + TMM + meta + futuro + nova) ---
+// --- RENDER BLOCO B: PIPELINE HEADER (VGV + contadores + TMM + meta + futuro) ---
 function renderHeader(){
   var ativas=imoveis.filter(function(x){return x.status_exclusividade==='ativa';});
   var gestao=imoveis.filter(function(x){return x.status_exclusividade==='gestao';});
   var repag=imoveis.filter(function(x){return x.status_exclusividade==='repaginando';});
   var aguard=imoveis.filter(function(x){return x.status_exclusividade==='aguardando';});
+  var vgv=ativas.concat(gestao).reduce(function(s,x){return s+(parsePrecM(x.preco)||0);},0);
   var tmmAtivo=0;
   ativas.forEach(function(im){tmmAtivo+=calcTMM(im);});
   gestao.forEach(function(im){tmmAtivo+=calcTMM(im);});
@@ -328,6 +327,8 @@ function renderHeader(){
   var corPct=pct>=100?'var(--green)':(pct>=70?'var(--yellow)':'var(--red)');
   var html='<div class="pipeline-header">'
     +'<div class="ph-counters">'
+      +'<span class="ph-vgv-lbl">VGV</span><span class="ph-vgv-val">'+fmtM(Math.round(vgv*1000000))+'</span>'
+      +'<span class="ph-counter-sep">&#183;</span>'
       +'<span class="ph-count-ativa">'+ativas.length+' ativas</span>'
       +'<span class="ph-counter-sep">-</span>'
       +'<span class="ph-count-repag">'+repag.length+' repag.</span>'
@@ -345,7 +346,6 @@ function renderHeader(){
       +'<span class="ph-future-lbl">Pipeline futuro</span>'
       +'<span class="ph-future-val">+'+fmtM(Math.round(tmmFuturo))+'/mes</span>'
     +'</div>'
-    +'<button class="ph-nova" onclick="window.location.href=\'exclusividades.html\'">+ Nova exclusividade</button>'
   +'</div>';
   document.getElementById('pipelineHeader').innerHTML=html;
 }
@@ -369,18 +369,7 @@ function renderDashboard(){
   });
   var diasPT={'Repaginado':40,'Mobiliado':80,'Vazio':120};
   var tmmGestao=gestao.reduce(function(s,im){var pr=parsePrecM(im.preco)*1000000;var d=diasPT[im.tipo_imovel]||120;return s+(pr/(d/30)/5);},0);
-  var html='<div class="card-navy" style="margin-bottom:14px">'
-    +'<div class="lbl">VGV em carteira</div>'
-    +'<div style="font-size:32px;font-weight:900;color:#fff;line-height:1">'+fmtM(Math.round(vgv*1000000))+'</div>'
-    +'<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px">'+ativas.length+' exclusividade'+(ativas.length===1?'':'s')+' ativa'+(ativas.length===1?'':'s')+'</div>'
-    +'</div>';
-  html+='<div class="stats-row" style="margin-bottom:14px">'
-    +'<div class="stat-box"><div class="stat-n">'+ativas.length+'</div><div class="stat-l">Em Campanha</div></div>'
-    +(gestao.length?'<div class="stat-box" style="border-color:#8B5CF6;background:#EDE9FE"><div class="stat-n" style="color:#5B21B6">'+gestao.length+'</div><div class="stat-l" style="color:#5B21B6">Gestao</div>'+(tmmGestao>0?'<div style="font-size:9px;color:#7C3AED;margin-top:2px">'+fmtTMMK(tmmGestao)+'/mes</div>':'')+'</div>':'')
-    +'<div class="stat-box"><div class="stat-n">'+repag.length+'</div><div class="stat-l">Repaginando</div></div>'
-    +'<div class="stat-box"><div class="stat-n">'+aguard.length+'</div><div class="stat-l">Aguardando</div></div>'
-    +'<div class="stat-box"><div class="stat-n">'+vendidas.length+'</div><div class="stat-l">Vendidas</div></div>'
-    +'</div>';
+  var html='';
   if(alertasCnt>0){
     html+='<div class="card" style="border-left:3px solid var(--red);margin-bottom:12px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center">'

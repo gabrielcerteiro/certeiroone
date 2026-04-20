@@ -774,7 +774,7 @@ async function salvarEdicao(){
   try{
     var preco=parseMoeda(document.getElementById('ef-preco').value);
     var imovelData={
-      nome:document.getElementById('ef-nome').value.trim()||null,
+      nome:document.getElementById('ef-nome').value.trim()||currentRec.imovel_nome,
       proprietario:document.getElementById('ef-prop').value.trim()||null,
       bairro:document.getElementById('ef-bairro').value||null
     };
@@ -785,7 +785,7 @@ async function salvarEdicao(){
       tipo_imovel:document.getElementById('ef-tipo').value||null,
       status:document.getElementById('ef-status').value,
       data_inicio:inicio||PLACEHOLDER_DATE,
-      dias_contrato:parseInt(document.getElementById('ef-prazo').value)||null,
+      dias_contrato:parseInt(document.getElementById('ef-prazo').value)||120,
       data_venda:document.getElementById('ef-venda').value||null,
       comprador_nome:document.getElementById('ef-comprador').value.trim()||null,
       valor_venda:vv,
@@ -807,6 +807,7 @@ async function salvarEdicao(){
     if(metaLeadsEl){
       var snapData={
         exclusividade_id:currentRec.id,
+        imovel_nome:currentRec.imovel_nome,
         meta_leads:metaLeadsEl.value!==''?parseInt(metaLeadsEl.value):null,
         meta_visitas:metaVisitasEl.value!==''?parseInt(metaVisitasEl.value):null,
         meta_propostas:metaPropostasEl.value!==''?parseInt(metaPropostasEl.value):null,

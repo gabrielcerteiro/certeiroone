@@ -519,7 +519,7 @@ function negHtml(negs){
 // --- BLOCO: INTENCAO POS-VISITA ---
 function intencaoHtml(vis){
   if(!vis.length)return '<div class="vis-empty">Sem dados de visita.</div>';
-  var cats=[{key:'Quer comprar',cor:'#10B981',bg:'rgba(16,185,129,0.75)'},{key:'Esta pensando',cor:'#F59E0B',bg:'rgba(245,158,11,0.75)'},{key:'Quer segunda visita',cor:'#3B82F6',bg:'rgba(59,130,246,0.75)'},{key:'Nao gostou',cor:'#EF4444',bg:'rgba(239,68,68,0.75)'}];
+  var cats=[{key:'Tem interesse no im\u00f3vel',cor:'#10B981',bg:'rgba(16,185,129,0.75)'},{key:'Ainda n\u00e3o se posicionou',cor:'#F59E0B',bg:'rgba(245,158,11,0.75)'},{key:'Descartou o im\u00f3vel',cor:'#EF4444',bg:'rgba(239,68,68,0.75)'}];
   var counts={};
   for(var c=0;c<cats.length;c++)counts[cats[c].key]=0;
   for(var j=0;j<vis.length;j++){var it=vis[j].intencao;if(it&&counts[it]!==undefined)counts[it]++;}
@@ -544,8 +544,8 @@ function objecoesHtml(vis){
 }
 
 // --- BLOCO: VISITAS (drill-down) ---
-var INTENT_CLS={'Quer comprar':'quer_comprar','Esta pensando':'esta_pensando','Nao gostou':'nao_gostou','Quer segunda visita':'segunda_visita'};
-var INTENT_LBL={'Quer comprar':'Quer comprar','Esta pensando':'Esta pensando','Nao gostou':'Nao gostou','Quer segunda visita':'Segunda visita'};
+var INTENT_CLS={'Tem interesse no im\u00f3vel':'quer_comprar','Ainda n\u00e3o se posicionou':'esta_pensando','Descartou o im\u00f3vel':'nao_gostou'};
+var INTENT_LBL={'Tem interesse no im\u00f3vel':'Tem interesse','Ainda n\u00e3o se posicionou':'N\u00e3o se posicionou','Descartou o im\u00f3vel':'Descartou'};
 function visitasHtml(vis){
   if(!vis.length)return '<div class="vis-empty">Nenhuma visita registrada.</div>';
   var html='';

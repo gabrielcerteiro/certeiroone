@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Registro | Certeiro One</title>
+<title>Atividades | Certeiro One</title>
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#191949">
 <meta name="mobile-web-app-capable" content="yes">
@@ -116,7 +116,7 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 .obj-add-input:focus{border-color:var(--navy)}
 .obj-add-btn{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-size:12px;font-weight:700;font-family:'Nunito Sans',sans-serif;cursor:pointer;flex-shrink:0;white-space:nowrap}
 /* RESULTADO — botoes grandes */
-.intencao-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.intencao-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .intencao-btn{padding:18px 12px;border-radius:12px;border:2px solid var(--s2);background:var(--white);font-size:13px;font-weight:800;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;text-align:center;transition:all .15s;line-height:1.3}
 .intencao-btn .int-icon{display:flex;align-items:center;justify-content:center;margin-bottom:6px;min-height:26px}
 .intencao-btn .int-icon svg{width:24px;height:24px}
@@ -262,7 +262,7 @@ textarea.finput{resize:none;min-height:80px;font-size:13px}
 <div class="auth-overlay" id="authOverlay" style="display:none">
   <div class="auth-box">
     <div class="auth-logo">Certeiro One</div>
-    <div class="auth-sub">Registro</div>
+    <div class="auth-sub">Atividades</div>
     <label class="auth-lbl">Email</label>
     <input type="email" class="auth-input" id="authEmail" placeholder="seu@email.com" autocomplete="username">
     <label class="auth-lbl">Senha</label>
@@ -344,7 +344,7 @@ async function loadCorretores(){
 }
 
 async function loadExclusividades(){
-  var res=await sb.from('dashboard_imoveis').select('id,imovel_nome,status_exclusividade').in('status_exclusividade',['ativa','gestao','repaginando','aguardando']).order('imovel_nome');
+  var res=await sb.from('dashboard_imoveis').select('id,nome,status_exclusividade').in('status_exclusividade',['ativa','gestao','repaginando','aguardando']).order('nome');
   if(res.error)return;
   exclusividades=res.data||[];
 }
@@ -483,12 +483,12 @@ function nomeImovel(imovelId){
 }
 
 function nomeExcl(exclId){
-  for(var i=0;i<exclusividades.length;i++){if(exclusividades[i].id===exclId)return exclusividades[i].imovel_nome;}
+  for(var i=0;i<exclusividades.length;i++){if(exclusividades[i].id===exclId)return exclusividades[i].nome;}
   return '';
 }
 
 function renderVisitaCard(v){
-  var intCls={'Quer comprar':'green','Esta pensando':'yellow','Quer segunda visita':'blue','Nao gostou':'red'};
+  var intCls={'Tem interesse no im\u00f3vel':'green','Ainda n\u00e3o se posicionou':'yellow','Descartou o im\u00f3vel':'red'};
   var badge=v.intencao?'<span class="rcard-badge '+(intCls[v.intencao]||'muted')+'">'+escHtml(v.intencao)+'</span>':'';
   return '<div class="rcard" id="rcard-v-'+v.id+'">'+
     '<div class="rcard-top"><div>'+
@@ -721,10 +721,9 @@ function addObjCustom(){
 
 function renderResultado(){
   var its=[
-    {v:'Quer comprar',c:'sel-green',icon:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>'},
-    {v:'Esta pensando',c:'sel-yellow',icon:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'},
-    {v:'Quer segunda visita',c:'sel-blue',icon:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'},
-    {v:'Nao gostou',c:'sel-red',icon:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'}
+    {v:'Tem interesse no im\u00f3vel',c:'sel-green',icon:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>'},
+    {v:'Ainda n\u00e3o se posicionou',c:'sel-yellow',icon:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'},
+    {v:'Descartou o im\u00f3vel',c:'sel-red',icon:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>'}
   ];
   var html='<div class="section-title">Resultado da visita</div>'+
   '<div class="field"><div class="field-lbl">Intencao do interessado <span class="req">*</span></div>'+
@@ -745,7 +744,7 @@ function renderResultado(){
 
 function selIntencao(el,val,cls){
   S.intencao=val;
-  document.querySelectorAll('#intWrap .intencao-btn').forEach(function(c){c.classList.remove('sel-green','sel-yellow','sel-blue','sel-red');});
+  document.querySelectorAll('#intWrap .intencao-btn').forEach(function(c){c.classList.remove('sel-green','sel-yellow','sel-red');});
   el.classList.add(cls);
 }
 
@@ -781,7 +780,7 @@ function togglePagto(el,val){
 
 function renderRevisao(){
   var pL={a_vista:'A vista',financiamento:'Financiamento',parcelamento_direto:'Parcelamento direto',dacao_a_vista:'Dacao + a vista',dacao_financiamento:'Dacao + financiamento',dacao_parcelamento_direto:'Dacao + parcelamento',parcelamento_direto_financiamento:'Parcelamento + financiamento'};
-  var iB={'Quer comprar':'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>','Esta pensando':'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>','Quer segunda visita':'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>','Nao gostou':'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'};
+  var iB={'Tem interesse no im\u00f3vel':'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>','Ainda n\u00e3o se posicionou':'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>','Descartou o im\u00f3vel':'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>'};
   return '<div class="section-title">Revisar antes de salvar</div>'+
   '<div class="card">'+
     '<div class="rev-section"><div class="rev-lbl">Imovel</div><div class="rev-val big">'+(S.imovel?escHtml(S.imovel.nome):'-')+'</div></div>'+
@@ -800,7 +799,7 @@ function renderRevisao(){
     (S.observacoes?'<div class="rev-section"><div class="rev-lbl">Observacoes</div><div class="rev-val" style="font-size:12px;font-weight:600">'+escHtml(S.observacoes)+'</div></div>':'')+
   '</div>'+
   '<button class="btn-next green" style="width:100%;padding:16px;font-size:15px;border-radius:12px;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px" id="btnSalvarVisita" onclick="salvarVisita()">&#10003; Salvar visita</button>'+
-  '<button class="btn-back" style="width:100%;padding:14px;text-align:center;border-radius:12px" onclick="voltarPasso()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg> Corrigir</button>';
+  '<button class="btn-back" style="width:100%;padding:14px;text-align:center;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px" onclick="voltarPasso()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg> Corrigir</button>';
 }
 
 function renderPropostaForm(){
@@ -845,7 +844,7 @@ function renderRevisaoProp(){
     (S.prop_obs?'<div class="rev-section"><div class="rev-lbl">Observacoes</div><div class="rev-val" style="font-size:12px;font-weight:600">'+escHtml(S.prop_obs)+'</div></div>':'')+
   '</div>'+
   '<button class="btn-next green" id="btnSalvarProposta" style="width:100%;padding:16px;font-size:15px;border-radius:12px;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px" onclick="salvarProposta()">&#10003; Salvar proposta</button>'+
-  '<button class="btn-back" style="width:100%;padding:14px;text-align:center;border-radius:12px" onclick="voltarPasso()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg> Corrigir</button>';
+  '<button class="btn-back" style="width:100%;padding:14px;text-align:center;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px" onclick="voltarPasso()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg> Corrigir</button>';
 }
 
 // ---- NAVEGACAO ----
@@ -935,7 +934,7 @@ async function salvarProposta(){
 
 function renderDisparoForm(){
   var exclOpts='<option value="">Selecione...</option>';
-  for(var i=0;i<exclusividades.length;i++){var e=exclusividades[i];exclOpts+='<option value="'+e.id+'"'+(S.disp_excl_id===e.id?' selected':'')+'>'+escHtml(e.imovel_nome)+'</option>';}
+  for(var i=0;i<exclusividades.length;i++){var e=exclusividades[i];exclOpts+='<option value="'+e.id+'"'+(S.disp_excl_id===e.id?' selected':'')+'>'+escHtml(e.nome)+'</option>';}
   var castOpts='<option value="">Selecione...</option>';
   for(var j=0;j<corretores.length;j++){var c=corretores[j];castOpts+='<option value="'+c.id+'"'+(S.disp_cadastrado_por_id===c.id?' selected':'')+'>'+escHtml(c.nome)+'</option>';}
   return '<div class="section-title">Dados do disparo</div>'+
@@ -977,7 +976,7 @@ function renderRevisaoDisp(){
     (S.disp_obs?'<div class="rev-section"><div class="rev-lbl">Observacao</div><div class="rev-val" style="font-size:12px;font-weight:600">'+escHtml(S.disp_obs)+'</div></div>':'')+
   '</div>'+
   '<button class="btn-next green" id="btnSalvarDisparo" style="width:100%;padding:16px;font-size:15px;border-radius:12px;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px" onclick="salvarDisparo()">&#10003; Salvar disparo</button>'+
-  '<button class="btn-back" style="width:100%;padding:14px;text-align:center;border-radius:12px" onclick="voltarPasso()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg> Corrigir</button>';
+  '<button class="btn-back" style="width:100%;padding:14px;text-align:center;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px" onclick="voltarPasso()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg> Corrigir</button>';
 }
 
 async function salvarDisparo(){
@@ -1073,7 +1072,7 @@ function editarDisparo(id){
   for(var i=0;i<disparosRecentes.length;i++){if(disparosRecentes[i].id===id){d=disparosRecentes[i];break;}}
   if(!d){showToast('Disparo nao encontrado');return;}
   var exclOpts='<option value="">Selecione...</option>';
-  for(var ei=0;ei<exclusividades.length;ei++){var e=exclusividades[ei];exclOpts+='<option value="'+e.id+'"'+(d.exclusividade_id===e.id?' selected':'')+'>'+escHtml(e.imovel_nome)+'</option>';}
+  for(var ei=0;ei<exclusividades.length;ei++){var e=exclusividades[ei];exclOpts+='<option value="'+e.id+'"'+(d.exclusividade_id===e.id?' selected':'')+'>'+escHtml(e.nome)+'</option>';}
   var castOpts='<option value="">Selecione...</option>';
   for(var ci=0;ci<corretores.length;ci++){var c=corretores[ci];castOpts+='<option value="'+c.id+'"'+(d.criado_por_id===c.id?' selected':'')+'>'+escHtml(c.nome)+'</option>';}
   var html='<div class="edit-modal-hdr">'+
@@ -1155,7 +1154,7 @@ function editarVisita(id){
   if(!v){showToast('Visita nao encontrada');return;}
   var origens=['Meta Ads','Google Ads','Instagram Organico','Indicacao','Disparo de base','Disparo de parceiros','Corretor parceiro','Site / Organico','YouTube','TikTok','Relacionamento','Outro'];
   var pts=[{v:'a_vista',l:'A vista'},{v:'financiamento',l:'Financiamento'},{v:'parcelamento_direto',l:'Parcelamento direto'},{v:'dacao_a_vista',l:'Dacao + a vista'},{v:'dacao_financiamento',l:'Dacao + financiamento'},{v:'dacao_parcelamento_direto',l:'Dacao + parcelamento'},{v:'parcelamento_direto_financiamento',l:'Parcelamento + financiamento'}];
-  var its=[{v:'Quer comprar'},{v:'Esta pensando'},{v:'Quer segunda visita'},{v:'Nao gostou'}];
+  var its=[{v:'Tem interesse no im\u00f3vel'},{v:'Ainda n\u00e3o se posicionou'},{v:'Descartou o im\u00f3vel'}];
   var presets=['Preco alto','Localizacao','Tamanho','Condominio caro','Precisa reformar','Sem vaga','Sem area de lazer','Documentacao','Nao gostou do imovel','Nao qualificado financeiramente'];
   var objArr=Array.isArray(v.objections)?v.objections:[];
   var pagtoArr=Array.isArray(v.formas_pagamento)?v.formas_pagamento:[];

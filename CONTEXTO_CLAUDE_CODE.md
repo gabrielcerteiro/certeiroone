@@ -1,6 +1,6 @@
 # CONTEXTO COMPLETO — PLATAFORMA CERTEIRO
 > Arquivo para onboarding de nova sessao no Claude Code.
-> Atualizado em: 19/04/2026 — v1.5.4 entregue
+> Atualizado em: 19/04/2026 — v1.5.5 entregue
 >
 > REGRA DE VERSIONAMENTO: git tag e Google Doc usam SEMPRE o mesmo numero. Sem consolidacao, sem granularidade desalinhada.
 
@@ -207,6 +207,26 @@ Sidebar via nav.js. Hash routing interno:
 ---
 
 ## 8. HISTORICO DE VERSOES
+
+### v1.5.5 — 19/04/2026
+- Corrigido: edicao de exclusividades pelo modal nao persistia (meta, prazo, datas, valor)
+  - imovelData.nome usava `|| null` em campo NOT NULL — corrigido para fallback no currentRec.imovel_nome
+  - excData.dias_contrato usava `parseInt() || null` em campo NOT NULL — corrigido para fallback 120
+  - snapData nao incluia imovel_nome (NOT NULL em funil_snapshot) — adicionado defensivamente
+- Corrigido: dropdown de exclusividades no cadastro de disparo aparecia vazio
+  - dashboard_imoveis tem coluna `nome` (nao `imovel_nome`); query estava selecionando coluna inexistente
+  - Corrigido: select/order/referencias de imovel_nome -> nome em registro.html
+- Renomeado: menu lateral "Registro" -> "Atividades" (nav.js + titulo/auth-sub de registro.html)
+- UX Pipeline: removido botao "+ Nova exclusividade" da barra superior
+- UX Pipeline: removida linha duplicada de cards numericos (stat-box row)
+- UX Pipeline: VGV em Carteira movido para barra superior compacta (ph-vgv-lbl/ph-vgv-val)
+- UX Pipeline: TMM e Pipeline futuro agora exibem formato completo R$ X.XXX.XXX (sem K/M)
+- Simplificado: campo intencao no wizard de visita de 4 -> 3 opcoes
+  (Tem interesse no imovel / Ainda nao se posicionou / Descartou o imovel)
+- Migracao banco: 18 registros de visitas.intencao migrados para 3 novos valores
+  (Ainda nao se posicionou=12, Tem interesse=5, Descartou=1)
+- Corrigido: icones SVG gigantes na tela de Revisao do wizard (width/height="16" adicionados)
+- Atualizado: detalhe.html — grafico de intencao pos-visita usa 3 novos labels
 
 ### v1.5.4 — 19/04/2026
 - Adicionada coluna `codigo` sequencial (sequence Postgres + UNIQUE) em visitas, propostas, disparos

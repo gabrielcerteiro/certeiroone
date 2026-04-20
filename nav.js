@@ -23,7 +23,7 @@ var PAGES=[
   {id:'exclusividades',label:'Exclusividades',url:'exclusividades.html',ic:'home',role:null},
   {id:'vendas',label:'Vendas',url:'vendas.html',ic:'coin',role:'operacional'},
   {id:'repaginacao',label:'Repaginacao',url:'repaginacao.html',ic:'brush',role:'operacional'},
-  {id:'registro',label:'Registro',url:'registro.html',ic:'clip',role:null},
+  {id:'registro',label:'Atividades',url:'registro.html',ic:'clip',role:null},
   {id:'usuarios',label:'Usuarios',url:'usuarios.html',ic:'user',role:'master'}
 ];
 
