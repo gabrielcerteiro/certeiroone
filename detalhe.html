@@ -33,6 +33,7 @@ html,body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--
 .hero-card::after{content:'';position:absolute;top:-25%;right:-8%;width:200px;height:200px;background:radial-gradient(circle,rgba(184,146,42,0.10) 0%,transparent 65%);border-radius:50%;pointer-events:none}
 .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;position:relative;z-index:1}
 .hero-nome{font-size:22px;font-weight:900;color:#fff;line-height:1.2;flex:1;min-width:0}
+.hero-actions{display:flex;gap:6px;flex-shrink:0}
 .btn-editar-hero{background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:7px 14px;font-size:11px;font-weight:700;font-family:'Nunito Sans',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .15s}
 .btn-editar-hero:hover{background:rgba(255,255,255,0.2)}
 .hero-row2{display:flex;justify-content:space-between;align-items:baseline;margin-top:6px;position:relative;z-index:1}
@@ -290,9 +291,10 @@ function funilConvBox(lbl,real,meta){
   return '<div class="fun-conv-box"><div class="fun-conv-lbl">'+lbl+'</div><div class="fun-conv-val" style="color:'+cor+'">'+realStr+'</div><div class="fun-conv-meta">'+metaStr+'</div></div>';
 }
 
-// --- BLOCO: PRAZOS (3 fases) ---
-// v1.6.1: removidas as 2 datas redundantes embaixo. Datas calculadas ficam apenas
-// dentro de cada box (Repaginacao, Venda-Contrato, Meta). Gabriel trabalha com meta interna.
+// --- BLOCO: PRAZOS (foco na Meta Interna) ---
+// v1.6.1: Gabriel trabalha com a meta interna. O prazo do contrato fica apenas
+// no modal de edicao (serve pra gerar a data que o vendedor ve em vendedor.html).
+// Aqui no detalhe mostramos so: Repaginacao (se > 0) + Meta Interna.
 function prazosHtml(im){
   var dI=im.data_inicio?new Date(im.data_inicio+'T00:00:00'):null;
   var repag=im.dias_repaginacao||0;
@@ -300,18 +302,15 @@ function prazosHtml(im){
   var mv=im.dias_meta_venda||vc;
   function addDias(base,d){var r=new Date(base);r.setDate(r.getDate()+d);return r;}
   function fmtDt(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
-  var dtFimContrato=dI?addDias(dI,repag+vc):null;
   var dtFimMeta=dI?addDias(dI,repag+mv):null;
-  var html='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">';
-  html+='<div class="prazo-box"><div class="prazo-box-lbl">Repagina\u00e7\u00e3o</div>';
-  html+='<div style="font-size:22px;font-weight:800;color:var(--navy)">'+repag+'<span class="prazo-box-unit">d</span></div>';
-  if(repag>0&&dI){html+='<div style="font-size:10px;color:var(--muted);margin-top:4px">fim '+fmtDt(addDias(dI,repag))+'</div>';}
-  else{html+='<div style="font-size:10px;color:var(--muted);margin-top:4px">n\u00e3o se aplica</div>';}
-  html+='</div>';
-  html+='<div class="prazo-box" style="border:2px solid var(--s3)"><div class="prazo-box-lbl">Venda \u2014 Contrato</div>';
-  html+='<div style="font-size:22px;font-weight:800;color:var(--navy)">'+vc+'<span class="prazo-box-unit">d</span></div>';
-  if(dtFimContrato){html+='<div style="font-size:10px;color:var(--muted);margin-top:4px">fim '+fmtDt(dtFimContrato)+'</div>';}
-  html+='</div>';
+  var cols=repag>0?2:1;
+  var html='<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:8px">';
+  if(repag>0){
+    html+='<div class="prazo-box"><div class="prazo-box-lbl">Repagina\u00e7\u00e3o</div>';
+    html+='<div style="font-size:22px;font-weight:800;color:var(--navy)">'+repag+'<span class="prazo-box-unit">d</span></div>';
+    if(dI){html+='<div style="font-size:10px;color:var(--muted);margin-top:4px">fim '+fmtDt(addDias(dI,repag))+'</div>';}
+    html+='</div>';
+  }
   html+='<div class="prazo-box" style="border:2px solid var(--navy)"><div class="prazo-box-lbl">Meta Interna</div>';
   html+='<div style="font-size:22px;font-weight:800;color:var(--navy)">'+mv+'<span class="prazo-box-unit">d</span></div>';
   if(dtFimMeta){html+='<div style="font-size:10px;color:var(--muted);margin-top:4px">fim '+fmtDt(dtFimMeta)+'</div>';}
@@ -597,7 +596,8 @@ function setFiltro(f){
 }
 function toggleNeg(id){var el=document.getElementById(id);if(el)el.classList.toggle('open');}
 function toggleVis(id){var el=document.getElementById(id);if(el)el.classList.toggle('open');}
-window.setFiltro=setFiltro;window.toggleNeg=toggleNeg;window.toggleVis=toggleVis;
+function abrirVendedor(id){window.open('vendedor.html?id='+id+'&from=internal','_blank');}
+window.setFiltro=setFiltro;window.toggleNeg=toggleNeg;window.toggleVis=toggleVis;window.abrirVendedor=abrirVendedor;
 
 // --- RENDER ---
 function renderPage(im,vis,negs){
@@ -606,11 +606,14 @@ function renderPage(im,vis,negs){
   var atualizado=im.atualizado_em?new Date(im.atualizado_em).toLocaleString('pt-BR'):null;
   var obsHtml=objecoesHtml(vis);
   var html='<div class="page-inner">';
-  // 1. HERO + botao Editar
+  // 1. HERO + botoes Vendedor e Editar
   html+='<div class="hero-card fade-in">'
     +'<div class="hero-top">'
       +'<div class="hero-nome">'+escHtml(nome).toUpperCase()+'</div>'
-      +'<button class="btn-editar-hero" onclick="window.location.href=\'exclusividades.html#editar/'+im.id+'\'">Editar</button>'
+      +'<div class="hero-actions">'
+        +'<button class="btn-editar-hero" onclick="abrirVendedor(\''+im.id+'\')" title="Abrir vis\u00e3o do vendedor">Vendedor</button>'
+        +'<button class="btn-editar-hero" onclick="window.location.href=\'exclusividades.html#editar/'+im.id+'\'">Editar</button>'
+      +'</div>'
     +'</div>'
     +'<div class="hero-row2"><span class="hero-prop">'+escHtml(im.proprietario||'')+'</span><span class="hero-preco">'+escHtml(im.preco||'')+'</span></div>'
   +'</div>';
