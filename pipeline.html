@@ -428,11 +428,11 @@ function renderAlertas(){
 function calcProporcional(im){
   var h=new Date();h.setHours(0,0,0,0);
   var dI=im.data_inicio?new Date(im.data_inicio+'T00:00:00'):null;
-  var dF=im.data_fim?new Date(im.data_fim+'T00:00:00'):null;
-  if(!dI||!dF)return{diasPassados:0,diasTotal:im.prazo_contrato_dias||120,fator:0};
-  var diasTotal=Math.max(Math.round((dF-dI)/86400000),1);
-  var diasPassados=Math.max(0,Math.min(Math.round((h-dI)/86400000),diasTotal));
-  return{diasPassados:diasPassados,diasTotal:diasTotal,fator:diasPassados/diasTotal};
+  if(!dI)return{diasPassados:0,diasTotal:im.prazo_contrato_dias||120,fator:0};
+  var diasTotal=Math.max(im.prazo_contrato_dias||im.dias_contrato||120,1);
+  var diasPassados=Math.max(0,Math.round((h-dI)/86400000));
+  var fator=diasTotal>0?diasPassados/diasTotal:0;
+  return{diasPassados:diasPassados,diasTotal:diasTotal,fator:fator};
 }
 function semCor(real,esp){
   if(!esp||esp<=0)return 'green';

@@ -249,10 +249,9 @@ var STATUS_LABEL={'em_andamento':'Em andamento','aceita':'Aceita','recusada':'Re
 function calcProporcional(im){
   var h=new Date();h.setHours(0,0,0,0);
   var dI=im.data_inicio?new Date(im.data_inicio+'T00:00:00'):null;
-  var dF=im.data_fim?new Date(im.data_fim+'T00:00:00'):null;
-  if(!dI||!dF)return{diasPassados:0,diasTotal:im.prazo_contrato_dias||120,fator:0};
-  var diasTotal=Math.max(Math.round((dF-dI)/86400000),1);
-  var diasPassados=Math.max(0,Math.min(Math.round((h-dI)/86400000),diasTotal));
+  if(!dI)return{diasPassados:0,diasTotal:im.prazo_contrato_dias||120,fator:0};
+  var diasTotal=Math.max(im.prazo_contrato_dias||im.dias_contrato||120,1);
+  var diasPassados=Math.max(0,Math.round((h-dI)/86400000));
   return{diasPassados:diasPassados,diasTotal:diasTotal,fator:Math.min(diasPassados/diasTotal,1)};
 }
 function semCor(real,esp){
@@ -289,6 +288,38 @@ function funilConvBox(lbl,real,meta){
   var realStr=(real!==null&&!isNaN(real))?real.toFixed(1).replace('.',',')+'%':'-';
   var metaStr=meta>0?'meta '+meta.toFixed(1).replace('.',',')+'%':'sem meta';
   return '<div class="fun-conv-box"><div class="fun-conv-lbl">'+lbl+'</div><div class="fun-conv-val" style="color:'+cor+'">'+realStr+'</div><div class="fun-conv-meta">'+metaStr+'</div></div>';
+}
+
+// --- BLOCO: PRAZOS (3 fases) ---
+function prazosHtml(im){
+  var dI=im.data_inicio?new Date(im.data_inicio+'T00:00:00'):null;
+  var repag=im.dias_repaginacao||0;
+  var vc=im.dias_venda_contrato||im.dias_contrato||120;
+  var mv=im.dias_meta_venda||vc;
+  function addDias(base,d){var r=new Date(base);r.setDate(r.getDate()+d);return r;}
+  function fmtDt(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
+  var dtFimContrato=dI?addDias(dI,repag+vc):null;
+  var dtFimMeta=dI?addDias(dI,repag+mv):null;
+  var html='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">';
+  html+='<div class="prazo-box"><div class="prazo-box-lbl">Repagina\u00e7\u00e3o</div>';
+  html+='<div style="font-size:22px;font-weight:800;color:var(--navy)">'+repag+'<span class="prazo-box-unit">d</span></div>';
+  if(repag>0&&dI){html+='<div style="font-size:10px;color:var(--muted);margin-top:4px">fim '+fmtDt(addDias(dI,repag))+'</div>';}
+  else{html+='<div style="font-size:10px;color:var(--muted);margin-top:4px">n\u00e3o se aplica</div>';}
+  html+='</div>';
+  html+='<div class="prazo-box" style="border:2px solid var(--s3)"><div class="prazo-box-lbl">Venda \u2014 Contrato</div>';
+  html+='<div style="font-size:22px;font-weight:800;color:var(--navy)">'+vc+'<span class="prazo-box-unit">d</span></div>';
+  if(dtFimContrato){html+='<div style="font-size:10px;color:var(--muted);margin-top:4px">fim '+fmtDt(dtFimContrato)+'</div>';}
+  html+='</div>';
+  html+='<div class="prazo-box" style="border:2px solid var(--navy)"><div class="prazo-box-lbl">Meta Interna</div>';
+  html+='<div style="font-size:22px;font-weight:800;color:var(--navy)">'+mv+'<span class="prazo-box-unit">d</span></div>';
+  if(dtFimMeta){html+='<div style="font-size:10px;color:var(--muted);margin-top:4px">fim '+fmtDt(dtFimMeta)+'</div>';}
+  html+='</div>';
+  html+='</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">';
+  html+='<div style="background:var(--bg);border-radius:8px;padding:8px 12px"><span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);display:block;margin-bottom:3px">Data fim do contrato (vis\u00e3o cliente)</span>'+(dtFimContrato?'<strong>'+fmtDt(dtFimContrato)+'</strong>':'\u2014')+'</div>';
+  html+='<div style="background:var(--bg);border-radius:8px;padding:8px 12px"><span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);display:block;margin-bottom:3px">Data fim da meta interna (pipeline)</span>'+(dtFimMeta?'<strong>'+fmtDt(dtFimMeta)+'</strong>':'\u2014')+'</div>';
+  html+='</div>';
+  return html;
 }
 
 // --- BLOCO: ANDAMENTO UNIFICADO (tempo + funil + ads) ---
@@ -589,9 +620,11 @@ function renderPage(im,vis,negs){
   if(atualizado)html+='<div class="updated-at fade-in fd1">\u00daltima atualiza\u00e7\u00e3o: '+atualizado+'</div>';
   // grid (3 colunas dense)
   html+='<div class="det-grid">';
-  // 1. Andamento unificado (span 2 colunas): Tempo + Funil + Ads + Conv
+  // 1. Prazos (largura total)
+  html+='<div class="scard fade-in fd1" style="grid-column:1/-1"><div class="scard-title">Prazos</div>'+prazosHtml(im)+'</div>';
+  // 2. Andamento unificado (span 2 colunas): Tempo + Funil + Ads + Conv
   html+='<div class="scard fade-in fd2" style="grid-column:span 2"><div class="scard-title">Andamento</div>'+andamentoHtml(im)+'</div>';
-  // 2. Disparos (1 coluna)
+  // 3. Disparos (1 coluna)
   html+='<div class="scard fade-in fd3"><div class="scard-title">Disparos</div>'+disparosHtml(im,vis,negs)+'</div>';
   // 3. Propostas drill-down
   html+='<div class="scard fade-in fd4"><div class="scard-title">Propostas ('+negs.length+')</div>'+negHtml(negs)+'</div>';

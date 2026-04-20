@@ -1,6 +1,6 @@
 # CONTEXTO COMPLETO — PLATAFORMA CERTEIRO
 > Arquivo para onboarding de nova sessao no Claude Code.
-> Atualizado em: 19/04/2026 — v1.5.5 entregue
+> Atualizado em: 19/04/2026 — v1.6.0 entregue
 >
 > REGRA DE VERSIONAMENTO: git tag e Google Doc usam SEMPRE o mesmo numero. Sem consolidacao, sem granularidade desalinhada.
 
@@ -87,9 +87,18 @@ REMOVIDOS: encerrada, inativa, renovada
 - Padding de 4 digitos padrao do projeto (igual a numero_controle de vendas V0349)
 - Helper global: `window.fmtCodigo(prefix, num)` e `window.parseCodigoBusca(termo)` em nav.js
 
+#### `exclusividades` — campos de prazo (v1.6.0)
+- `dias_repaginacao` — integer NOT NULL DEFAULT 0 — fase de obra antes de iniciar venda. 0 se nao ha repaginacao.
+- `dias_venda_contrato` — integer NOT NULL DEFAULT 120 — prazo formal no contrato com proprietario (visao do cliente)
+- `dias_meta_venda` — integer nullable — meta interna de venda do Gabriel (visao do pipeline). Fallback: dias_venda_contrato
+- `dias_contrato` — mantido por compatibilidade; conceitualmente = repag + venda_contrato
+
 #### `funil_snapshot` — campos relevantes
 - `status_exclusividade` — ver constraint acima
 - `tipo_imovel` — Mobiliado | Vazio | Repaginado (usado no calculo do TMM)
+- `prazo_contrato_dias` — sincronizado com dias_meta_venda via trigger (pipeline usa esta referencia)
+- `prazo_repaginacao_dias` — sincronizado com dias_repaginacao via trigger
+- `data_fim` — calculado como data_inicio + repag + venda_contrato (visao cliente, para timeline)
 - `prazo_interno_dias` — meta interna de vendas (NAO usar para TMM)
 - `atualizado_em` timestamptz — usado para indicador "sem atualizacao"
 - Todos os campos de leads por canal (leads_meta_ads, leads_google_ads, etc.)
@@ -207,6 +216,19 @@ Sidebar via nav.js. Hash routing interno:
 ---
 
 ## 8. HISTORICO DE VERSOES
+
+### v1.6.0 — 19/04/2026
+- Refundacao do modelo de prazos: 3 fases distintas
+- Adicionadas colunas em exclusividades: dias_repaginacao (NOT NULL DEFAULT 0), dias_venda_contrato (NOT NULL DEFAULT 120), dias_meta_venda (nullable)
+- Migracao de dados: dias_contrato historico copiado para dias_venda_contrato e dias_meta_venda em todos os 57 registros
+- Trigger sync_exclusividade_to_snapshot atualizado: data_fim = data_inicio + repag + venda_contrato; prazo_contrato_dias = dias_meta_venda (pipeline usa meta interna)
+- Views atualizadas: view_exclusividades_gestao e dashboard_imoveis agora expoe os 3 novos campos
+- calcProporcional em pipeline.html e detalhe.html corrigido para usar prazo_contrato_dias (meta interna) como diasTotal ao inves de dF-dI
+- Modal de edicao da exclusividade (exclusividades.html) redesenhado com 3 campos de prazo + helper texts + indicador data fim calculada em tempo real
+- Formulario de nova exclusividade tambem atualizado com 3 campos
+- detalhe.html: bloco Prazos adicionado (largura total, 3 boxes com datas de fim + 2 rows de data fim: contrato e meta interna)
+- Pipeline continua funcional, agora usando meta interna como referencia de tempo
+- Pendente do lado humano: revisar e ajustar os 3 prazos das 8 exclusividades operacionais
 
 ### v1.5.5 — 19/04/2026
 - Corrigido: edicao de exclusividades pelo modal nao persistia (meta, prazo, datas, valor)
