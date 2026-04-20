@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- v1.6.1 deploy 2026-04-20 02:47 --><!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -292,9 +292,7 @@ function funilConvBox(lbl,real,meta){
 }
 
 // --- BLOCO: PRAZOS (foco na Meta Interna) ---
-// v1.6.1: Gabriel trabalha com a meta interna. O prazo do contrato fica apenas
-// no modal de edicao (serve pra gerar a data que o vendedor ve em vendedor.html).
-// Aqui no detalhe mostramos so: Repaginacao (se > 0) + Meta Interna.
+// v1.6.1 (deploy 02:47): so Repaginacao (se > 0) + Meta Interna. Contrato fica no modal.
 function prazosHtml(im){
   var dI=im.data_inicio?new Date(im.data_inicio+'T00:00:00'):null;
   var repag=im.dias_repaginacao||0;
